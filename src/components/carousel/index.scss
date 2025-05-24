@@ -1,0 +1,33 @@
+.carousel {
+  width: 100%;
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: auto; // Giảm chiều cao xuống
+    object-fit: contain; // Giữ nguyên tỷ lệ ảnh và đảm bảo ảnh không bị crop
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+    background-color: #fff; // Có thể thêm để ảnh không bị lộ khoảng trắng nếu nhỏ hơn container
+  }
+
+  img:hover {
+    transform: scale(1.03);
+  }
+
+  &.multi-item {
+    .swiper-slide {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      img {
+        width: 90%;
+        height: 80vh; // Cũng giảm nhưng vẫn đảm bảo đủ chỗ hiển thị toàn bộ ảnh
+        object-fit: cover;
+        margin: 20px 0;
+      }
+    }
+  }
+}

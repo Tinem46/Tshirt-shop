@@ -1,0 +1,35 @@
+.layout {
+  &__container {
+    min-height: 100vh;
+    position: relative;
+  }
+
+  &__compare-button-container {
+    z-index: 1000;
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    justify-content: flex-end;
+    overflow: hidden;
+    transition: transform 0.3s ease-out;
+    transform: translateX(100%);
+  }
+
+  &__compare-button {
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 5px 0 0 5px;
+    cursor: pointer;
+    transform: translateX(0);
+    transition: none;
+  }
+
+  &__container:hover &__compare-button-container,
+  &__compare-button-container--visible {
+    transform: translateX(0);
+  }
+}

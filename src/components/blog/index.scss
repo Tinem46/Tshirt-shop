@@ -1,0 +1,38 @@
+.image-list {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-bottom: 25px;
+}
+
+.image-item {
+cursor: pointer;
+  width: 35%; 
+  border: 1px solid #ddd;
+  height: auto;
+  position: relative;
+  display: inline-block
+}
+
+.image-item img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+
+
+.overlay-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+    text-shadow: 0 0 5px rgba(0,0,0,0.7);
+    pointer-events: none; /* để không ảnh hưởng tới click */
+  }
+
