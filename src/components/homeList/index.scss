@@ -1,0 +1,82 @@
+.shirt-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px 70px;
+}
+
+.shirt-list > * {
+    flex: 0 0 calc((100% - 90px) / 4); // 3 khoảng cách * 30px = 90px
+    max-width: calc((100% - 90px) / 4);
+    box-sizing: border-box;
+}
+
+.scrolling-text {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    margin: 60px 0; // Có thể giữ lại hoặc điều chỉnh khoảng cách
+
+    .text-track {
+        display: inline-block;
+        white-space: nowrap;
+        animation: scrollText 20s linear infinite;
+
+        span {
+            display: inline-block;
+            font-size: 70px;
+            font-weight: 300;
+            color: black;
+            margin-right: 60px;
+            font-family: "Arial", sans-serif;
+            letter-spacing: 2px;
+            -webkit-text-stroke: 1px black;
+            color: transparent;
+        }
+    }
+}
+
+@keyframes scrollText {
+    0% {
+        transform: translateX(0%);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.category-banners {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 40px;
+    margin-top: 5px;
+    padding: 0 8px;
+
+    .category-item {
+        flex: 1;
+        text-align: center;
+
+        img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+    }
+}
+.home-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    cursor: pointer;
+
+    img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+}

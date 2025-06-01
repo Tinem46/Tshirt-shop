@@ -1,0 +1,91 @@
+.sidebar {
+  width: 260px;
+  background-color: #f4f4f4;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  margin-top: 30px;
+
+  .profile-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+
+    .profile-info {
+      margin-left: 10px;
+
+      .username {
+        display: block;
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+      }
+
+      .edit-profile {
+        display: flex;
+        align-items: center;
+        color: #999;
+        font-size: 13px;
+        cursor: pointer;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #fa541c;
+        }
+      }
+    }
+  }
+
+  .section-title {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 15px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #fa541c;
+    }
+  }
+
+  .tab-list {
+    list-style: none;
+    padding-left: 0;
+    margin-left: 25px;
+    transition:
+      max-height 1s ease-in-out,
+      opacity 0.5s ease;
+
+    .tab-item {
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition:
+        background-color 0.2s,
+        color 0.2s;
+
+      &:hover {
+        background-color: #e6e6e6;
+      }
+
+      &:active {
+        background-color: #e6e6e6;
+      }
+    }
+
+    .tab-item.active {
+      color: #000000; // Màu cam
+      font-weight: bold; // In đậm
+      background-color: #e6e6e6;
+    }
+  }
+
+  .line {
+    height: 1px;
+    width: 90%;
+    background-color: #ccc;
+    margin: 15px 0;
+  }
+}

@@ -1,0 +1,257 @@
+.aboutUs {
+  font-size: 1.6rem;
+  background-color: black;
+  color: #2c3e50;
+  line-height: 1.6;
+  padding-top: 130px;
+
+  &__hero {
+    background-size: cover;
+    background-position: center;
+    height: 60vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+
+
+  }
+
+  &__heroImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 1;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  &__overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); // Lớp phủ mờ để chữ nổi bật
+    z-index: 2;
+  }
+
+  &__heroContent {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+
+    h1 {
+      font-size: 4.5rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    p {
+      font-size: 2.2rem;
+    }
+  }
+
+  &__historyImage {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+  }
+
+  &__mission,
+  &__history,
+  &__whyChooseUs,
+  &__gallery,
+  &__team,
+  &__locations,
+  &__storeHistory {
+    padding: 5rem 2rem;
+    margin: 0;
+    background-color: #f8f9fa;
+    position: relative;
+    overflow: hidden;
+
+    &:hover {
+      background-color: #f1f3f5;
+      transition: background-color 0.3s ease;
+    }
+
+    h2 {
+      font-size: 3rem;
+      color: #2c3e50;
+      margin-bottom: 2rem;
+      text-align: center;
+      position: relative;
+      padding-bottom: 1.5rem;
+
+      &:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 3px;
+        background: linear-gradient(to right, #3498db, #2ecc71);
+        border-radius: 2px;
+      }
+
+      svg {
+        margin-right: 1rem;
+        color: #3498db;
+      }
+    }
+
+    p {
+      font-size: 1.8rem;
+      color: #34495e;
+      line-height: 1.8;
+      max-width: 900px;
+      margin: 0 auto;
+      text-align: center;
+    }
+  }
+
+  &__historyContent,
+  &__galleryContent {
+    margin-top: 20px;
+    font-size: 1.4rem;
+    color: #777;
+    font-style: italic;
+
+    p {
+      flex: 1;
+    }
+  }
+
+  &__content1 ul,
+  &__locations ul {
+    list-style-type: none;
+    padding-left: 0;
+
+    li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 15px;
+      line-height: 1.6;
+      font-size: 1.6rem;
+
+      &::before {
+        content: '✔'; /* Dấu kiểm */
+        color: #28a745; /* Màu xanh nổi bật cho dấu kiểm */
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 1.6rem;
+      }
+
+      &:hover {
+        color: #e67e22; /* Đổi màu khi hover */
+        transform: translateX(5px); /* Dịch chuyển nhẹ khi hover */
+        cursor: pointer;
+      }
+    }
+  }
+
+  &__gallery {
+    text-align: center;
+
+    .aboutUs__varietyImage {
+      width: 65%; /* Tăng kích thước ảnh trong phần bộ sưu tập */
+      border-radius: 15px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Hiệu ứng đổ bóng khi hover */
+      }
+    }
+
+    p {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      color: #777;
+      font-style: italic;
+    }
+  }
+
+  &__content2 {
+    text-align: center;
+
+    p {
+      margin-bottom: 20px;
+      line-height: 1.8;
+      color: #555;
+    }
+  }
+
+  &__locations {
+    text-align: center;
+
+    ul {
+      line-height: 1.8;
+      color: #555;
+    }
+
+    h1 {
+      font-size: 2.4rem;
+      font-weight: bold;
+      color: #333;
+    }
+  }
+
+  &__reasons {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+
+    .aboutUs__reason {
+      flex: 1;
+      min-width: 300px;
+      background-color: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      h3 {
+        font-size: 2rem;
+        color: #2980b9;
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      p {
+        font-size: 1.6rem;
+        text-align: center;
+      }
+    }
+  }
+
+  &__mission,
+  &__whyChooseUs,
+  &__team {
+    background-color: #fff;
+  }
+
+  &__storeHistory,
+  &__history,
+  &__gallery,
+  &__locations {
+    background-color: #f8f9fa;
+  }
+}

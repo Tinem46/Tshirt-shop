@@ -1,18 +1,23 @@
 .shop-list {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 80px;
-  padding: 20px 100px;
+  max-width: 1160px;
+  margin: 0 auto;
 }
 
+.shop-list > * {
+  flex: 0 0 calc((100% - 90px) / 4); // 3 khoảng cách * 30px = 90px
+  max-width: calc((100% - 90px) / 4);
+  box-sizing: border-box;
+}
 .pagination {
-  margin-top: 20px;
   display: flex;
   gap: 0.5rem;
-  justify-content: flex-end; /* căn sang trái */
-  margin-right: 150px ;
-  margin-bottom: 80px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-right: 8vw; // hoặc 16px, tùy bạn
   button {
     border: 1px solid #ccc;
     background: white;
@@ -34,7 +39,13 @@
 
 .line {
   height: 1px;
-  width: 80%;
-  background-color: #ccc; 
-  margin: 0 auto 30px auto; 
+  width: 85%;
+  background-color: #ccc;
+  margin: 0 auto 30px auto;
+  max-width: 1400px;
+}
+
+.dots {
+  padding: 6px 8px;
+  color: #999;
 }

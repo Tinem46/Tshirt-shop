@@ -10,7 +10,7 @@ function Layout() {
   // const compareItems = useSelector((state) => state.compare.items);
 
   return (
-    <div className="layout"style={{ paddingTop: "130px" }}>
+    <div className="layout" style={{ paddingTop: "110px" }}>
       <Header />
       <Outlet />
       {/* <div className="layout__container">
@@ -26,7 +26,7 @@ function Layout() {
           </div>
         )}
       </div> */}
-      <Footer style={{ height: "80dvh" }} />
+      <Footer style={{}} />
       {/* <CompareModal
         isOpen={isCompareModalOpen}
         onClose={() => setIsCompareModalOpen(false)}

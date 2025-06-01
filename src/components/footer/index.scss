@@ -1,144 +1,155 @@
 .footer {
-  background-color: #111; // Đen chủ đạo cho nền footer
-  color: #f5f5f5; // Màu trắng sáng cho chữ
-  padding: 20px 20px;
-  text-align: center;
+  background-color: #fff;
+  color: #000;
   font-family: Arial, sans-serif;
-  width: 100%;
+  padding: 40px 80px;
+  
 
   .footerContent {
-    max-width: 1200px;
-    margin: auto;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .map-container {
-      width: 100%;
-      margin-bottom: 20px;
-
-      iframe {
-        width: 100%;
-        height: 200px;
-        border: none;
-      }
-    }
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 40px;
 
     .footerColumns {
       display: flex;
       flex-wrap: wrap;
-      justify-content: space-between;
-      margin: 20px 0;
-      width: 100%;
-      max-width: 1000px;
+      gap: 40px;
+      flex: 1;
+    }
 
-      .footerColumn {
-        flex: 1;
-        min-width: 200px;
-        margin: 10px 0;
+    .footerColumn {
+      flex: 1;
+      min-width: 200px;
 
-        .columnTitle {
-          font-size: 18px;
-          font-weight: 600;
-          margin-bottom: 10px;
-          color: #ffffff;
-          text-transform: uppercase;
-        }
-
-        .columnList {
-          list-style: none;
-          padding: 0;
-
-          .columnItem {
-            margin: 8px 0;
-            color: #bfbfbf;
-            font-size: 14px;
-            transition: color 0.3s;
-
-            &:hover {
-              color: #ffffff;
-            }
-          }
-        }
+      .columnTitle {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-transform: uppercase;
       }
 
-      .brandSection {
-        text-align: center;
+      .columnList {
+        list-style: none;
+        padding: 0;
+        margin: 0;
 
-        .logoText {
-          font-size: 24px;
-          font-weight: bold;
-          color: #ffffff;
-        }
-
-        .subscribeTitle {
-          font-size: 18px;
-          margin: 15px 0 5px;
-          color: #ffffff;
-        }
-
-        .offerText {
+        .columnItem {
+          margin-bottom: 12px;
           font-size: 14px;
-          color: #bfbfbf;
-          margin-bottom: 20px;
+        }
+      }
+    }
+
+    .brandSection {
+      flex: 1.5;
+
+      h2.logoText {
+        font-size: 16px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      p,
+      h3 {
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .emailForm {
+        display: flex;
+        margin-top: 10px;
+
+        .emailInput {
+          flex: 1;
+          padding: 8px 12px;
+          font-size: 14px;
+          border: 1px solid #ccc;
+          border-radius: 4px 0 0 4px;
         }
 
-        .emailForm {
+        .submitIcon {
+          background-color: black;
+          color: white;
+          padding: 8px 12px;
+          border: none;
+          border-radius: 0 4px 4px 0;
+          cursor: pointer;
           display: flex;
-          justify-content: center;
-
-          .emailInput {
-            padding: 10px;
-            border: none;
-            border-radius: 4px 0 0 4px;
-            outline: none;
-          }
-
-          .submitIcon {
-            padding: 10px 20px;
-            background-color: #333;
-            border: none;
-            color: #ffffff;
-            border-radius: 0 4px 4px 0;
-            cursor: pointer;
-            transition: background-color 0.3s;
-
-            &:hover {
-              background-color: #555;
-            }
-          }
+          align-items: center;
         }
       }
     }
 
     .socialIcons {
-      margin: 15px 0;
       display: flex;
-      gap: 15px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 120px;
 
-      .icon {
-        width: 30px;
-        height: 30px;
-        background-color: #333;
+      .socialIconsRow {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 50%;
-        color: #ffffff;
-        font-size: 16px;
-        transition: background-color 0.3s;
+        gap: 10px;
 
-        &:hover {
-          background-color: #555;
+        img,
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+
+      .govBadge {
+        margin-top: 10px;
+        img {
+          height: 40px;
         }
       }
     }
   }
 
   .copyright {
-    border-top: 1px solid #333;
-    padding-top: 15px;
-    font-size: 14px;
-    color: #bfbfbf;
+    border-top: 1px solid #ccc;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+    font-size: 13px;
+    color: #777;
   }
+
 }
+.scroll-text {
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+    margin: 60px 0; // Có thể giữ lại hoặc điều chỉnh khoảng cách
+    margin-top: 120px;
+
+    .text-track {
+      display: inline-block;
+      white-space: nowrap;
+      animation: scrollText 20s linear infinite;
+
+      span {
+        display: inline-block;
+        font-size: 70px;
+        font-weight: 300;
+        color: black;
+        margin-right: 60px;
+        font-family: "Arial", sans-serif;
+        letter-spacing: 2px;
+        -webkit-text-stroke: 1px black;
+        color: transparent;
+      }
+    }
+  }
+
+  @keyframes scrollText {
+    0% {
+      transform: translateX(0%);
+    }
+    100% {
+      transform: translateX(-1%);
+    }
+  }

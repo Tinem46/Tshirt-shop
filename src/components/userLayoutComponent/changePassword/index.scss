@@ -1,0 +1,78 @@
+.register-form {
+  max-width: 400px;
+  padding-top: 20px;
+
+  .password-header {
+    text-align: left;
+    margin-bottom: 20px;
+
+    h2 {
+      font-size: 26px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .ant-form-item-label > label {
+    font-weight: bold;
+    color: #333;
+  }
+
+  .ant-form-item {
+    margin-bottom: 20px;
+  }
+
+  .ant-input-password {
+    border-radius: 4px;
+
+    input {
+      padding: 10px;
+    }
+
+    .anticon {
+      color: #888;
+
+      &:hover {
+        color: #3f3c3a;
+      }
+    }
+  }
+
+  .ant-form-item-explain-error {
+    font-size: 13px;
+    color: #cc1919fa;
+  }
+
+  button {
+    background-color: #000000;
+    border: none;
+    border-radius: 4px;
+    height: 50px;
+    font-weight: bold;
+    margin-top: 10px;
+    color: #ffffff;
+    width: 100%;
+    cursor: pointer;
+    &:hover {
+      background-color: #333333; // Màu khi hover (tuỳ chỉnh theo ý bạn)
+    }
+  }
+}
+.line3 {
+  height: 1px;
+  width: 100%;
+  background-color: #ccc;
+}
+.form-container {
+  width: 100%;
+  max-width: 400px;
+  margin-top: 20px;
+  margin-left: 80%;
+}

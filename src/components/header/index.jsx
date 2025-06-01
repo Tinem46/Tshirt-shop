@@ -64,7 +64,7 @@ const Header=()=> {
     <header className="header">
       <div className="header__logo" onClick={() => navigate("/")}>
         {/* <img src={logo} alt="logo" /> */}
-        <img src="https://keedo.vn/wp-content/uploads/2020/08/logo-keedo.png"/>
+        <img src="https://keedo.vn/wp-content/uploads/2020/08/logo-keedo.png" alt="logo"/>
       </div>
       <nav className="header__nav">
         <div className="header__nav-center">
@@ -72,7 +72,7 @@ const Header=()=> {
             <li onClick={() => navigate("/")} className="header__home-link">
               Home
             </li>
-            <li onClick={() => navigate("/FishShop")}>Shop</li>
+            <li onClick={() => navigate("/shop")}>Shop</li>
 
             
             <li onClick={() => navigate("/aboutUs")}>About Us</li>
@@ -91,21 +91,22 @@ const Header=()=> {
             {/* )} */}
             <li>
               {/* <Dropdown overlay={userMenu} trigger={['hover']}> */}
-                <UserOutlined style={{ cursor: 'pointer' }} />
+                <UserOutlined style={{ cursor: 'pointer' }} onClick={()=>navigate("/login")} />
               {/* </Dropdown> */}
             </li>
             <li>
               <ShoppingCartOutlined
                 style={{ cursor: "pointer" }}
-                onClick={() => {
-                  const token = localStorage.getItem("token");
-                  if (!token) {
-                    navigate("/login");
-                    toast.error("Please login to view cart");
-                  } else {
-                    navigate("/cart");
-                  }
-                }}
+                // onClick={() => {
+                //   const token = localStorage.getItem("token");
+                //   if (!token) {
+                //     navigate("/login");
+                //     toast.error("Please login to view cart");
+                //   } else {
+                //     navigate("/cart");
+                //   }
+                // }}
+                onClick={() => navigate("/cart")}
               />
               {/* <span className="cart-count">{cartItemCount}</span> */}
             </li>

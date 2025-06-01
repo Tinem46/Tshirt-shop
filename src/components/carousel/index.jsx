@@ -6,16 +6,20 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "./index.scss"; // Bạn có thể thêm CSS cụ thể trong đây nếu muốn
 
-const Carousel=({
+const Carousel = ({
   numberOfSlides = 1,
   autoplay = false,
-//   name="name 1"
-})=> {
+  numberOfItems = 1,
+  img = "https://theme.hstatic.net/1000306633/1001194548/14/slideshow_3.jpg?v=360",
+  //   name="name 1"
+}) => {
   const [shirt, setShirt] = useState([]);
 
   const fetchShirt = async () => {
     try {
-      const response = await fetch("https://682f2e5b746f8ca4a4803faf.mockapi.io/product");
+      const response = await fetch(
+        "https://682f2e5b746f8ca4a4803faf.mockapi.io/product"
+      );
       const data = await response.json();
       console.log("DATA:", data);
 
@@ -34,8 +38,12 @@ const Carousel=({
   }, []);
 
   // Filter shirts by name before rendering
-//   const filteredShirts = shirt.filter(item => item.name === name);
-
+  //   const filteredShirts = shirt.filter(item => item.name === name);
+  console.log("Slides to render:", shirt.slice(0, numberOfItems).length);
+  console.log(
+    "Số chấm pagination dự kiến:",
+    Math.ceil(numberOfItems / numberOfSlides)
+  );
   return (
     <Swiper
       slidesPerView={numberOfSlides}
@@ -48,21 +56,19 @@ const Carousel=({
           : false
       }
       pagination={{ clickable: true }}
+      loop={false} // Ngăn Swiper tự clone slides
+      watchOverflow={true} // Ngăn tạo pagination nếu slides không đủ
       modules={autoplay ? [Pagination, Autoplay] : [Pagination]}
       className={`carousel ${numberOfSlides > 2 ? "multi-item" : ""}`}
-
     >
-      {shirt.map((item) => (
+      {shirt.slice(0,numberOfItems).map((item) => (
         <SwiperSlide key={item.id}>
-          <img
-            src={"https://th.bing.com/th/id/OIP.sr2nojqKTA26FoACKi32wgHaE8?cb=iwp2&rs=1&pid=ImgDetMain"}
-            alt={item.name || "T-Shirt"}
-          />
+          <img src={img} alt={item.name || "T-Shirt"} />
         </SwiperSlide>
       ))}
     </Swiper>
   );
-}
+};
 
 Carousel.propTypes = {
   numberOfSlides: PropTypes.number,

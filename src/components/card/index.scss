@@ -1,19 +1,21 @@
 .shirt-card {
+  margin-bottom: 40px;
+  margin-right: 20px;
   max-width: 300px;
-  width: calc(100% / 4);
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-//   border-radius: 10px;
-//   overflow: hidden;
-//   box-shadow: 0 0 17px 6px rgba(0, 0, 0, 0.1);
+  //   border-radius: 10px;
+  //   overflow: hidden;
+  //   box-shadow: 0 0 17px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s;
   position: relative;
   cursor: pointer;
-   
+
 
   img {
-    width: 100%;
+    width: 90%;
     height: auto; // dùng auto để giữ đúng tỷ lệ
     aspect-ratio: 1; // hoặc 4/3 tuỳ ý
     object-fit: cover; // cắt ảnh để vừa khung mà không méo
@@ -21,6 +23,7 @@
     transition: filter 0.3s;
     display: block;
     z-index: 1;
+    
   }
 
   &:hover img {

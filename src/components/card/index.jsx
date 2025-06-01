@@ -1,16 +1,16 @@
-
+import { Navigate } from "react-router-dom";
 import "./index.scss";
 // import { addToCart } from '../redux/features/cartSlice';
 // import { useDispatch } from 'react-redux';
 // import api from "../config/api";
 // import { setSelectedshirt } from "../redux/features/shirtSlice";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import { addToCompare } from '../redux/features/compareSlice';
 // import { toast } from "react-toastify";
 
 function Card({ shirt }) {
   // const dispatch = useDispatch();
-  //  const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // const handleAddToCart = async () => {
   //   if (shirt.status.toLowerCase() === "SOLD OUT") {
@@ -34,20 +34,26 @@ function Card({ shirt }) {
   //   }
   // };
 
-
   // const handleCardClick = () => {
-  //   dispatch(setSelectedshirt(shirt)); 
+  //   dispatch(setSelectedshirt(shirt));
   //   navigate(`/product-details/${shirt.id}`);
   // };
-  
+
   // const handleCompareClick = (e) => {
   //   e.stopPropagation();
   //   dispatch(addToCompare(shirt));
   // };
+  const handleOnClick = () => {
+    window.scrollTo(0, 0);
+    navigate(`/detail/${shirt.id}`);
+  };
 
   return (
-    <div className="shirt-card" onClick={()=>alert("hello")}>
-      <img src="https://dosi-in.com/images/detailed/42/CDL10_1.jpg" alt={shirt.name} />
+    <div className="shirt-card" onClick={handleOnClick}>
+      <img
+        src="https://dosi-in.com/images/detailed/42/CDL10_1.jpg"
+        alt={shirt.name}
+      />
       <div className="shirt-card__actions">
         {/* <button className="action-button" onClick={() => alert("hello")}>
           <span className="icon">⇄</span> Compare
@@ -57,9 +63,9 @@ function Card({ shirt }) {
         <div className="shirt-card__info">
           <div className="name">{shirt.name}</div>
           <div className="price">
-            {new Intl.NumberFormat('vi-VN', { 
-              style: 'currency', 
-              currency: 'VND' 
+            {new Intl.NumberFormat("vi-VN", {
+              style: "currency",
+              currency: "VND",
             }).format(shirt.price)}
           </div>
           {/* <div className="category">Category: {shirt.name}</div> */}
@@ -67,14 +73,13 @@ function Card({ shirt }) {
             Status: {shirt.status}
           </div> */}
         </div>
-       {/* <button 
+        {/* <button 
   className={`button ${shirt.status?.toLowerCase() === "sold out" ? "disabled" : ""}`} 
   onClick={() => alert("hello")}
   disabled={shirt.status?.toLowerCase() === "sold out"}
 >
   {shirt.status?.toLowerCase() === "sold out" ? "Sold Out" : "Add to Cart"}
 </button> */}
-
       </div>
     </div>
   );

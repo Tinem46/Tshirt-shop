@@ -1,97 +1,95 @@
 import React from "react";
 import "./index.scss";
-import { IoSendSharp } from "react-icons/io5";
 
-const Footer = ({
-  style,
-  ...rest
-}) => {
-  return (
-    <footer className="footer" style={style} {...rest}>
+const Footer = () => {
+  return (<>
+   <div className="scroll-text">
+        <div className="text-track">
+          {Array(4)
+            .fill("STREETWEAR BRAND LIMITED")
+            .map((text, index) => (
+              <span key={index}>{text}</span>
+            ))}
+        </div>
+      </div>
+    <footer className="footer">
+        
       <div className="footerContent">
-        <div className="map-container">
-          <iframe
-            className="AboutUsPage__map"
-            title="map"
-            src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d111712.0863672117!2d106.72314450848583!3d10.848130864058845!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1zbmjDoCB0aHXhu5FjIGxvbmcgY2jDonU!5e0!3m2!1svi!2s!4v1727451316132!5m2!1svi!2s"
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
-        </div>
-
         <div className="footerColumns">
-          {/* Brand & Subscribe */}
-          <div className="footerColumn brandSection">
-            <h2 className="logoText">Exclusive</h2>
-            <h3 className="subscribeTitle">Subscribe</h3>
-            <p className="offerText">Get 10% off your first order</p>
-            <form className="emailForm" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="emailInput"
-                required
+          {/* Cột 1: Hệ thống cửa hàng */}
+          <div className="footerColumn">
+            <h3 className="columnTitle">HỆ THỐNG CỬA HÀNG HADES</h3>
+            <ul className="columnList">
+              <li className="columnItem">
+                STUDIO Store 1: 26 LY TU TRONG STREET, DISTRICT 1,
+                HOCHIMINH (THE NEW PLAYGROUND).
+              </li>
+              <li className="columnItem">
+                Store 2: 140 NGUYEN HY QUANG, DONG DA DISTRICT, HANOI.
+              </li>
+              <li className="columnItem">
+                Store 3: Floor B1 VINCOM LY TU TRONG, DISTRICT 1, HOCHIMINH.
+              </li>
+              <li className="columnItem">Store 4: Tầng 4, GIGA MALL, HCM</li>
+              <li className="columnItem">
+                Store 5: 152 TRAN QUANG DIEU, WARD 14, DISTRICT 3, HCM
+              </li>
+            </ul>
+          </div>
+
+          {/* Cột 2: Chính sách */}
+          <div className="footerColumn">
+            <h3 className="columnTitle">CHÍNH SÁCH</h3>
+            <ul className="columnList">
+              <li className="columnItem">Chính sách sử dụng website</li>
+              <li className="columnItem">Phương thức thanh toán</li>
+              <li className="columnItem">Chính sách đổi trả</li>
+              <li className="columnItem">Chính sách giao nhận - vận chuyển</li>
+              <li className="columnItem">Điều khoản dịch vụ</li>
+              <li className="columnItem">Hướng dẫn mua hàng</li>
+              <li className="columnItem">Chính sách bảo mật</li>
+            </ul>
+          </div>
+
+          {/* Cột 3: Thông tin liên hệ */}
+          <div className="footerColumn">
+            <h3 className="columnTitle">THÔNG TIN LIÊN HỆ</h3>
+            <ul className="columnList">
+              <li className="columnItem">CÔNG TY TNHH HADES</li>
+              <li className="columnItem">SỐ CSKH: 02873011021 (10h -18h)</li>
+              <li className="columnItem">Ngày cấp: 20/07/2020</li>
+              <li className="columnItem">Tuyển dụng: hr@hades.vn</li>
+              <li className="columnItem">Website: hades.vn</li>
+              <li className="columnItem">For business: contact@hades.vn</li>
+            </ul>
+          </div>
+
+          {/* Cột 4: Social media */}
+          <div className="footerColumn socialIcons">
+            <h3 className="columnTitle">FOLLOW US ON SOCIAL MEDIA</h3>
+            <div className="socialIconsRow">
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/733/733547.png"
+                alt="Facebook"
               />
-              <button
-                type="submit"
-                className="submitIcon"
-                aria-label="Subscribe"
-              >
-                <IoSendSharp />
-              </button>
-            </form>
+              <img
+                src="https://cdn-icons-png.flaticon.com/512/733/733558.png"
+                alt="Instagram"
+              />
+            </div>
+           
           </div>
-
-          {/* Support */}
-          <div className="footerColumn">
-            <h3 className="columnTitle">Support</h3>
-            <ul className="columnList">
-              <li className="columnItem">111 Bijoy sarani, Dhaka,</li>
-              <li className="columnItem">DH 1515, Bangladesh.</li>
-              <li className="columnItem">exclusive@gmail.com</li>
-              <li className="columnItem">+88015-88888-9999</li>
-            </ul>
-          </div>
-
-          {/* Account */}
-          <div className="footerColumn">
-            <h3 className="columnTitle">Account</h3>
-            <ul className="columnList">
-              <li className="columnItem">My Account</li>
-              <li className="columnItem">Login / Register</li>
-              <li className="columnItem">Cart</li>
-              <li className="columnItem">Wishlist</li>
-              <li className="columnItem">Shop</li>
-            </ul>
-          </div>
-
-          {/* Quick Link */}
-          <div className="footerColumn">
-            <h3 className="columnTitle">Quick Link</h3>
-            <ul className="columnList">
-              <li className="columnItem">Privacy Policy</li>
-              <li className="columnItem">Terms Of Use</li>
-              <li className="columnItem">FAQ</li>
-              <li className="columnItem">Contact</li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Social Icons placeholder */}
-        <div className="socialIcons">
-          {/* Bạn có thể thêm icon mạng xã hội ở đây */}
         </div>
       </div>
 
-      {/* Copyright */}
       <div className="copyright">
         <span className="copyrightIcon">&copy;</span>
         <span className="copyrightText">
-          Copyright Rimel 2024. All rights reserved
+          Copyright  2024. All rights reserved
         </span>
       </div>
     </footer>
+    </>
   );
 };
 
