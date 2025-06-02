@@ -19,6 +19,7 @@
     "@mui/material": "^7.1.0",
     "@reduxjs/toolkit": "^2.8.2",
     "antd": "^5.25.2",
+    "aos": "^2.3.4",
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
     "firebase": "^11.8.1",

@@ -160,17 +160,17 @@ function Cart() {
 
   return (
     <>
-      <div className="outlet-Cart">
+      <div className="outlet-Cart" data-aos="fade-up" >
         <div className="cart">
           <span className="title-Cart">Cart</span>
           <ShoppingCartOutlined className="icon-Cart" />
           {Array.isArray(cart) && cart.length === 0 ? (
             <div className="empty-cart">
               <img
-                src="https://png.pngtree.com/png-clipart/20230418/original/pngtree-order-confirm-line-icon-png-image_9065104.png"
+                src="https://bizweb.dktcdn.net/100/368/179/themes/738982/assets/empty-cart.png?1712982025915"
                 alt="Empty Cart"
               />
-              <p>Your cart is empty</p>
+             
             </div>
           ) : (
             <Table

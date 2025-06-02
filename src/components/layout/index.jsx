@@ -4,10 +4,20 @@ import { Outlet } from "react-router-dom";
 import "./index.scss";
 import Footer from "../footer";
 import Header from "../header";
+import { useEffect } from "react";
+import Aos from "aos";
 
 function Layout() {
   // const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   // const compareItems = useSelector((state) => state.compare.items);
+  useEffect(() => {
+    Aos.init({
+      duration: 800,
+      once: true,
+      offset: 120,
+      easing: "ease-in-out",
+    });
+  }, []);
 
   return (
     <div className="layout" style={{ paddingTop: "110px" }}>

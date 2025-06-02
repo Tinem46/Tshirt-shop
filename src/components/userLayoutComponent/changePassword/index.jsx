@@ -5,20 +5,18 @@ import "./index.scss"; // Ensure you have the correct path to your CSS file
 const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
   return (
-    <div className="register-form">
+    <div className="register1-form">
       <div className="password-header">
         <h2>Thêm mật khẩu</h2>
-        <p>
-          Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu
-        </p>
+        <p>Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu</p>
       </div>
       <div className="line3"></div>
-      <div className="form-container" >
+      <div className="form-container">
         <Form
           layout="vertical"
           name="userForm"
           onFinish={() => alert("Register")}
-          className="register-form"
+          className="register1-form"
         >
           <Form.Item
             name="password"
@@ -62,7 +60,13 @@ const ChangePassword = () => {
           </Form.Item>
 
           <Form.Item>
-            <button className="button" type="primary" htmlType="submit" block disabled={loading}>
+            <button
+              className="button"
+              type="primary"
+              htmlType="submit"
+              block
+              disabled={loading}
+            >
               {loading ? <Spin size="small" /> : "Đổi mật khẩu"}{" "}
             </button>
           </Form.Item>

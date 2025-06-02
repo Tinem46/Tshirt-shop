@@ -35,8 +35,11 @@ const UserLayout = () => {
         padding: "20px",
       }}
     >
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div data-aos="fade-up">
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
       <div
+        data-aos="fade-down"
         style={{
           flex: 0.9,
           backgroundColor: "#fff",

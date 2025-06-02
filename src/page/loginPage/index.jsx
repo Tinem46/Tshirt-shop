@@ -90,7 +90,7 @@ function Login() {
 
   return (
     <AuthLayout>
-      <Form layout="vertical" onFinish={()=>alert("hello")} className="login-form">
+      <Form layout="vertical" onFinish={()=>alert("hello")} className="login-form" data-aos="fade-up" >
         <Form.Item
           name="username"
           rules={[{ required: true, message: "Please enter your username" }]}
@@ -105,22 +105,22 @@ function Login() {
         </Form.Item>
 
         <Form.Item>
-          <button type="primary" htmlType="submit" block disabled={loading} className="login-btn">
+          <Button type="primary" htmlType="submit" block disabled={loading} className="login-btn">
             {loading ? <Spin size="small" /> : "Login"}
-          </button>
+          </Button>
         </Form.Item>
 
         <div className="or-divider">or</div>
 
         <Form.Item>
-          <button className="google-login-btn" onClick={()=>alert("hello")} loading={loading} block>
+          <Button className="google-login-btn" onClick={()=>alert("hello")} loading={loading} block>
             <img
               src="https://th.bing.com/th/id/R.0fa3fe04edf6c0202970f2088edea9e7?rik=joOK76LOMJlBPw&riu=http%3a%2f%2fpluspng.com%2fimg-png%2fgoogle-logo-png-open-2000.png&ehk=0PJJlqaIxYmJ9eOIp9mYVPA4KwkGo5Zob552JPltDMw%3d&risl=&pid=ImgRaw&r=0"
               alt="google"
               width={20}
             />
             <span>Login with Google</span>
-          </button>
+          </Button>
         </Form.Item>
 
         <Form.Item className="signup-link">

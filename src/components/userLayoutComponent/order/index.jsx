@@ -28,20 +28,21 @@ const Orders = () => {
   return (
     <div className="history-container">
       <div className="history-content">
-        <Tabs
-          activeKey={activeTab}
-          onChange={handleTabChange}
-          className="history-tabs"
-        >
-          <TabPane tab="Tất cả" key="1" />
-          <TabPane tab="Chờ Thanh Toán" key="2" />
-          <TabPane tab="Vận chuyển" key="3" />
-          <TabPane tab="Chờ giao hàng" key="4" />
-          <TabPane tab="Hoàn thành" key="5" />
-          <TabPane tab="Đã hủy" key="6" />
-          <TabPane tab="Đã hoàn tiền" key="7" />
-        </Tabs>
-
+        <div data-aos="fade-right">
+          <Tabs
+            activeKey={activeTab}
+            onChange={handleTabChange}
+            className="history-tabs"
+          >
+            <TabPane tab="Tất cả" key="1" />
+            <TabPane tab="Chờ Thanh Toán" key="2" />
+            <TabPane tab="Vận chuyển" key="3" />
+            <TabPane tab="Chờ giao hàng" key="4" />
+            <TabPane tab="Hoàn thành" key="5" />
+            <TabPane tab="Đã hủy" key="6" />
+            <TabPane tab="Đã hoàn tiền" key="7" />
+          </Tabs>
+        </div>
         {orders.length === 0 && (
           <div className="empty-order">
             <img
