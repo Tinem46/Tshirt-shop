@@ -22,12 +22,13 @@ export const userSlice = createSlice({
     login: (state, action) => {
       state.isLoggedIn = true;
       state.id = action.payload.id;
-      state.username = action.payload.username;
+      state.email = action.payload.email;
     
       localStorage.setItem('user', JSON.stringify({
         isLoggedIn: true,
         id: action.payload.id,
-        username: action.payload.username,
+        email: action.payload.email,
+        
       }));
     },
     logout: (state) => {

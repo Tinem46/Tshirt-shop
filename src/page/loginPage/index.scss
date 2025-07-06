@@ -56,28 +56,12 @@
   }
 
   .google-login-btn {
-    margin-top: 0; // Removed top margin
-    background-color: white;
-    color: black;
-    border: 1px solid #ccc;
-    height: 45px;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    cursor: pointer;
-    transition:
-      background-color 0.3s,
-      color 0.3s;
     width: 100%;
-    &:hover {
-      background-color: #f5f5f5 !important;
-      color: black;
-    }
-    img {
-      margin-right: 10px;
-    }
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    min-height: 60px; /* Đảm bảo không bị thấp */
   }
   input:-internal-autofill-selected {
     appearance: menulist-button;

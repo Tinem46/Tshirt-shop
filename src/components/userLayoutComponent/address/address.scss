@@ -1,0 +1,86 @@
+.address-container {
+    .address-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .add-btn {
+            background-color: #000000;
+
+            &:hover {
+                background-color: #333333;
+            }
+        }
+    }
+
+    .address-list {
+        .address-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            border-radius: 2px;
+            margin-bottom: 16px;
+
+            .address-info {
+                flex: 1;
+
+                .name-phone {
+                    margin-bottom: 8px;
+
+                    .name {
+                        font-weight: 500;
+                        margin-right: 12px;
+                    }
+
+                    .phone {
+                        color: #666;
+                    }
+                }
+
+                .address-detail {
+                    p {
+                        margin: 4px 0;
+                        color: #666;
+                    }
+                }
+
+                .default-tag {
+                    display: inline-block;
+                    padding: 2px 8px;
+                    background-color: #000000;
+                    color: white;
+                    font-size: 12px;
+                    border-radius: 2px;
+                    margin-top: 8px;
+                }
+            }
+
+            .address-actions {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                min-width: 120px;
+                align-items: flex-start;
+                width: 140px;
+                .action-btn {
+                    padding: 0;
+                    height: auto;
+                    margin: 4px 0;
+                    text-align: right;
+
+                    &.delete {
+                        color: #ee4d2d;
+                    }
+                }
+            }
+        }
+    }
+}

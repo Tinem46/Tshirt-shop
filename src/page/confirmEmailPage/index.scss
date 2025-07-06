@@ -1,0 +1,56 @@
+$primary-color: #000;
+$background-color: #fff;
+$text-color: #111;
+$muted-text: #666;
+$button-bg: $primary-color;
+$button-text: #fff;
+$border-radius: 8px;
+
+.confirm-container {
+    max-width: 500px;
+    margin: 0 auto;
+    margin-top: 50px;
+    padding: 100px 20px;
+    text-align: center;
+    background-color: $background-color;
+    color: $text-color;
+    font-family: "Segoe UI", sans-serif;
+    border: 1px solid #eee;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    h3 {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+
+    p {
+        color: $muted-text;
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    .resend-button {
+        background-color: $button-bg;
+        color: $button-text;
+        border: none;
+        padding: 10px 20px;
+        border-radius: $border-radius;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: darken($button-bg, 10%);
+        }
+
+        &:disabled {
+            background-color: lighten($button-bg, 20%);
+            cursor: not-allowed;
+        }
+    }
+
+    .ant-spin {
+        margin-top: 30px;
+    }
+}

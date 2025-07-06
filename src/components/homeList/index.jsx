@@ -25,7 +25,7 @@ const HomeList = ({ Type }) => {
   return (
     <>
       <div className="category-banners">
-        <div className="category-item">
+        <div className="category-item" onClick={() => navigate("/topShop")}>
           <img
             src="https://theme.hstatic.net/1000306633/1001194548/14/block_home_category1_new.png?v=360"
             alt="Top"

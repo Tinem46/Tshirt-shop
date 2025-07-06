@@ -17,9 +17,18 @@ const FilterDropdown = ({ title, options, onSelect }) => {
       <button onClick={() => setOpen(!open)} className="filter-button">
         {title} <DownOutlined className="icon" />
       </button>
-
       {open && (
         <div className="dropdown-menu">
+          <label className="dropdown-option">
+            <input
+              type="radio"
+              name={title}
+              value=""
+              checked={selected === null}
+              onChange={() => handleSelect(null)}
+            />
+            Tất cả
+          </label>
           {options.map((option, index) => (
             <label key={index} className="dropdown-option">
               <input

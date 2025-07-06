@@ -1,0 +1,145 @@
+.profile-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    max-width: 1000px;
+    margin: 0 auto;
+
+    .profile-header {
+        margin-bottom: 24px;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 0px 18px 18px 0px;
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        p {
+            color: #666;
+            margin: 4px 0 0;
+        }
+    }
+
+    .profile-form {
+        display: flex;
+
+        .form-main {
+            flex: 6;
+            padding-right: 50px;
+            .ant-form-item {
+                margin-bottom: 20px;
+
+                .ant-form-item-label {
+                    width: 120px;
+                    color: #333;
+                    font-size: 14px;
+                    padding-top: 5px;
+                    margin-right: 10px;
+                    label {
+                        &::after {
+                            display: none;
+                        }
+                    }
+                }
+
+                .ant-form-item-control {
+                    flex: 1;
+                }
+
+                &.change-group {
+                    .ant-input {
+                        margin-bottom: 4px;
+                    }
+
+                    .change-btn {
+                        padding: 0;
+                        height: auto;
+                        color: #1890ff;
+                    }
+                }
+
+                .note-text {
+                    color: #666;
+                    font-size: 12px;
+                    margin-top: 4px;
+                }
+                &.gender-group .ant-radio-wrapper {
+                    margin-top: 10px;
+                }
+                &.birthday-group {
+                    .select-group {
+                        display: flex;
+                        gap: 16px;
+                        margin-top: 5px;
+                        .ant-select {
+                            flex: 1;
+                        }
+                    }
+                }
+
+                .save-btn {
+                    display: flex;
+                    background-color: #000000;
+
+                    margin: 0 auto;
+                    width: 120px;
+                    &:hover {
+                        background-color: #333333;
+                    }
+                }
+            }
+        }
+
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 300px;
+            text-align: center;
+            padding-top: 24px;
+            flex: 4;
+            border-left: 1px solid #e0e0e0;
+            padding: 15px;
+            .ant-avatar {
+                margin-bottom: 16px;
+                width: 100px;
+                height: 100px;
+            }
+
+            .select-img-btn {
+                margin-bottom: 16px;
+            }
+
+            .avatar-hint {
+                color: #666;
+                font-size: 12px;
+
+                p {
+                    margin: 4px 0;
+                }
+            }
+        }
+    }
+}
+
+.change-group {
+    .display-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+        .masked-text {
+            color: #000;
+            font-size: 14px;
+        }
+
+        .change-btn {
+            padding: 0;
+            height: auto;
+            font-size: 14px;
+            color: #1890ff;
+        }
+    }
+}

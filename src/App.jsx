@@ -10,6 +10,16 @@ import SearchPage from "./page/searchPage";
 import Login from "./page/loginPage";
 import Register from "./page/registerPage";
 import AboutUs from "./page/aboutUsPage";
+import Dashboard from "./components/dashboard";
+import TopShop from "./page/topShop";
+import ManagementProducts from "./page/admin/product";
+import ManageCategory from "./page/admin/category";
+import Checkout from "./page/checkout";
+import ConfirmEmail from "./page/confirmEmailPage";
+import ManageCoupon from "./page/admin/couponManage";
+import AccountManagement from "./page/admin/accountManagement";
+import ShippingManagement from "./page/admin/shippingManagement";
+import PaymentPage from "./page/PaymentPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -35,6 +45,10 @@ function App() {
           element: <Register />,
         },
         {
+          path: "/confirm-email",
+          element: <ConfirmEmail />,
+        },
+        {
           path: "/aboutUs",
           element: <AboutUs />,
         },
@@ -55,8 +69,47 @@ function App() {
           element: <Shop />,
         },
         {
+          path: "/topShop",
+          element: <TopShop />,
+        },
+        {
           path: "/search",
           element: <SearchPage />,
+        },
+        {
+          path: "/checkout",
+          element: <Checkout />,
+        },
+        {
+          path: "/payment",
+          element: <PaymentPage />,
+        },
+      ],
+    },
+
+    {
+      path: "/dashboard",
+      element: <Dashboard />,
+      children: [
+        {
+          path: "product",
+          element: <ManagementProducts />,
+        },
+        {
+          path: "category",
+          element: <ManageCategory />,
+        },
+        {
+          path: "coupon",
+          element: <ManageCoupon />,
+        },
+        {
+          path: "accountManagement",
+          element: <AccountManagement />,
+        },
+        {
+          path: "shippingManagement",
+          element: <ShippingManagement />,
         },
       ],
     },

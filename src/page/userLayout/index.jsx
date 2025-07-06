@@ -1,10 +1,10 @@
 import { useState } from "react";
 import Profile from "../../components/userLayoutComponent/profile";
 import Address from "../../components/userLayoutComponent/address";
-import Bank from "../../components/userLayoutComponent/bank";
 import ChangePassword from "../../components/userLayoutComponent/changePassword";
 import Orders from "../../components/userLayoutComponent/order";
 import Sidebar from "../../components/userLayoutComponent/sidebar";
+import Coupon from "../../components/userLayoutComponent/coupon";
 
 const UserLayout = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -15,8 +15,8 @@ const UserLayout = () => {
         return <Profile />;
       case "address":
         return <Address />;
-      case "bank":
-        return <Bank />;
+      case "coupon":
+        return <Coupon />;
       case "changePassword":
         return <ChangePassword />;
       case "orders":

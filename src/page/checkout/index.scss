@@ -1,0 +1,181 @@
+.checkout {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px;
+    gap: 40px; // Added gap between sections
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.billing-details, .order-summary {
+    width: 48%; // Slightly reduced width to accommodate the gap
+    background-color: white;
+    padding: 15px; 
+}
+
+.billing-details h2, .order-summary h2 {
+    margin-bottom: 20px;
+    color: #333;
+    text-align: center;
+    font-size: 24px; // Increased font size for better readability
+    font-weight: 600;
+}
+
+.billing-details input, .billing-details select, .billing-details textarea {
+    width: 100%;
+    padding: 17px; 
+    margin-bottom: 50px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 20px;
+    transition: border-color 0.3s;
+
+    &:focus {
+        border-color: #1890ff; // Highlight border on focus
+    }
+}
+
+.order-summary ul {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 30px; // Add space before totals
+}
+
+.order-summary li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0; // Increased padding
+    border-bottom: 1px solid #eee; // Lighter border
+
+    .item-info {
+        display: flex;
+        align-items: center;
+        
+        img {
+            width: 80px; // Slightly smaller
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px; // Rounded corners
+            margin-right: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); // Subtle shadow
+        }
+
+        .item-name {
+            font-size: 18px;
+            color: #333;
+            font-weight: 600; // Semi-bold
+        }
+    }
+
+    .item-details {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        span {
+            display: block;
+            font-size: 20px;
+            color: #666; // Slightly lighter color
+            &:last-child {
+                color: #333; // Darker color for price
+                font-weight: 600; // Semi-bold
+            }
+        }
+    }
+}
+.cart-totals{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    font-size: 20px;
+}
+
+.order-summary h3 {
+    text-align: center;
+    margin-top: 10px;
+    color: #333;
+    font-size: 20px; // Increased font size for better readability
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.order-summary .ant-btn-primary {
+    width: 200px;  // Giữ nguyên width từ inline style
+    margin: 20px auto 0;  // Thêm auto cho margin left/right
+    background-color: #1890ff;
+    border-color: #1890ff;
+    font-size: 18px;
+    padding: 12px;
+    display: block;  // Để margin auto hoạt động
+    &:hover {
+        background-color: #40a9ff;
+        border-color: #40a9ff;
+    }
+}
+
+.payment-methods {
+    margin-top: 30px;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+
+    h3 {
+        margin-bottom: 15px;
+        font-size: 20px;
+        color: #333;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 16px;
+        color: #666;
+
+        input[type="radio"] {
+            margin-right: 10px;
+        }
+    }
+}
+
+.name-fields {
+    display: flex;
+    gap: 10px; // Adjust the gap as needed
+}
+
+.billing-details {
+    .ant-select {
+        width: 100%;
+        margin-bottom: 80px;  // Match other inputs' margin
+
+        .ant-select-selector {
+            padding: 8px 17px !important;  // Adjusted padding to better align content
+            height: 60px !important;  // Match input height
+            font-size: 20px;
+            border: 1px solid #ddd !important;
+            border-radius: 6px !important;
+
+            .ant-select-selection-item {
+                line-height: 44px !important;  // Center the text vertically
+                padding: 0;
+                font-size: 20px;
+                color: rgba(0, 0, 0, 0.88);
+            }
+
+            .ant-select-selection-placeholder {
+                line-height: 44px !important;  // Center placeholder text
+                font-size: 20px;
+            }
+        }
+
+        &.ant-select-focused .ant-select-selector {
+            border-color: #1890ff !important;
+            box-shadow: none !important;
+        }
+    }
+}

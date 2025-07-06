@@ -1,139 +1,108 @@
-import { Button, Form, Input, Spin } from "antd";
-
-// import { toast } from 'react-toastify';
-import { useNavigate, Link } from "react-router-dom"; // Add Link to the import
-// import api from '../../config/api';
-import { Row, Col } from "antd"; // Make sure this import is present
+import { Button, Form, Input, Spin, Select } from "antd";
+import { useNavigate, Link } from "react-router-dom";
+import { Row, Col } from "antd";
 import { useState } from "react";
 import AuthLayout from "../../components/auth-layout";
 import "./index.scss";
+import { toast } from "react-toastify";
+import api from "../../config/api";
+
+const { Option } = Select;
 
 function Register() {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  // const handleRegister = async (values) => {
-  //     setLoading(true);
-  //     try {
 
-  //         const apiData = {
-  //             username: values.username,
-  //             fullName: values.fullname, // Note the change from fullname to fullName
-  //             password: values.password,
-  //             email: values.email,
-  //             phone_number: values.phone_number
-  //         };
-  //         const apiResponse = await api.post("account/register", apiData);
+  const handleRegister = async (values) => {
+    setLoading(true);
+    try {
+      const apiData = {
+        email: values.email,
+        password: values.password,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        gender: Number(values.gender),
+      };
 
-  //         console.log("Response:", apiResponse);
-  //         toast.success("Register successful");
-  //         navigate("/login");
-  //     } catch (err) {
-  //         console.error("Error details:", err);
+      const apiResponse = await api.post("Auth/register", apiData);
 
-  //         if (err.response) {
-  //             console.error("Response data:", err.response.data);
-  //             console.error("Response status:", err.response.status);
-  //             console.error("Response headers:", err.response.headers);
-  //             toast.error(err.response.data?.message || "Register failed");
-  //         } else if (err.request) {
-  //             console.error("Request:", err.request);
-  //             toast.error("No response received from server");
-  //         } else {
-  //             console.error("Error message:", err.message);
-  //             toast.error("An unexpected error occurred");
-  //         }
+      toast.success("Đăng ký thành công. Vui lòng xác nhận email.");
+      navigate("/confirm-email", {
+        state: {
+          email: values.email,
+          userId: apiResponse.data.userId, // <-- giả sử backend trả về userId
+        },
+      });
+    } catch (err) {
+      console.error("Error details:", err);
+      toast.error(err.response?.data?.message || "Đăng ký thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  //         toast.error("Registration failed. Please try again.");
-
-  //     } finally {
-  //         setLoading(false);
-  //     }
-  // }
   return (
     <AuthLayout>
       <Form
         layout="vertical"
         name="register-form"
-        onFinish={() => alert("Register")}
+        onFinish={handleRegister}
         className="register-form"
         data-aos="fade-down"
       >
         <Row gutter={[64, 16]}>
           <Col xs={24} md={12}>
             <Form.Item
-              name="username"
-              label="Username"
+              name="firstName"
+              label="First Name"
               rules={[
-                {
-                  required: true,
-                  message: "Please input your Username!",
-                },
+                { required: true, message: "Please input your First Name!" },
               ]}
             >
-              <Input placeholder="Enter your Username" />
+              <Input placeholder="Enter your First Name" />
             </Form.Item>
 
             <Form.Item
-              name="fullname"
-              label="Full Name"
+              name="lastName"
+              label="Last Name"
               rules={[
-                {
-                  required: true,
-                  message: "Please input your Full Name!",
-                },
-                {
-                  transform: (value) => value.trim(),
-                  message: "Full Name cannot be empty!",
-                },
+                { required: true, message: "Please input your Last Name!" },
               ]}
             >
-              <Input placeholder="Enter your Full Name" />
+              <Input placeholder="Enter your Last Name" />
             </Form.Item>
 
             <Form.Item
               name="email"
               label="Email"
               rules={[
-                {
-                  required: true,
-                  message: "Please input your Email!",
-                },
-                {
-                  type: "email",
-                  message: "Invalid email format!",
-                },
+                { required: true, message: "Please input your Email!" },
+                { type: "email", message: "Invalid email format!" },
               ]}
             >
               <Input placeholder="Enter your Email" />
             </Form.Item>
-          </Col>
-          <Col xs={24} md={12}>
+
             <Form.Item
-              name="phone_number"
-              label="Phone Number"
+              name="gender"
+              label="Gender"
               rules={[
-                {
-                  required: true,
-                  message: "Please input your Phone number!",
-                },
-                {
-                  required: /^(\+84|0)([1-9]{1}[0-9]{8})$/,
-                  message:
-                    "Invalid phone number format! Please use +84 or 0 prefix followed by 9 digits!",
-                },
+                { required: true, message: "Please select your Gender!" },
               ]}
             >
-              <Input placeholder="Enter your Phone Number" />
+              <Select placeholder="Select Gender">
+                <Option value="0">Male</Option>
+                <Option value="1">Female</Option>
+              </Select>
             </Form.Item>
+          </Col>
 
+          <Col xs={24} md={12}>
             <Form.Item
               name="password"
               label="Password"
               rules={[
-                {
-                  required: true,
-                  message: "Please input your password!",
-                },
+                { required: true, message: "Please input your password!" },
                 {
                   min: 6,
                   message: "Password must be at least 6 characters long!",
@@ -150,10 +119,7 @@ function Register() {
               dependencies={["password"]}
               hasFeedback
               rules={[
-                {
-                  required: true,
-                  message: "Please confirm your password!",
-                },
+                { required: true, message: "Please confirm your password!" },
                 ({ getFieldValue }) => ({
                   validator(_, value) {
                     if (!value || getFieldValue("password") === value) {
@@ -168,6 +134,7 @@ function Register() {
             </Form.Item>
           </Col>
         </Row>
+
         <Form.Item>
           <Button
             type="primary"
@@ -176,11 +143,12 @@ function Register() {
             disabled={loading}
             className="register-btn"
           >
-            {loading ? <Spin size="small" /> : "Register"}{" "}
+            {loading ? <Spin size="small" /> : "Register"}
           </Button>
         </Form.Item>
-        <div
-          className="login-link"
+
+        <Form.Item
+          className="signin-link"
           style={{
             marginTop: "10px",
             fontSize: "16px",
@@ -189,9 +157,10 @@ function Register() {
           }}
         >
           Already have an account? <Link to="/login">Log in</Link>
-        </div>
+        </Form.Item>
       </Form>
     </AuthLayout>
   );
 }
+
 export default Register;

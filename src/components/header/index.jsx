@@ -5,113 +5,117 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-// import logo from "../../assets/image/LogoHome1.png";
-// import { useDispatch, useSelector } from "react-redux";
-// import { logout } from "../../redux/features/userSlice";
-// import { Dropdown} from "antd";
+import { useState } from "react";
 import { Wallet as WalletIcon } from "@mui/icons-material";
+import { Dropdown, Menu } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/features/userSlice";
 import { toast } from "react-toastify";
-import { Dropdown } from "antd";
+import api from "../../config/api";
 
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const [searchValue, setSearchValue] = useState("");
+
+  const user = useSelector((state) => state.user);
+  const isLoggedIn = user?.isLoggedIn;
+  const cart = useSelector((store) => store.cart.products) || [];
+  const cartItemCount = cart.length;
+
   const shopMenuItems = [
     {
       key: "1",
-      label: <div style={{color:"white"}} onClick={() => navigate("/shop/tops")}>TOPS</div>,
+      label: (
+        <div style={{ color: "white" }} onClick={() => navigate("/topShop")}>
+          TOPS
+        </div>
+      ),
     },
     {
       key: "2",
-      label: <div style={{color:"white"}} onClick={() => navigate("/shop/bottoms")}>BOTTOMS</div>,
+      label: (
+        <div
+          style={{ color: "white" }}
+          onClick={() => navigate("/shop/bottoms")}
+        >
+          BOTTOMS
+        </div>
+      ),
     },
     {
       key: "3",
       label: (
-        <div style={{color:"white"}} onClick={() => navigate("/shop/accessories")}>ACCESSORIES</div>
+        <div
+          style={{ color: "white" }}
+          onClick={() => navigate("/shop/accessories")}
+        >
+          OUTTERWEAR
+        </div>
       ),
     },
-    {
-      key: "4",
-      label: <div style={{color:"white"}} onClick={() => navigate("/shop/bags")}>BAGS</div>,
-    },
-    {
-      key: "5",
-      label: <div style={{color:"white"}} onClick={() => navigate("/shop/womenswear")}>WOMENSWEAR</div>,
-    },
-    {
-      key: "6",
-      label: <div style={{color:"white"}} onClick={() => navigate("/shop/combo")}>COMBO</div>,
-    },
   ];
-  const [searchValue, setSearchValue] = useState("");
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="profile" onClick={handleProfile}>
+        Profile
+      </Menu.Item>
+
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Logout
+      </Menu.Item>
+    </Menu>
+  );
+
+  function handleProfile() {
+    const token = localStorage.getItem("token");
+    token ? navigate("/userLayout") : navigate("/login");
+  }
+
+  function handleLogout() {
+    // Lấy refreshToken từ localStorage
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // Gửi request logout lên backend nếu có refreshToken
+    if (refreshToken) {
+      api.post("Auth/logout", { refreshToken }).catch((err) => {
+        // Nếu fail vẫn tiếp tục logout ở FE, không cần báo lỗi cho người dùng
+        console.error("Logout backend failed:", err);
+      });
+    }
+
+    // Xoá toàn bộ thông tin trên localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+
+    // Redux logout (nếu có), điều hướng về trang login, show toast
+    dispatch(logout());
+    navigate("/login");
+    toast.success("Đã đăng xuất");
+  }
   const handleSearch = () => {
     if (!searchValue.trim()) {
       alert("Vui lòng nhập từ khóa tìm kiếm");
       return;
     }
     navigate(`/search?q=${encodeURIComponent(searchValue.trim())}`);
-    setSearchValue(""); 
+    setSearchValue("");
   };
-
-  // const dispatch = useDispatch();
-  // const user = useSelector((state) => state.user);
-  // const isLoggedIn = user ? user.isLoggedIn : false;
-  // const cart = useSelector((store) => store.cart.products) || [];
-  // const cartItemCount = Array.isArray(cart) ? cart.length : 0;
-
-  // const userMenu = (
-  //   <ul className="header__dropdown-menu">
-  //     {isLoggedIn && <li onClick={handleProfile}>Profile</li>}
-  //     {isLoggedIn && <li onClick={() => navigate("/history")}>History</li>}
-  //     {isLoggedIn ? (
-  //       <li onClick={handleLogout}>Logout</li>
-  //     ) : (
-  //       <li onClick={() => navigate("/login")}>Login</li>
-  //     )}
-  //   </ul>
-  // );
-
-  // function handleProfile() {
-  //   const token = localStorage.getItem("token");
-  //   if (token) {
-  //     navigate(`/profile`);
-  //   } else {
-  //     navigate(`/login`);
-  //   }
-  // }
-
-  // function handleLogout() {
-  //   localStorage.removeItem("token");
-  //   dispatch(logout());
-  //   navigate("/login");
-  // }
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     const header = document.querySelector('.header');
-  //     if (window.scrollY > 0) {
-  //       header.classList.add('scrolled');
-  //     } else {
-  //       header.classList.remove('scrolled');
-  //     }
-  //   };
-
-  //   window.addEventListener('scroll', handleScroll);
-  //   return () => {
-  //     window.removeEventListener('scroll', handleScroll);
-  //   };
-  // }, []);
 
   return (
     <header className="header">
       <div className="header__logo" onClick={() => navigate("/")}>
-        {/* <img src={logo} alt="logo" /> */}
         <img
           src="https://keedo.vn/wp-content/uploads/2020/08/logo-keedo.png"
           alt="logo"
         />
       </div>
+
       <nav className="header__nav">
         <div className="header__nav-center">
           <ul>
@@ -136,20 +140,24 @@ const Header = () => {
                 Shop
               </span>
             </Dropdown>
-
             <li onClick={() => navigate("/aboutUs")}>About Us</li>
-            <li onClick={() => navigate("/feedback")}>Feedback</li>
           </ul>
         </div>
+
         <div className="header__nav-right">
           <ul>
-            {/* {isLoggedIn && ( */}
-            {/* <li>
-              <WalletIcon
-                onClick={() => navigate("/wallet")}
-                style={{ color: "black", cursor: "pointer", fontSize: "35px" }}
-              />
-            </li> */}
+            {/* {isLoggedIn && (
+              <li>
+                <WalletIcon
+                  onClick={() => navigate("/wallet")}
+                  style={{
+                    color: "black",
+                    cursor: "pointer",
+                    fontSize: "35px",
+                  }}
+                />
+              </li>
+            )} */}
             <li className="search-container">
               <input
                 type="text"
@@ -164,30 +172,37 @@ const Header = () => {
               </button>
             </li>
 
-            {/* )} */}
             <li>
-              {/* <Dropdown overlay={userMenu} trigger={['hover']}> */}
-              <UserOutlined
-                style={{ cursor: "pointer" }}
-                onClick={() => navigate("/login")}
-              />
-              {/* </Dropdown> */}
+              {isLoggedIn ? (
+                <Dropdown overlay={userMenu} trigger={["hover"]}>
+                  <UserOutlined
+                    style={{ cursor: "pointer", fontSize: "24px" }}
+                  />
+                </Dropdown>
+              ) : (
+                <UserOutlined
+                  style={{ cursor: "pointer", fontSize: "24px" }}
+                  onClick={() => navigate("/login")}
+                />
+              )}
             </li>
+
             <li>
               <ShoppingCartOutlined
-                style={{ cursor: "pointer" }}
-                // onClick={() => {
-                //   const token = localStorage.getItem("token");
-                //   if (!token) {
-                //     navigate("/login");
-                //     toast.error("Please login to view cart");
-                //   } else {
-                //     navigate("/cart");
-                //   }
-                // }}
-                onClick={() => navigate("/cart")}
+                style={{ cursor: "pointer", fontSize: "24px" }}
+                onClick={() => {
+                  const token = localStorage.getItem("token");
+                  if (!token) {
+                    toast.error("Vui lòng đăng nhập để xem giỏ hàng");
+                    navigate("/login");
+                  } else {
+                    navigate("/cart");
+                  }
+                }}
               />
-              {/* <span className="cart-count">{cartItemCount}</span> */}
+              {cartItemCount > 0 && (
+                <span className="cart-count">{cartItemCount}</span>
+              )}
             </li>
           </ul>
         </div>

@@ -24,7 +24,7 @@ const FilterBar = ({ onFilterChange }) => {
         />
         <FilterDropdown
           title="Loại"
-          options={["Áo thun", "Áo sơ mi", "Áo khoác", "Áo hoodie"]}
+          options={["Shirt", "Áo sơ mi", "Áo khoác", "Áo hoodie"]}
           onSelect={(v) => handleFilterChange("Loại", v)}
         />
         <FilterDropdown

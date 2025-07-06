@@ -1,14 +1,14 @@
-// import { configureStore } from '@reduxjs/toolkit'
-// import userSlice from './features/userSlice'
-// import cartSlice from './features/cartSlice'
-// import compareSlice from './features/compareSlice';
+import { configureStore } from "@reduxjs/toolkit";
+import userReducer from "./features/userSlice";
+import cartReducer from "./features/cartSlice";
+import couponReducer from "./features/couponSlice";
 
-// export const store = configureStore({
-//   reducer: {
-//     user: userSlice,
-//     cart: cartSlice,
-//     compare: compareSlice,
-//   },
-// })
+export const store = configureStore({
+  reducer: {
+    user: userReducer,
+    cart: cartReducer,
+    coupon: couponReducer,
+  },
+});
 
-// export const getRootState = () => store.getState();
+export const getRootState = () => store.getState();

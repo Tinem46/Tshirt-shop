@@ -1,251 +1,210 @@
-import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux"; // Corrected import
-import "./index.scss";
-import { Image, Table, Button, Space, Select, Popconfirm } from "antd";
+import React, { useEffect, useState } from "react";
+import { Table, Button, Image, Popconfirm, message, InputNumber } from "antd";
 import { ShoppingCartOutlined } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
-// import api from "../../config/api";
-// import { reset, syncWithApi } from "../../redux/features/cartSlice";
-import { toast } from "react-toastify";
+import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
-// import NavBar from "../../components/navigation2";
+import "./index.scss";
 
-function Cart() {
+const Cart = () => {
   const [cart, setCart] = useState([]);
-  const [cartId, setCartId] = useState(null);
-  const [voucherCode, setVoucherCode] = useState("");
-  const [subTotal, setSubTotal] = useState(0);
-  const [shippingPee, setShippingPee] = useState(0);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [vouchers, setVouchers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [updating, setUpdating] = useState(false);
+  const navigate = useNavigate();
 
-  //   const navigate = useNavigate();
-  //   const dispatch = useDispatch();
+  useEffect(() => {
+    fetchCart();
+    fetchProducts();
+    // eslint-disable-next-line
+  }, []);
 
-  //   const fetchCart = async () => {
-  //     try {
-  //       const response = await api.get('Cart');
-  //       const cartData = response.data.activeCartDetails || [];
-  //       setCart(cartData);
-  //       dispatch(syncWithApi(cartData));
-  //       setCartId(response.data.id);
-  //       await updateCartTotal(response.data.id);
-  //     } catch (error) {
-  //       console.error("Failed to fetch cart:", error.response);
-  //       setCart([]);
-  //       dispatch(syncWithApi([])); // Sync với Redux store khi có lỗi
-  //     }
-  //   };
+  const fetchCart = async () => {
+    try {
+      const res = await api.get("Cart/my-cart");
+      setCart(res.data || []);
+    } catch (error) {
+      setCart([]);
+      message.error("Không thể tải giỏ hàng!");
+    }
+  };
 
-  //   const fetchVouchers = async () => {
-  //     try {
-  //       const response = await api.get('voucher');
-  //       const activeVouchers = response.data.filter(v => v.is_active);
-  //       setVouchers(activeVouchers);
-  //     } catch (error) {
-  //       console.error("Failed to fetch vouchers:", error);
-  //       toast.error("Failed to load vouchers");
-  //     }
-  //   };
+  const fetchProducts = async () => {
+    try {
+      const res = await api.get("Product");
+      setProducts(res.data?.data?.data || []);
+    } catch {
+      setProducts([]);
+    }
+  };
 
-  //   useEffect(() => {
-  //     fetchCart();
-  //     fetchVouchers();
-  //   }, []);
+  // Thay đổi số lượng
+  const handleQuantityChange = async (record, newQty) => {
+    if (newQty < 1) return;
+    setUpdating(true);
+    try {
+      await api.put(`Cart/${record.id}`, {
+        ...record,
+        quantity: newQty,
+      });
+      fetchCart();
+    } catch {
+      message.error("Không thể cập nhật số lượng!");
+    }
+    setUpdating(false);
+  };
 
-  //   const handleRemove = async (id) => {
-  //     try {
-  //       await api.delete(`Cart/${id}`);
-  //       const updatedCart = cart.filter(item => item.id !== id);
-  //       setCart(updatedCart);
-  //       if (updatedCart.length === 0) {
-  //         dispatch(reset());
-  //       }
-  //       await updateCartTotal(cartId); // Update cart total after removing item
-  //     } catch (error) {
-  //       console.error("Failed to remove item:", error.response ? error.data : error);
-  //     }
-  //   };
+  const handleRemove = async (id) => {
+    try {
+      await api.delete(`Cart/${id}`);
+      message.success("Đã xóa sản phẩm khỏi giỏ hàng");
+      fetchCart();
+    } catch {
+      message.error("Không thể xóa sản phẩm khỏi giỏ hàng");
+    }
+  };
 
-  //   const handleApplyVoucher = () => {
-  //     updateCartTotal(cartId, voucherCode);
-  //   };
-
-  //   const updateCartTotal = async (cartId, voucherCode) => {
-  //     if (!cartId) {
-  //       console.error("Cart ID is not available");
-  //       return;
-  //     }
-  //     try {
-  //       const response = await api.get(`Cart/total`, {
-  //         params: {
-  //           cartId,
-  //           voucherCode: voucherCode || undefined
-  //         }
-  //       });
-  //       const { subTotal = 0, shippingPee = 0, totalAmount = 0 } = response.data;
-  //       setSubTotal(subTotal);
-  //       setShippingPee(shippingPee);
-  //       setTotalAmount(totalAmount);
-  //     } catch (error) {
-  //       console.error("Failed to fetch cart total:", error.response ? error.response.data : error);
-  //       toast.error("Failed to apply voucher. Please check your code and try again.");
-  //       setSubTotal(0);
-  //       setShippingPee(0);
-  //       setTotalAmount(0);
-  //     }
-  //   };
+  const handleCheckout = () => {
+    if (!cart.length) {
+      message.warning("Giỏ hàng rỗng!");
+      return;
+    }
+    navigate("/checkout", {
+      state: { cart },
+    });
+  };
 
   const columns = [
     {
-      title: "Picture",
+      title: "Ảnh",
       dataIndex: "image",
       key: "image",
-      render: (image) => <Image src={image} width={100} />,
+      render: (image) => (
+        <Image src={image} width={70} style={{ borderRadius: 7 }} />
+      ),
     },
     {
-      title: "Product",
+      title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
     },
     {
-      title: "Price",
-      dataIndex: "price",
-      key: "price",
+      title: "Đơn giá",
+      dataIndex: "unitPrice",
+      key: "unitPrice",
+      render: (price) => <FormatCost value={price} />,
     },
-
     {
-      title: "Action",
+      title: "Số lượng",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (_, record) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Button
+            size="small"
+            disabled={updating || record.quantity <= 1}
+            onClick={() => handleQuantityChange(record, record.quantity - 1)}
+            style={{ fontWeight: 700 }}
+          >
+            -
+          </Button>
+          <InputNumber
+            min={1}
+            max={99}
+            value={record.quantity}
+            onChange={(val) => {
+              if (!val) return;
+              handleQuantityChange(record, val);
+            }}
+            style={{ width: 48 }}
+            disabled={updating}
+          />
+          <Button
+            size="small"
+            disabled={updating}
+            onClick={() => handleQuantityChange(record, record.quantity + 1)}
+            style={{ fontWeight: 700 }}
+          >
+            +
+          </Button>
+        </div>
+      ),
+    },
+    {
+      title: "Thành tiền",
+      key: "total",
+      render: (_, record) => (
+        <FormatCost value={record.unitPrice * record.quantity} />
+      ),
+    },
+    {
+      title: "Thao tác",
       key: "action",
       render: (_, record) => (
         <Popconfirm
-          title={`Are you sure you want to delete ${record.name}?`}
-          //   onConfirm={() => handleRemove(record.id)}
+          title={`Bạn chắc chắn xóa ${record.name}?`}
+          onConfirm={() => handleRemove(record.id)}
         >
-          <Button danger>Remove</Button>
+          <Button danger>Xóa</Button>
         </Popconfirm>
       ),
     },
   ];
 
-  //   const handleProceedToCheckout = async () => {
-  //     try {
-  //       // Create the order here
-  //       const orderData = {
-  //         orderDate: new Date().toISOString(),
-  //         voucherCode: voucherCode,
-  //         orderStatus: "PENDING",
-  //         subTotal,
-  //         shippingPee,
-  //         totalAmount
-  //       };
-
-  //       const orderResponse = await api.post('order', orderData);
-  //       const orderId = orderResponse.data.id;
-
-  //       navigate('/checkout', {
-  //         state: {
-  //           orderId,
-  //           subTotal,
-  //           shippingPee,
-  //           totalAmount,
-  //           cart,
-  //         }
-  //       });
-  //     } catch (error) {
-  //       console.error("Failed to create order:", error);
-  //       toast.error("An error occurred while creating the order. Please try again.");
-  //     }
-  //   };
+  const dataSource = cart.map((item) => {
+    const product = products.find((p) => p.id === item.productId) || {};
+    return {
+      ...item,
+      key: item.id,
+      name: product.name || "Không rõ",
+      image:
+        product.images?.[0] ||
+        "https://th.bing.com/th/id/OIP.7ZxepcJaDNoUZqs3JZPxKwHaHa?w=199&h=200&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3",
+    };
+  });
 
   return (
-    <>
-      <div className="outlet-Cart" data-aos="fade-up" >
-        <div className="cart">
-          <span className="title-Cart">Cart</span>
-          <ShoppingCartOutlined className="icon-Cart" />
-          {Array.isArray(cart) && cart.length === 0 ? (
-            <div className="empty-cart">
-              <img
-                src="https://bizweb.dktcdn.net/100/368/179/themes/738982/assets/empty-cart.png?1712982025915"
-                alt="Empty Cart"
-              />
-             
-            </div>
-          ) : (
-            <Table
-              columns={columns}
-              dataSource={cart.map((item) => ({
-                key: item.id,
-                name: item.name,
-                price: new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(item.price),
-                image: item.image,
-                id: item.id,
-              }))}
+    <div className="outlet-Cart" data-aos="fade-up">
+      <div className="cart">
+        <span className="title-Cart">Giỏ Hàng</span>
+        <ShoppingCartOutlined className="icon-Cart" />
+        {!cart.length ? (
+          <div className="empty-cart">
+            <img
+              src="https://bizweb.dktcdn.net/100/368/179/themes/738982/assets/empty-cart.png?1712982025915"
+              alt="Empty Cart"
             />
-          )}
-        </div>
-        <div className="return-update-cart">
-          <Link to="/">
-            <Button >Return To Shop</Button>
-          </Link>
-        </div>
-        <div className="coupon-Checkout">
-          <Space.Compact className="coupon-Input">
-            <Select
-              style={{ width: 200 }}
-              placeholder="Select a voucher"
-              value={voucherCode}
-              onChange={(value) => setVoucherCode(value)}
-              options={vouchers.map((v) => ({
-                label: `${v.description}`,
-                value: v.code,
-              }))}
-            />
-            <Button type="primary" onClick={() => alert("hello")}>
-              Apply Voucher
-            </Button>
-          </Space.Compact>
-          <section className="checkOut-Box">
-            <h1>Cart Total</h1>
-            <div className="modify-Checkout">
-              <p>Subtotal: </p>
-              <p>
-                <FormatCost value={subTotal} />
-              </p>
-            </div>
-            <div className="modify-Checkout">
-              <p>Shipping: </p>
-              <p>
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(shippingPee)}
-              </p>
-            </div>
-            <div className="modify-Checkout">
-              <p>Total amount: </p>
-              <p>
-                {new Intl.NumberFormat("vi-VN", {
-                  style: "currency",
-                  currency: "VND",
-                }).format(totalAmount)}
-              </p>
-            </div>
-            <br />
-            {Array.isArray(cart) && cart.length > 0 && (
-              <button onClick={() => alert("hello")}>
-                Proceed to checkout
-              </button>
-            )}
-          </section>
-        </div>
+          </div>
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={dataSource}
+            pagination={false}
+            style={{ marginBottom: 28 }}
+          />
+        )}
       </div>
-    </>
+
+      <div className="return-update-cart">
+        <Link to="/">
+          <Button>Tiếp tục mua sắm</Button>
+        </Link>
+      </div>
+
+      {/* Nút thanh toán để sang phải, dưới cùng */}
+      <div className="cart-footer-action">
+        {cart.length > 0 && (
+          <Button
+            type="primary"
+            className="btn-checkout"
+            onClick={handleCheckout}
+            disabled={updating}
+          >
+            Thanh toán
+          </Button>
+        )}
+      </div>
+    </div>
   );
-}
+};
 
 export default Cart;

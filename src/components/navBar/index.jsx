@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 function Naviagtion({
   selectedMenu = "",
   triggerReset = () => {},
-  name = "shop",
+  standOn = "shop",
   link = "/",
 }) {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ function Naviagtion({
         alt="background"
       />
       <div className="container">
-        <h1 className="shopTitle">{name}</h1>
+        <h1 className="shopTitle">{standOn}</h1>
         <div className="breadcrumbBar">
           <Breadcrumb>
             {/* Home should navigate to / */}
