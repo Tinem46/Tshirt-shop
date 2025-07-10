@@ -109,7 +109,7 @@ const PaymentPage = () => {
     cartSummary?.estimatedShipping ??
     0;
   const estimatedTotal =
-    (cartSummary?.estimatedTotal || 0) +
+    (cartSummary?.totalAmount || 0) +
     shippingFee -
     (cartSummary?.estimatedShipping || 0);
 
@@ -207,14 +207,12 @@ const PaymentPage = () => {
           </ul>
           <div className="totals">
             <p>
-              Subtotal: <FormatCost value={cartSummary?.subtotal || 0} />
+              Subtotal: <FormatCost value={cartSummary?.totalAmount || 0} />
             </p>
             <p>
               Shipping: <FormatCost value={shippingFee} />
             </p>
-            <p>
-              Tax: <FormatCost value={cartSummary?.estimatedTax || 0} />
-            </p>
+
             <h3>
               Total: <FormatCost value={estimatedTotal} />
             </h3>

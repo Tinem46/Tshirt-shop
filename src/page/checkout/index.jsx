@@ -5,6 +5,7 @@ import "./index.scss";
 import { toast } from "react-toastify";
 import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
+import { getUserAddress } from "../../utils/addressService";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -32,14 +33,39 @@ const Checkout = () => {
     subtotal: 0,
     estimatedShipping: 0,
     estimatedTotal: 0,
-    estimatedTax: 0,
+    totalAmount: 0,
   });
 
   useEffect(() => {
     fetchUserProfile();
     fetchCartSummary();
+    fetchDefaultAddress();
     // eslint-disable-next-line
   }, []);
+
+  const fetchDefaultAddress = async () => {
+    try {
+      const res = await getUserAddress();
+      const addresses = res.data.data;
+      const defaultAddress = addresses.find((addr) => addr.isDefault);
+      if (defaultAddress) {
+        setUserDetails((prev) => ({
+          ...prev,
+          fullname: defaultAddress.receiverName || prev.fullname,
+          phone_number: defaultAddress.phone || "",
+          specific_Address: defaultAddress.detailAddress || "",
+          city: defaultAddress.province || "",
+          district: defaultAddress.district || "",
+          ward: defaultAddress.ward || "",
+        }));
+      }
+      console.log("Địa chỉ mặc định:", defaultAddress);
+      console.log("Tất cả địa chỉ:", userDetails);
+    } catch (err) {
+      console.error("❌ Lỗi khi lấy địa chỉ:", err);
+      toast.error("Không thể tải địa chỉ mặc định");
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -119,84 +145,92 @@ const Checkout = () => {
       },
     });
   };
-
   return (
     <div className="checkout-container">
       <div className="checkout">
         {/* Billing Details */}
         <div className="billing-details">
-          <h2>Billing Details</h2>
+          <h2>Thông tin giao hàng</h2>
+
           <Input
             name="fullname"
-            placeholder="Full Name"
+            placeholder="Họ và tên"
             value={userDetails.fullname}
             onChange={handleInputChange}
           />
+
           <Select
             name="country"
             value={userDetails.country || undefined}
             onChange={handleSelectChange}
             style={{ width: "100%" }}
+            placeholder="Quốc gia / Khu vực"
           >
-            <Option value="">Country / Region</Option>
-            <Option value="Vietnam">Vietnam</Option>
-            <Option value="Laos">Laos</Option>
-            <Option value="Cambodia">Cambodia</Option>
-            <Option value="Thailand">Thailand</Option>
+            <Option value="">Chọn quốc gia</Option>
+            <Option value="Vietnam">Việt Nam</Option>
+            <Option value="Laos">Lào</Option>
+            <Option value="Cambodia">Campuchia</Option>
+            <Option value="Thailand">Thái Lan</Option>
           </Select>
+
           <Select
             name="gender"
             value={userDetails.gender || undefined}
             onChange={handleGenderChange}
             style={{ width: "100%" }}
-            placeholder="Gender"
+            placeholder="Giới tính"
           >
-            <Option value="">Gender</Option>
-            <Option value="male">Male</Option>
-            <Option value="female">Female</Option>
-            <Option value="other">Other</Option>
+            <Option value="">Chọn giới tính</Option>
+            <Option value="male">Nam</Option>
+            <Option value="female">Nữ</Option>
+            <Option value="other">Khác</Option>
           </Select>
+
           <Input
             name="specific_Address"
-            placeholder="Street Address"
-            value={userDetails.specific_Address}
+            placeholder="Địa chỉ chi tiết (số nhà, tên đường)"
+            value={userDetails.detailAddress}
             onChange={handleInputChange}
           />
+
           <Input
             name="city"
-            placeholder="Town / City"
+            placeholder="Tỉnh / Thành phố"
             value={userDetails.city}
             onChange={handleInputChange}
           />
 
           <Input
             name="district"
-            placeholder="District (Quận/Huyện)"
+            placeholder="Quận / Huyện"
             value={userDetails.district}
             onChange={handleInputChange}
           />
+
           <Input
             name="ward"
-            placeholder="Ward (Phường/Xã)"
+            placeholder="Phường / Xã"
             value={userDetails.ward}
             onChange={handleInputChange}
           />
 
           <Input
             name="phone_number"
-            placeholder="Phone"
+            placeholder="Số điện thoại"
             value={userDetails.phone_number}
             onChange={handleInputChange}
           />
+
           <Input
             name="email"
-            placeholder="Email Address"
+            placeholder="Địa chỉ email"
             value={userDetails.email}
             onChange={handleInputChange}
           />
+
           <TextArea
             name="additionalInfo"
-            placeholder="Additional Information"
+            placeholder="Ghi chú thêm (tuỳ chọn)"
             value={userDetails.additionalInfo}
             onChange={handleInputChange}
             rows={4}
@@ -205,7 +239,7 @@ const Checkout = () => {
 
         {/* Order Summary */}
         <div className="order-summary">
-          <h2>Order Summary</h2>
+          <h2>Đơn hàng của bạn</h2>
           <ul>
             {cart.map((item) => (
               <li key={item.id}>
@@ -218,9 +252,9 @@ const Checkout = () => {
                   <span className="item-name">{item.name}</span>
                 </div>
                 <div className="item-details">
-                  <span>Quantity: {item.quantity}</span>
+                  <span>Số lượng: {item.quantity}</span>
                   <span>
-                    Price: <FormatCost value={item.unitPrice * item.quantity} />
+                    Giá: <FormatCost value={item.unitPrice * item.quantity} />
                   </span>
                 </div>
               </li>
@@ -228,9 +262,8 @@ const Checkout = () => {
           </ul>
 
           <div className="cart-totals">
-           
             <h3>
-              Total: <FormatCost value={cartSummary?.totalAmount || 0} />
+              Tổng cộng: <FormatCost value={cartSummary?.totalAmount || 0} />
             </h3>
           </div>
 
