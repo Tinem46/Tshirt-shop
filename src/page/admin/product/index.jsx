@@ -7,7 +7,7 @@ import {
   Button,
   Drawer,
   message,
-  Upload,
+  Table,
 } from "antd";
 import { EyeOutlined, PlusOutlined, ClusterOutlined } from "@ant-design/icons";
 import { useState, useEffect } from "react";
@@ -15,17 +15,21 @@ import { useForm } from "antd/es/form/Form";
 import api from "../../../config/api";
 import DashboardTemplate from "../../../components/dashboard-template";
 import "./index.scss";
+import uploadFile from "../../../utils/upload";
 
 function ManagementProducts() {
-  const [fileList, setFileList] = useState([]);
+  const [fileList, setFileList] = useState([]); // không dùng nữa nhưng giữ lại cho reset
   const [categories, setCategories] = useState([]);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = useForm();
   const [products, setProducts] = useState([]);
   const [drawerRecord, setDrawerRecord] = useState(null);
+  const [drawerVariants, setDrawerVariants] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalCate, setTotalCate] = useState(0);
+  const [imageList, setImageList] = useState([]); // [{url, isPrimary}]
 
-  // --- VARIANT STATE ---
+  // Variant state
   const [variantDrawer, setVariantDrawer] = useState({
     open: false,
     productId: null,
@@ -35,18 +39,23 @@ function ManagementProducts() {
   const [variantForm] = useForm();
   const [variantLoading, setVariantLoading] = useState(false);
 
-  // Lấy danh mục và sản phẩm
+  // Fetch categories + products
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [categoriesResponse] = await Promise.all([
-          api.get("Category", { params: { PageSize: 100 } }),
-        ]);
+        const categoriesResponse = await api.get("Category", {
+          params: { PageSize: totalCate },
+        });
+        setTotalCate(categoriesResponse.data?.data?.totalCount || 0);
         setCategories(
           Array.isArray(categoriesResponse.data?.data.data)
             ? categoriesResponse.data?.data.data
             : []
+        );
+        const res = await api.get("Product", { params: { PageSize: 100 } });
+        setProducts(
+          Array.isArray(res.data?.data?.data) ? res.data.data.data : []
         );
       } catch (err) {
         message.error("Không thể tải dữ liệu!");
@@ -55,9 +64,37 @@ function ManagementProducts() {
       }
     };
     fetchData();
-  }, []);
+  }, [totalCate]);
 
-  // --- VARIANT FUNCTIONS ---
+  // Khi user chọn file, upload lên firebase
+  const handleSelectFiles = async (e) => {
+    const files = Array.from(e.target.files);
+    const uploadedImages = [];
+    for (const file of files) {
+      const url = await uploadFile(file);
+      uploadedImages.push({ url, isPrimary: false });
+    }
+    setImageList(uploadedImages);
+    form.setFieldsValue({ images: uploadedImages });
+    console.log("AFTER setFieldsValue, getFieldsValue:", form.getFieldsValue());
+  };
+
+  // VARIANT
+  const fetchVariants = async (productId) => {
+    const res = await api.get(`ProductVariant/product/${productId}`);
+    return Array.isArray(res.data?.data) ? res.data.data : [];
+  };
+
+  const handleShowDetail = async (record) => {
+    setDrawerRecord(record);
+    if (record?.id) {
+      const vs = await fetchVariants(record.id);
+      setDrawerVariants(vs);
+    } else {
+      setDrawerVariants([]);
+    }
+  };
+
   const openVariantDrawer = async (productId, productName) => {
     setVariantDrawer({ open: true, productId, productName });
     loadVariants(productId);
@@ -70,10 +107,8 @@ function ManagementProducts() {
   const loadVariants = async (productId) => {
     setVariantLoading(true);
     try {
-      const res = await api.get(`/ProductVariant?productId=${productId}`);
-      setVariants(
-        Array.isArray(res.data?.data?.data) ? res.data.data.data : []
-      );
+      const vs = await fetchVariants(productId);
+      setVariants(vs);
     } catch {
       setVariants([]);
     } finally {
@@ -82,7 +117,7 @@ function ManagementProducts() {
   };
   const handleCreateVariant = async (values) => {
     try {
-      await api.post("/ProductVariant", {
+      await api.post("ProductVariant", {
         ...values,
         productId: variantDrawer.productId,
       });
@@ -94,7 +129,7 @@ function ManagementProducts() {
     }
   };
 
-  // Cấu hình cột Table
+  // Cấu hình cột Table sản phẩm
   const columns = [
     { title: "Tên sản phẩm", dataIndex: "name", key: "name" },
     {
@@ -114,19 +149,18 @@ function ManagementProducts() {
       title: "Ảnh",
       dataIndex: "images",
       key: "images",
-      render: (text) => {
-        let images = [];
+      render: (images) => {
+        let arr = [];
         try {
-          images = typeof text === "string" ? JSON.parse(text) : text || [];
-        } catch (e) {
-          images = [];
+          arr = typeof images === "string" ? JSON.parse(images) : images || [];
+        } catch {
+          arr = [];
         }
-        return images?.length > 0 ? (
-          <img
-            src={images[0]}
-            alt="product"
-            style={{ width: 40, borderRadius: 6 }}
-          />
+        if (!Array.isArray(arr) || arr.length === 0) return null;
+        const imgObj = arr.find((i) => i.isPrimary) || arr[0];
+        const url = typeof imgObj === "string" ? imgObj : imgObj.url;
+        return url ? (
+          <img src={url} alt="" style={{ width: 40, borderRadius: 6 }} />
         ) : null;
       },
     },
@@ -186,7 +220,7 @@ function ManagementProducts() {
         <Select>
           <Select.Option value={0}>Cotton</Select.Option>
           <Select.Option value={1}>Silk</Select.Option>
-          {/* Thêm options đúng backend */}
+          {/* Thêm options đúng backend nếu cần */}
         </Select>
       </Form.Item>
       <Form.Item
@@ -222,34 +256,23 @@ function ManagementProducts() {
           <Select.Option value={3}>Ngừng bán</Select.Option>
         </Select>
       </Form.Item>
-      {/* <Form.Item
-        name="images"
-        label="Ảnh sản phẩm"
-        // rules={[{ required: true, message: "Tối thiểu 1 ảnh" }]}
-        valuePropName="fileList"
-        getValueFromEvent={(e) => (Array.isArray(e) ? e : e && e.fileList)}
-      > */}
-      {/* Bạn có thể dùng Upload Dragger hoặc custom Upload nhiều ảnh ở đây.
-          Tuy nhiên bạn cần map fileList về array object: [{id, url, isPrimary}]
-          Nếu chỉ nhập url đơn giản thì để Input, còn nếu muốn Upload ảnh thì nên dùng Upload của AntD. */}
-      {/* <Upload
-          listType="picture-card"
-          beforeUpload={() => false} // chặn upload tự động, handle ở FE hoặc call API upload riêng
+      <Form.Item name="images" label="Ảnh sản phẩm" required>
+        <input
+          type="file"
           multiple
-        >
-          <div>
-            <PlusOutlined />
-            <div>Upload</div>
-          </div>
-        </Upload>
-         */}
-      {/* </Form.Item> */}
-      <Form.Item
-        name="images"
-        label="Ảnh sản phẩm (mỗi dòng 1 URL)"
-        // rules={[{ required: true, message: "Ít nhất 1 ảnh" }]}
-      >
-        <Input.TextArea placeholder="https://..." autoSize />
+          accept="image/*"
+          onChange={handleSelectFiles}
+        />
+        <div style={{ marginTop: 8 }}>
+          {imageList.map((img, idx) => (
+            <img
+              key={idx}
+              src={img.url}
+              alt=""
+              style={{ width: 60, marginRight: 8, borderRadius: 6 }}
+            />
+          ))}
+        </div>
       </Form.Item>
     </>
   );
@@ -265,35 +288,50 @@ function ManagementProducts() {
       availableSizes: Array.isArray(record.availableSizes)
         ? record.availableSizes.join(", ")
         : record.availableSizes,
+      images:
+        typeof record.images === "string"
+          ? JSON.parse(record.images)
+          : record.images || [],
     });
-    if (record.images) {
-      let images = [];
-      try {
-        images =
-          typeof record.images === "string"
-            ? JSON.parse(record.images)
-            : record.images;
-      } catch {
-        images = [];
-      }
-      setFileList(
-        images.map((url, idx) => ({
-          uid: String(idx),
-          name: `image${idx}.jpg`,
-          status: "done",
-          url,
-        }))
-      );
-    }
+    setImageList(
+      (typeof record.images === "string"
+        ? JSON.parse(record.images)
+        : record.images || []
+      ).map((img) =>
+        typeof img === "string" ? { url: img, isPrimary: false } : img
+      )
+    );
   };
 
-  // Drawer hiển thị chi tiết sản phẩm
+  const SIZE_MAP = {
+    1: "S",
+    2: "M",
+    3: "L",
+    4: "XL",
+    5: "XXL",
+  };
+  const COLOR_MAP = {
+    0: "Trắng",
+    1: "Đỏ",
+    2: "Xanh dương",
+    3: "Đen",
+    4: "Vàng",
+    5: "Xanh lá",
+  };
+  const getSizeName = (val) => SIZE_MAP[val] || val;
+  const getColorName = (val) => COLOR_MAP[val] || val;
+
+  // Drawer chi tiết sản phẩm
   const renderDrawerContent = (record) => {
     if (!record) return null;
-    const images =
+    let images =
       typeof record.images === "string"
         ? JSON.parse(record.images || "[]")
         : record.images || [];
+    // Hỗ trợ cả trường hợp array url hoặc array object
+    images = images.map((img) =>
+      typeof img === "string" ? { url: img } : img
+    );
     const colors = record.availableColors
       ? JSON.parse(record.availableColors || "[]")
       : [];
@@ -305,10 +343,10 @@ function ManagementProducts() {
         <div className="product-detail-header">{record.name}</div>
         {images.length > 0 && (
           <div className="product-detail-images">
-            {images.map((url, idx) => (
+            {images.map((img, idx) => (
               <img
                 key={idx}
-                src={url}
+                src={img.url}
                 alt={`product${idx}`}
                 className="product-detail-image"
               />
@@ -328,34 +366,85 @@ function ManagementProducts() {
         <DetailRow label="Tồn kho" value={record.quantity} />
         <DetailRow label="Chất liệu" value={record.material} />
         <DetailRow label="Mùa" value={record.season} />
-        <DetailRow label="Khối lượng" value={`${record.weight} kg`} />
-        <DetailRow label="Min Order" value={record.minOrderQuantity} />
-        <DetailRow label="Max Order" value={record.maxOrderQuantity} />
-        <DetailRow
-          label="Featured"
-          value={record.isFeatured ? "✅ Có" : "❌ Không"}
-        />
-        <DetailRow
-          label="Bestseller"
-          value={record.isBestseller ? "✅ Có" : "❌ Không"}
-        />
         <DetailRow
           label="Danh mục"
           value={categories.find((c) => c.id === record.categoryId)?.name || ""}
         />
         <DetailRow label="Màu sắc" value={colors.join(", ")} />
         <DetailRow label="Size" value={sizes.join(", ")} />
+
+        {/* --- DANH SÁCH BIẾN THỂ --- */}
+        {drawerVariants.length > 0 && (
+          <div className="product-detail-variants">
+            <div style={{ fontWeight: 600, margin: "16px 0 8px" }}>
+              Các biến thể:
+            </div>
+            <Table
+              columns={[
+                {
+                  title: "Màu sắc",
+                  dataIndex: "color",
+                  key: "color",
+                  render: (val) => getColorName(val),
+                },
+                {
+                  title: "Size",
+                  dataIndex: "size",
+                  key: "size",
+                  render: (val) => getSizeName(val),
+                },
+                { title: "SKU", dataIndex: "variantSku", key: "variantSku" },
+                { title: "Tồn kho", dataIndex: "quantity", key: "quantity" },
+                {
+                  title: "Giá",
+                  dataIndex: "priceAdjustment",
+                  key: "priceAdjustment",
+                  render: (val) => (val ? `${val.toLocaleString()}đ` : "—"),
+                },
+                {
+                  title: "Trạng thái",
+                  dataIndex: "isActive",
+                  key: "isActive",
+                  render: (v) => (v ? "Đang bán" : "Ẩn"),
+                },
+                {
+                  title: "Ảnh",
+                  dataIndex: "imageUrl",
+                  key: "imageUrl",
+                  render: (url) =>
+                    url ? (
+                      <img
+                        src={url}
+                        alt=""
+                        style={{
+                          width: 38,
+                          height: 38,
+                          objectFit: "cover",
+                          borderRadius: 5,
+                        }}
+                      />
+                    ) : null,
+                },
+              ]}
+              dataSource={drawerVariants.map((v) => ({ ...v, key: v.id }))}
+              pagination={false}
+              size="small"
+              locale={{ emptyText: "Chưa có biến thể nào." }}
+              style={{ marginTop: 8 }}
+            />
+          </div>
+        )}
       </div>
     );
   };
 
-  // ----- Thêm nút VARIANTS cho mỗi sản phẩm -----
+  // ----- Nút custom trên Table -----
   const customActions = [
     {
       label: <EyeOutlined style={{ marginRight: 4 }} />,
       className: "detail-button",
       condition: () => true,
-      action: (id) => setDrawerRecord(products.find((p) => p.id === id)),
+      action: (id, record) => handleShowDetail(record), // truyền record trực tiếp!
     },
     {
       label: (
@@ -366,10 +455,7 @@ function ManagementProducts() {
       ),
       className: "variants-button",
       condition: () => true,
-      action: (id) => {
-        const product = products.find((p) => p.id === id);
-        openVariantDrawer(id, product?.name || "");
-      },
+      action: (id, record) => openVariantDrawer(id, record?.name || ""),
     },
   ];
 
@@ -393,6 +479,9 @@ function ManagementProducts() {
         loading={loading}
         showEditDelete={true}
         customActions={customActions}
+        dataSource={products}
+        products={products}
+        setProducts={setProducts}
       />
 
       <Drawer
@@ -457,29 +546,49 @@ function ManagementProducts() {
             Thêm biến thể
           </Button>
         </Form>
-
-        <div>
-          <b>Danh sách biến thể</b>
-          {variants.length === 0 ? (
-            <div style={{ color: "#888", marginTop: 12 }}>
-              Chưa có biến thể nào.
-            </div>
-          ) : (
-            <ul style={{ paddingLeft: 16, margin: 0 }}>
-              {variants.map((v, idx) => (
-                <li key={v.id || idx} style={{ marginBottom: 6 }}>
-                  <b>{v.color}</b> - <b>{v.size}</b>
-                  {v.variantSku ? ` | SKU: ${v.variantSku}` : ""}
-                  {v.quantity !== undefined ? ` | SL: ${v.quantity}` : ""}
-                  {v.priceAdjustment !== undefined
-                    ? ` | Giá: ${v.priceAdjustment}`
-                    : ""}
-                  {v.isActive === false ? " | Ẩn" : ""}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <Table
+          columns={[
+            { title: "Màu sắc", dataIndex: "color", key: "color" },
+            { title: "Size", dataIndex: "size", key: "size" },
+            { title: "SKU", dataIndex: "variantSku", key: "variantSku" },
+            { title: "Tồn kho", dataIndex: "quantity", key: "quantity" },
+            {
+              title: "Giá",
+              dataIndex: "priceAdjustment",
+              key: "priceAdjustment",
+              render: (val) => (val ? `${val.toLocaleString()}đ` : "—"),
+            },
+            {
+              title: "Trạng thái",
+              dataIndex: "isActive",
+              key: "isActive",
+              render: (v) => (v ? "Đang bán" : "Ẩn"),
+            },
+            {
+              title: "Ảnh",
+              dataIndex: "imageUrl",
+              key: "imageUrl",
+              render: (url) =>
+                url ? (
+                  <img
+                    src={url}
+                    alt=""
+                    style={{
+                      width: 38,
+                      height: 38,
+                      objectFit: "cover",
+                      borderRadius: 5,
+                    }}
+                  />
+                ) : null,
+            },
+          ]}
+          dataSource={variants.map((v) => ({ ...v, key: v.id }))}
+          pagination={false}
+          size="small"
+          locale={{ emptyText: "Chưa có biến thể nào." }}
+          style={{ marginTop: 16 }}
+        />
       </Drawer>
     </>
   );

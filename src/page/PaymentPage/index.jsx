@@ -17,7 +17,7 @@ const { Option } = Select;
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cart, userDetails, cartSummary } = location.state || {};
+  const { cart, userDetails, cartSummary, cartId } = location.state || {};
 
   // Lấy userId từ localStorage để đọc đúng coupon
   const userId = localStorage.getItem("userId");
@@ -67,8 +67,8 @@ const PaymentPage = () => {
         receiverName: userDetails.fullname,
         phone: userDetails.phone_number,
         detailAddress: userDetails.specific_Address,
-        ward: "",
-        district: "",
+        ward: userDetails.ward,
+        district: userDetails.district,
         province: userDetails.country,
         postalCode: "",
         isDefault: false,
@@ -93,7 +93,11 @@ const PaymentPage = () => {
     try {
       const res = await api.post("Orders", payload);
       toast.success("Đặt hàng thành công!");
-      navigate("/order-success", { state: { orderId: res.data.id } });
+      // Xóa giỏ hàng sau khi đặt hàng thành công
+      // await api.delete(`Cart/${cartId}`);
+      // console.log(cartId);
+      const orderId = res.data.id;
+      navigate(`/order-success/${orderId}`);
     } catch {
       toast.error("Đặt hàng thất bại! Vui lòng thử lại.");
     }

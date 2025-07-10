@@ -13,12 +13,15 @@ const Checkout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart = [] } = location.state || {};
+  const { cartId, variantIds = [], cartItemIds = [] } = location.state || {};
 
   const [userDetails, setUserDetails] = useState({
     fullname: "",
     country: "",
     specific_Address: "",
     city: "",
+    district: "",
+    ward: "",
     phone_number: "",
     email: "",
     gender: "",
@@ -71,16 +74,18 @@ const Checkout = () => {
       toast.error("Không thể tải thông tin người dùng");
     }
   };
-
   const fetchCartSummary = async () => {
     try {
-      const res = await api.get("Cart/summary");
+      // Gọi API calculate-total với variantIds
+      if (!cartItemIds.length) return;
+      const res = await api.post("Cart/calculate-total", cartItemIds, {
+        headers: { "Content-Type": "application/json" },
+      });
       setCartSummary(res.data);
     } catch {
       toast.error("Không thể tính tổng đơn hàng");
     }
   };
-
   // Xử lý input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -110,6 +115,7 @@ const Checkout = () => {
         cart,
         userDetails,
         cartSummary,
+        cartId,
       },
     });
   };
@@ -162,6 +168,20 @@ const Checkout = () => {
             value={userDetails.city}
             onChange={handleInputChange}
           />
+
+          <Input
+            name="district"
+            placeholder="District (Quận/Huyện)"
+            value={userDetails.district}
+            onChange={handleInputChange}
+          />
+          <Input
+            name="ward"
+            placeholder="Ward (Phường/Xã)"
+            value={userDetails.ward}
+            onChange={handleInputChange}
+          />
+
           <Input
             name="phone_number"
             placeholder="Phone"
@@ -208,18 +228,9 @@ const Checkout = () => {
           </ul>
 
           <div className="cart-totals">
-            <p>
-              Subtotal: <FormatCost value={cartSummary?.subtotal || 0} />
-            </p>
-            <p>
-              Shipping:{" "}
-              <FormatCost value={cartSummary?.estimatedShipping || 0} />
-            </p>
-            <p>
-              Tax: <FormatCost value={cartSummary?.estimatedTax || 0} />
-            </p>
+           
             <h3>
-              Total: <FormatCost value={cartSummary?.estimatedTotal || 0} />
+              Total: <FormatCost value={cartSummary?.totalAmount || 0} />
             </h3>
           </div>
 

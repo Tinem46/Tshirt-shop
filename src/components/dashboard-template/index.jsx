@@ -1,4 +1,12 @@
-import { Button, Form, Input, Modal, Popconfirm, Table } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Modal,
+  Popconfirm,
+  Table,
+  Typography,
+} from "antd";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useForm } from "antd/es/form/Form";
@@ -22,9 +30,8 @@ function DashboardTemplate(props) {
     resetImage,
     onEdit,
     dataSource,
+
     form: propForm,
-    loading: externalLoading,
-    rowSelection, // <- nhận prop này để truyền cho Table
   } = props;
 
   const [dashboard, setDashboard] = useState([]);
@@ -32,43 +39,68 @@ function DashboardTemplate(props) {
   const [form] = useForm();
   const formInstance = propForm || form;
   const [loading, setLoading] = useState(false);
-  const [fileList, setFileList] = useState([]);
+  const [setFileList] = useState([]);
   const [editingRecord, setEditingRecord] = useState(null);
   const [actionLoading, setActionLoading] = useState({});
+  const [current, setCurrent] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = async (page = 1, size = 10) => {
     try {
       setLoading(true);
       const uri = typeof apiURI === "function" ? apiURI("get") : apiURI;
       const response = await api.get(uri, {
-        params: { PageSize: 100 },
+        params: { PageSize: size, PageNumber: page },
       });
-      // ===> Sửa tại đây:
+      // Lấy dữ liệu
+      let dataArr = [];
       if (Array.isArray(response.data)) {
-        setDashboard(response.data);
+        dataArr = response.data;
       } else if (Array.isArray(response.data.data)) {
-        setDashboard(response.data.data);
+        dataArr = response.data.data;
       } else if (response.data.data && Array.isArray(response.data.data.data)) {
-        setDashboard(response.data.data.data);
+        dataArr = response.data.data.data;
       } else {
-        setDashboard([]);
+        dataArr = [];
       }
+      setDashboard(dataArr);
+
+      // Lấy tổng số bản ghi
+      setTotal(
+        response.data?.totalCount ||
+          response.data?.data?.totalCount || // thử nhiều key khác nhau (tuỳ backend)
+          dataArr.length // fallback
+      );
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
           "An error occurred while fetching dashboard"
       );
       setDashboard([]);
+      setTotal(0);
     } finally {
       setLoading(false);
     }
   };
 
+  const tablePagination = props.pagination || {
+    current,
+    pageSize,
+    total,
+    showSizeChanger: true,
+    pageSizeOptions: ["10", "20", "50", "100"],
+    onChange: (page, size) => {
+      setCurrent(page);
+      setPageSize(size);
+    },
+  };
+
   useEffect(() => {
-    if (!dataSource) {
-      fetchDashboard();
+    if (!props.dataSource) {
+      fetchDashboard(current, pageSize);
     }
-  }, []);
+  }, [current, pageSize]);
 
   const handleCustomAction = async (actionConfig, recordId, record) => {
     setActionLoading((prev) => ({
@@ -113,14 +145,15 @@ function DashboardTemplate(props) {
   };
 
   const handleSubmit = async (values) => {
+    console.log("DATA POST TO BACKEND:", values);
     console.log(values);
     setLoading(true);
     try {
-      if (values.image) {
-        const img = await uploadFile(values.image.fileList[0].originFileObj);
-        console.log(img);
-        values.image = img;
-      }
+      // if (values.image) {
+      //   const img = await uploadFile(values.image.fileList[0].originFileObj);
+      //   console.log(img);
+      //   values.image = img;
+      // }
       const uri =
         typeof apiURI === "function"
           ? apiURI(editingRecord ? "put" : "post")
@@ -257,16 +290,31 @@ function DashboardTemplate(props) {
           Create new {title.toLowerCase()}
         </Button>
       )}
+      <div
+        style={{
+          marginBottom: 16,
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          fontSize: 16,
+          gap: 8,
+          fontWeight: 500,
+          border: "1px solid #f0f0f0",
+          padding: "8px 16px",
+          borderRadius: 4,
+          backgroundColor: "#fafafa",
+          marginTop: 16,
+        }}
+      >
+        Tổng số {title.toLowerCase()}:{" "}
+        <span style={{ fontWeight: 700 }}>{total}</span>
+      </div>
       <Table
         columns={getColumns()}
         dataSource={dataSource || dashboard}
         loading={loading}
         rowKey="id"
-        pagination={{
-          pageSize: 10,
-          showSizeChanger: true,
-          pageSizeOptions: ["10", "20", "50", "100"],
-        }}
+        pagination={tablePagination}
       />
       <Modal
         title={`${editingRecord ? "Edit" : "Create"} ${title}`}

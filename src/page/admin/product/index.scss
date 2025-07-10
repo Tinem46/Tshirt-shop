@@ -1,36 +1,55 @@
 .product-detail-container {
-    padding: 16px;
-    background-color: #fff; /* Nền trắng */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    color: #000;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, #fafdff 0%, #f1f1f1 100%);
+    border-radius: 16px;
+    box-shadow:
+        0 4px 24px 0 rgba(35, 50, 100, 0.1),
+        0 1.5px 7px 0 rgba(0, 0, 0, 0.04);
+    color: #20232a;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    min-width: 340px;
+    max-width: 900px;
 
     .product-detail-header {
-        font-size: 20px;
-        font-weight: 600;
-        margin-bottom: 16px;
-        border-bottom: 1px solid #e5e5e5;
-        padding-bottom: 8px;
-        color: #111;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 18px;
+        border-bottom: 2px solid #ececec;
+        padding-bottom: 10px;
+        color: #1a1a1a;
+        background: linear-gradient(90deg, #02c6f3 0, #05a 100%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
     }
 
     .product-detail-images {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin-bottom: 20px;
+        gap: 14px;
+        margin-bottom: 24px;
+        min-height: 70px;
 
         .product-detail-image {
-            width: 70px;
-            height: 70px;
+            width: 75px;
+            height: 75px;
             object-fit: cover;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            transition: transform 0.2s ease;
+            border-radius: 10px;
+            border: 2px solid #ececec;
+            background: #fafbfd;
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s,
+                border-color 0.2s;
+            box-shadow: 0 1.5px 7px 0 rgba(0, 0, 0, 0.04);
 
             &:hover {
-                transform: scale(1.05);
-                border-color: #000;
+                transform: scale(1.08) rotate(-2deg);
+                border-color: #00b6f7;
+                box-shadow: 0 8px 32px 0 rgba(0, 182, 247, 0.08);
+                z-index: 2;
             }
         }
     }
@@ -38,22 +57,71 @@
     .detail-row {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        padding: 6px 0;
-        border-bottom: 1px dashed #e0e0e0;
+        align-items: flex-end;
+        gap: 18px;
+        padding: 7px 0;
+        border-bottom: 1px dashed #dbeafe;
 
         span:first-child {
             font-weight: 500;
-            color: #444;
+            color: #4b5563;
+            font-size: 15px;
+            min-width: 110px;
         }
-
         span:last-child {
-            color: #000;
-            font-weight: 600;
+            color: #131e29;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: right;
+            max-width: 60%;
+            word-break: break-word;
         }
     }
-
     .detail-row:last-child {
         border-bottom: none;
+    }
+
+    .product-detail-variants {
+        margin: 26px 0 6px 0;
+        padding-top: 7px;
+        border-top: 2px dotted #9ee3ff;
+
+        .variant-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #06a3ea;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            margin: 0 0 0 4px;
+            padding: 0;
+            list-style: none;
+
+            li {
+                background: #f8fafd;
+                border-radius: 8px;
+                margin-bottom: 7px;
+                padding: 7px 12px 7px 12px;
+                font-size: 15px;
+                color: #1b2430;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                border-left: 4px solid #02c6f3;
+
+                b {
+                    color: #09a8e2;
+                    margin-right: 5px;
+                    font-weight: 600;
+                }
+
+                // Ẩn nếu variant không active
+                &.inactive {
+                    opacity: 0.55;
+                    text-decoration: line-through;
+                }
+            }
+        }
     }
 }

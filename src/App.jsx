@@ -20,6 +20,9 @@ import ManageCoupon from "./page/admin/couponManage";
 import AccountManagement from "./page/admin/accountManagement";
 import ShippingManagement from "./page/admin/shippingManagement";
 import PaymentPage from "./page/PaymentPage";
+import OrderSuccess from "./page/orderSuccessPage";
+import ForgotPassword from "./page/forgotPasswordPage";
+import ResetPassword from "./page/resetPasswordPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -47,6 +50,14 @@ function App() {
         {
           path: "/confirm-email",
           element: <ConfirmEmail />,
+        },
+        {
+          path: "/forgot-password",
+          element: <ForgotPassword />,
+        },
+        {
+          path: "/reset-password",
+          element: <ResetPassword />,
         },
         {
           path: "/aboutUs",
@@ -83,6 +94,10 @@ function App() {
         {
           path: "/payment",
           element: <PaymentPage />,
+        },
+        {
+          path: "/order-success/:orderId",
+          element: <OrderSuccess />,
         },
       ],
     },

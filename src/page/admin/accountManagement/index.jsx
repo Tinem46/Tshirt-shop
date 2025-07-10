@@ -11,15 +11,29 @@ import { toast } from "react-toastify";
 
 function AccountManagement() {
   const [form] = Form.useForm();
-  const [fileList, setFileList] = useState([]);
+  const [setFileList] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [totalUsers, setTotalUsers] = useState(0);
 
-  // Lấy danh sách user ban đầu
-  const fetchUsers = async () => {
-    const res = await api.get("User");
+  // BỔ SUNG
+  const [current, setCurrent] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Hàm fetch có phân trang
+  const fetchUsers = async (page = 1, size = 30) => {
+    const res = await api.get("User", {
+      params: { pageNumber: page, pageSize: size },
+    });
+    const total = res.data?.data?.length || 0;
+    setTotalUsers(total);
+
+    // Thêm dòng kiểm tra (console)
+    console.log("Tổng số user:", total);
+    console.log("Dữ liệu trả về:", res.data);
+
     if (Array.isArray(res.data)) {
-      setUsers(res.data);s
+      setUsers(res.data);
     } else if (Array.isArray(res.data.data)) {
       setUsers(res.data.data);
     } else if (res.data.data && Array.isArray(res.data.data.data)) {
@@ -28,9 +42,10 @@ function AccountManagement() {
       setUsers([]);
     }
   };
+
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(current, pageSize);
+  }, [current, pageSize]);
 
   // Các cột Table
   const columns = [
@@ -69,24 +84,8 @@ function AccountManagement() {
       render: (roles) =>
         Array.isArray(roles) ? roles.join(", ") : roles || "N/A",
     },
-    {
-      title: "Status",
-      dataIndex: "isLocked",
-      key: "isLocked",
-      render: (locked) =>
-        locked ? (
-          <span style={{ color: "red" }}>
-            <LockOutlined /> Locked
-          </span>
-        ) : (
-          <span style={{ color: "green" }}>
-            <UnlockOutlined /> Active
-          </span>
-        ),
-    },
   ];
 
-  // Các trường nhập form
   const formItems = (
     <>
       <Form.Item
@@ -170,9 +169,10 @@ function AccountManagement() {
   // Lock/Unlock
   const lockAccount = async (id) => {
     try {
-      await api.put(`/User/lock?id=${id}`);
+      const res = await api.put(`/User/lock?id=${id}`);
       toast.success("Account locked!");
-      fetchUsers(); // Refresh user list
+      fetchUsers();
+      console.log(res.data);
     } catch {
       toast.error("Lock failed!");
     }
@@ -246,7 +246,17 @@ function AccountManagement() {
     selectedRowKeys,
     onChange: setSelectedRowKeys,
   };
-
+  const pagination = {
+    current,
+    pageSize,
+    total: 20,
+    showSizeChanger: true,
+    pageSizeOptions: ["10", "20", "50", "100"],
+    onChange: (page, size) => {
+      setCurrent(page);
+      setPageSize(size);
+    },
+  };
   return (
     <div>
       {/* Nút xóa nhiều */}
@@ -278,6 +288,7 @@ function AccountManagement() {
         form={form}
         resetImage={() => setFileList([])}
         rowSelection={rowSelection}
+        pagination={pagination}
       />
     </div>
   );

@@ -88,3 +88,34 @@
     color: #666;
   }
 }
+/* Đổi màu border của checkbox sang đen */
+.ant-checkbox-inner {
+  border-color: #111 !important;
+  background: #fff !important; /* Nền trắng cho chưa tick */
+  border-radius: 50%; /* Tròn nếu muốn */
+  width: 20px;
+  height: 20px;
+}
+
+/* Khi hover vào checkbox */
+.ant-checkbox:hover .ant-checkbox-inner {
+  border-color: #222 !important;
+}
+
+/* Khi đã chọn */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #111 !important; /* Nền đen khi tick */
+  border-color: #111 !important;
+}
+
+/* Dấu check màu trắng */
+.ant-checkbox-checked .ant-checkbox-inner:after {
+  border-color: #fff !important;
+  border-width: 2.5px;
+}
+
+/* Khi disabled thì làm nhạt */
+.ant-checkbox-disabled .ant-checkbox-inner {
+  background: #eee !important;
+  border-color: #ccc !important;
+}

@@ -45,7 +45,11 @@ function Card({ shirt }) {
   // };
   const handleOnClick = () => {
     window.scrollTo(0, 0);
-    navigate(`/detail/${shirt.id}`);
+    navigate(`/detail/${shirt.id}`,{
+      state: {
+        shirtId: { id: shirt.id},
+      },
+    });
   };
 
   return (
