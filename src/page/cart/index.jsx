@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
 import "./index.scss";
+import { toast } from "react-toastify";
 
 const SIZE_ENUM_MAP = { 1: "S", 2: "M", 3: "L", 4: "XL", 5: "XXL" };
 
@@ -98,7 +99,20 @@ const Cart = () => {
 
   // Thay đổi số lượng
   const handleQuantityChange = async (record, newQty) => {
-    if (newQty < 1) return;
+    if (newQty < 1) {
+      try {
+        const res = await api.delete(`Cart`, {
+          data: [record.id],
+          headers: { "Content-Type": "application/json" },
+        });
+        console.log("Xóa sản phẩm:", res.data);
+        toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+        fetchCart();
+      } catch (e) {
+        message.error("Số lượng không thể nhỏ hơn 1!");
+      }
+      return;
+    }
     setUpdating(true);
     try {
       await api.put(`Cart/${record.id}`, {
@@ -111,12 +125,19 @@ const Cart = () => {
     }
     setUpdating(false);
   };
-
-  const handleRemove = async (id) => {
+  const variantIds = selectedRows.map((item) => item.productVariantId);
+  const cartItemIds = selectedRows.map((item) => item.id);
+  const handleRemoveSelected = async () => {
     try {
-      await api.delete(`Cart/${id}`);
-      message.success("Đã xóa sản phẩm khỏi giỏ hàng");
+      await api.delete("Cart", {
+        data: cartItemIds, // mảng các id đã chọn
+        headers: { "Content-Type": "application/json" },
+      });
+      message.success("Đã xóa sản phẩm đã chọn khỏi giỏ hàng");
       fetchCart();
+      setSelectedRowKeys([]); // reset chọn
+      setSelectedRows([]);
+      console.log("Xóa cartItemIds:", cartItemIds);
     } catch {
       message.error("Không thể xóa sản phẩm khỏi giỏ hàng");
     }
@@ -127,8 +148,7 @@ const Cart = () => {
       message.warning("Giỏ hàng rỗng!");
       return;
     }
-    const variantIds = selectedRows.map((item) => item.productVariantId);
-    const cartItemIds = selectedRows.map((item) => item.id);
+
     navigate("/checkout", {
       state: { cart: selectedRows, cartId, variantIds, cartItemIds },
     });
@@ -202,18 +222,18 @@ const Cart = () => {
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <Button
             size="small"
-            disabled={updating || record.quantity <= 1}
+            disabled={updating || record.quantity <= 0}
             onClick={() => handleQuantityChange(record, record.quantity - 1)}
             style={{ fontWeight: 700 }}
           >
             -
           </Button>
           <InputNumber
-            min={1}
+            min={0}
             max={99}
             value={record.quantity}
             onChange={(val) => {
-              if (!val) return;
+              if (val === null || val === undefined) return;
               handleQuantityChange(record, val);
             }}
             style={{ width: 48 }}
@@ -237,18 +257,6 @@ const Cart = () => {
         <FormatCost value={record.unitPrice * record.quantity} />
       ),
     },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_, record) => (
-        <Popconfirm
-          title={`Bạn chắc chắn xóa ${record.detail?.name || "sản phẩm"}?`}
-          onConfirm={() => handleRemove(record.id)}
-        >
-          <Button danger>Xóa</Button>
-        </Popconfirm>
-      ),
-    },
   ];
 
   return (
@@ -256,12 +264,27 @@ const Cart = () => {
       <div className="cart">
         <span className="title-Cart">Giỏ Hàng</span>
         <ShoppingCartOutlined className="icon-Cart" />
-        {loading ? (
-          <Spin
-            style={{ margin: "40px auto", display: "block" }}
-            size="large"
-          />
-        ) : !cartDetails.length ? (
+        <div className="cart-header">
+          {selectedRows.length > 0 && (
+            <Popconfirm
+              title={`Bạn chắc chắn muốn xóa ${selectedRows.length} sản phẩm đã chọn?`}
+              onConfirm={handleRemoveSelected}
+              okText="Xóa"
+              cancelText="Hủy"
+            >
+              <Button
+                danger
+                className="btn-delete-selected"
+                size="middle"
+                style={{ marginLeft: 18, fontWeight: 600 }}
+              >
+                Xóa đã chọn
+              </Button>
+            </Popconfirm>
+          )}
+        </div>
+
+        {!cartDetails.length ? (
           <div className="empty-cart">
             <img
               src="https://bizweb.dktcdn.net/100/368/179/themes/738982/assets/empty-cart.png?1712982025915"

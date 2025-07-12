@@ -18,12 +18,11 @@ const Checkout = () => {
 
   const [userDetails, setUserDetails] = useState({
     fullname: "",
-    country: "",
-    specific_Address: "",
+    detailAddress: "",
     city: "",
     district: "",
     ward: "",
-    phone_number: "",
+    phone: "",
     email: "",
     gender: "",
     additionalInfo: "",
@@ -52,8 +51,8 @@ const Checkout = () => {
         setUserDetails((prev) => ({
           ...prev,
           fullname: defaultAddress.receiverName || prev.fullname,
-          phone_number: defaultAddress.phone || "",
-          specific_Address: defaultAddress.detailAddress || "",
+          phone: defaultAddress.phone || "",
+          detailAddress: defaultAddress.detailAddress || "",
           city: defaultAddress.province || "",
           district: defaultAddress.district || "",
           ward: defaultAddress.ward || "",
@@ -83,18 +82,9 @@ const Checkout = () => {
           (user?.firstName ? user.firstName + " " : "") +
           (user?.lastName || ""),
         country: "",
-        specific_Address: user?.address || "",
-        city: user?.city || "",
         phone_number: user?.phoneNumber || "",
         email: user?.email || "",
-        gender:
-          user?.gender === 0
-            ? "male"
-            : user?.gender === 1
-            ? "female"
-            : user?.gender === 2
-            ? "other"
-            : "",
+        gender: user?.gender || "",
       }));
     } catch {
       toast.error("Không thể tải thông tin người dùng");
@@ -118,9 +108,6 @@ const Checkout = () => {
     setUserDetails((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (value) => {
-    setUserDetails((prev) => ({ ...prev, country: value }));
-  };
 
   const handleGenderChange = (value) => {
     setUserDetails((prev) => ({ ...prev, gender: value }));
@@ -128,14 +115,14 @@ const Checkout = () => {
 
   // Sang trang payment
   const handleGoToPayment = () => {
-    if (
-      !userDetails.fullname ||
-      !userDetails.specific_Address ||
-      !userDetails.phone_number
-    ) {
-      toast.error("Vui lòng điền đầy đủ thông tin nhận hàng!");
-      return;
-    }
+    // if (
+    //   !userDetails.fullname ||
+    //   !userDetails.specific_Address ||
+    //   !userDetails.phone_number
+    // ) {
+    //   toast.error("Vui lòng điền đầy đủ thông tin nhận hàng!");
+    //   return;
+    // }
     navigate("/payment", {
       state: {
         cart,
@@ -159,19 +146,7 @@ const Checkout = () => {
             onChange={handleInputChange}
           />
 
-          <Select
-            name="country"
-            value={userDetails.country || undefined}
-            onChange={handleSelectChange}
-            style={{ width: "100%" }}
-            placeholder="Quốc gia / Khu vực"
-          >
-            <Option value="">Chọn quốc gia</Option>
-            <Option value="Vietnam">Việt Nam</Option>
-            <Option value="Laos">Lào</Option>
-            <Option value="Cambodia">Campuchia</Option>
-            <Option value="Thailand">Thái Lan</Option>
-          </Select>
+         
 
           <Select
             name="gender"
@@ -180,9 +155,8 @@ const Checkout = () => {
             style={{ width: "100%" }}
             placeholder="Giới tính"
           >
-            <Option value="">Chọn giới tính</Option>
-            <Option value="male">Nam</Option>
-            <Option value="female">Nữ</Option>
+            <Option value="Male">Nam</Option>
+            <Option value="Female">Nữ</Option>
             <Option value="other">Khác</Option>
           </Select>
 
@@ -217,7 +191,7 @@ const Checkout = () => {
           <Input
             name="phone_number"
             placeholder="Số điện thoại"
-            value={userDetails.phone_number}
+            value={userDetails.phone}
             onChange={handleInputChange}
           />
 

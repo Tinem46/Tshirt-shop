@@ -119,3 +119,37 @@
   background: #eee !important;
   border-color: #ccc !important;
 }
+.cart-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .title-Cart {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-right: 10px;
+  }
+
+  .icon-Cart {
+    font-size: 2rem;
+    margin-right: 6px;
+    color: #111;
+  }
+
+  .btn-delete-selected {
+    margin-left: 18px;
+    background: #ffeded !important;
+    color: #ff4d4f !important;
+    border: 1px solid #ffcccc !important;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+
+    &:hover,
+    &:focus {
+      background: #fff0f0 !important;
+      color: #d9363e !important;
+      border: 1.5px solid #ff7875 !important;
+    }
+  }
+}

@@ -3,77 +3,53 @@ import { Button, Modal, Spin } from "antd";
 import { toast } from "react-toastify";
 import api from "../../../config/api";
 import DashboardTemplate from "../../../components/dashboard-template";
-import OrderStatusButton from "../../../components/orderStatusButton";
 import OrderDetails from "../../../components/orderDetails";
 import OrderFilter from "../../../components/orderFilter";
 
-function ShippingManagement() {
+function CancelledOrdersManagement() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Lưu filter để gọi lại khi lọc
   const [filter, setFilter] = useState({
     startDate: null,
     endDate: null,
     sortOrder: "desc",
   });
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Fetch orders có status = 2, 3, 4 (Completed, Processing, Shipping) theo filter
-  const fetchOrders = async (customFilter = filter) => {
+  // Fetch Cancelled Orders có filter ngày/sort
+  const fetchCancelledOrders = async (customFilter = filter) => {
     setLoading(true);
+    const MIN_LOADING_TIME = 1200; // Tăng độ trễ loading (ms)
+    const start = Date.now();
     try {
-      // API chỉ filter được 1 status/lần, nên Promise.all
-      const [res3, res4, res2] = await Promise.all([
-        api.get("Orders", {
-          params: {
-            Status: 3,
-            PageSize: 100,
-            ...(customFilter.startDate && { FromDate: customFilter.startDate }),
-            ...(customFilter.endDate && { ToDate: customFilter.endDate }),
-            SortBy: "createdDate",
-            SortDescending: customFilter.sortOrder === "desc",
-          },
-        }),
-        api.get("Orders", {
-          params: {
-            Status: 4,
-            PageSize: 100,
-            ...(customFilter.startDate && { FromDate: customFilter.startDate }),
-            ...(customFilter.endDate && { ToDate: customFilter.endDate }),
-            SortBy: "createdDate",
-            SortDescending: customFilter.sortOrder === "desc",
-          },
-        }),
-        api.get("Orders", {
-          params: {
-            Status: 2,
-            PageSize: 100,
-            ...(customFilter.startDate && { FromDate: customFilter.startDate }),
-            ...(customFilter.endDate && { ToDate: customFilter.endDate }),
-            SortBy: "createdDate",
-            SortDescending: customFilter.sortOrder === "desc",
-          },
-        }),
-      ]);
-      const data3 = Array.isArray(res3.data)
-        ? res3.data
-        : res3.data?.data || [];
-      const data4 = Array.isArray(res4.data)
-        ? res4.data
-        : res4.data?.data || [];
-      const data2 = Array.isArray(res2.data)
-        ? res2.data
-        : res2.data?.data || [];
-      setOrders([...data3, ...data4, ...data2]);
+      const params = {
+        Status: 6,
+        PageSize: 100,
+        ...(customFilter.startDate && { FromDate: customFilter.startDate }),
+        ...(customFilter.endDate && { ToDate: customFilter.endDate }),
+        SortBy: "createdDate",
+        SortDescending: customFilter.sortOrder === "desc",
+      };
+      const res = await api.get("Orders", { params });
+      const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
+      setOrders(data);
     } catch (err) {
-      toast.error("Failed to fetch orders");
+      toast.error("Failed to fetch cancelled orders");
     } finally {
-      setLoading(false);
+      const elapsed = Date.now() - start;
+      if (elapsed < MIN_LOADING_TIME) {
+        setTimeout(() => setLoading(false), MIN_LOADING_TIME - elapsed);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    fetchOrders();
+    fetchCancelledOrders();
     // eslint-disable-next-line
   }, [filter]);
 
@@ -88,8 +64,51 @@ function ShippingManagement() {
     setIsDetailsOpen(false);
   };
 
+  const handleRefund = async (orderId) => {
+    try {
+      await api.post(
+        `transactions/refund`,
+        {},
+        {
+          params: {
+            koiOrderId: Number(orderId),
+          },
+        }
+      );
+      toast.success("Order refunded successfully!");
+      fetchCancelledOrders();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to refund order");
+    }
+  };
+
+  const getPaymentStatusLabel = (status) => {
+    switch (status) {
+      case 0:
+        return "Unpaid";
+      case 1:
+        return "Processing";
+      case 2:
+        return "Completed";
+      case 3:
+        return "Partially Paid";
+      case 4:
+        return "Refunded";
+      case 5:
+        return "Partially Refunded";
+      case 6:
+        return "Failed";
+      default:
+        return status;
+    }
+  };
+
   const getOrderStatusLabel = (status) => {
     switch (status) {
+      case 0:
+        return "Pending";
+      case 1:
+        return "Paid (awaiting confirmation)";
       case 2:
         return "Completed";
       case 3:
@@ -98,6 +117,10 @@ function ShippingManagement() {
         return "Shipping";
       case 5:
         return "Delivered";
+      case 6:
+        return "Cancelled";
+      case 7:
+        return "Returned";
       default:
         return status;
     }
@@ -127,6 +150,12 @@ function ShippingManagement() {
       render: (status) => getOrderStatusLabel(status),
     },
     {
+      title: "Payment Status",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
+      render: (status) => getPaymentStatusLabel(status),
+    },
+    {
       title: "View Details",
       key: "viewDetails",
       render: (text, record) => (
@@ -142,41 +171,18 @@ function ShippingManagement() {
       ),
     },
     {
-      title: "Shipping Action",
-      key: "shippingAction",
-      render: (text, record) =>
-        record.status === 3 ? (
-          <OrderStatusButton
-            orderId={record.id}
-            status={4}
-            type="primary"
-            style={{ backgroundColor: "#52c41a", color: "#fff" }}
-            onSuccess={fetchOrders}
-          >
-            Chuyển sang Shipping
-          </OrderStatusButton>
-        ) : record.status === 4 ? (
-          <Button disabled style={{ background: "#d9d9d9", color: "#888" }}>
-            Đã Shipping
-          </Button>
-        ) : null,
-    },
-    {
       title: "Actions",
       key: "actions",
       render: (text, record) => (
         <div style={{ display: "flex", gap: 8 }}>
-          {/* Nếu status là Delivered thì show nút chuyển sang Completed */}
-          {record.status === 5 && (
-            <OrderStatusButton
-              orderId={record.id}
-              status={2}
+          {record.paymentStatus === 2 && (
+            <Button
               type="primary"
-              style={{ backgroundColor: "#52c41a", color: "#fff" }}
-              onSuccess={fetchOrders}
+              style={{ backgroundColor: "#faad14", color: "#fff" }}
+              onClick={() => handleRefund(record.id)}
             >
-              Hoàn thành đơn
-            </OrderStatusButton>
+              Refund
+            </Button>
           )}
         </div>
       ),
@@ -190,7 +196,7 @@ function ShippingManagement() {
         <DashboardTemplate
           columns={columns}
           dataSource={orders}
-          title="Shipping Management"
+          title="Cancelled Orders"
           loading={loading}
           disableCreate={true}
           showEditDelete={false}
@@ -217,4 +223,4 @@ function ShippingManagement() {
   );
 }
 
-export default ShippingManagement;
+export default CancelledOrdersManagement;

@@ -23,6 +23,9 @@ import PaymentPage from "./page/PaymentPage";
 import OrderSuccess from "./page/orderSuccessPage";
 import ForgotPassword from "./page/forgotPasswordPage";
 import ResetPassword from "./page/resetPasswordPage";
+import OrderManagement from "./page/admin/orderManagement";
+import CompletedOrdersManagement from "./page/admin/completedOrderManagement";
+import CancelledOrdersManagement from "./page/admin/cancelManagement";
 
 function App() {
   const router = createBrowserRouter([
@@ -125,6 +128,18 @@ function App() {
         {
           path: "shippingManagement",
           element: <ShippingManagement />,
+        },
+        {
+          path: "orderManagement", // Remove the leading slash
+          element: <OrderManagement />,
+        },
+        {
+          path: "completedManagement", // Remove the leading slash
+          element: <CompletedOrdersManagement />,
+        },
+        {
+          path: "cancelManagement", // Remove the leading slash
+          element: <CancelledOrdersManagement />,
         },
       ],
     },

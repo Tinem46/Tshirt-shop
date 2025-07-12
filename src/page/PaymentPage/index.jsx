@@ -61,6 +61,7 @@ const PaymentPage = () => {
       toast.error("Vui lòng chọn phương thức thanh toán!");
       return;
     }
+    console.log("Cart gửi sang order:", cart);
     const payload = {
       userAddressId: null,
       newAddress: {
@@ -76,29 +77,51 @@ const PaymentPage = () => {
       customerNotes: userDetails.additionalInfo,
       couponId: selectedCoupon?.id || null,
       shippingMethodId,
+
       orderItems: cart.map((item) => ({
         cartItemId: item.id,
-        productId: item.productId,
-        customDesignId: item.customDesignId || null,
-        productVariantId: item.productVariantId || null,
-        itemName: item.name,
-        selectedColor: item.selectedColor || null,
-        selectedSize: item.selectedSize || null,
+        productId: item.productId ?? item.detail?.productId ?? null,
+        customDesignId: item.customDesignId ?? null,
+        productVariantId: item.productVariantId ?? item.detail?.id ?? null,
+        itemName: item.itemName ?? item.name ?? item.detail?.productName ?? "",
+        selectedColor: item.selectedColor ?? item.detail?.color ?? "",
+        selectedSize: item.selectedSize ?? item.detail?.size ?? "",
+        image: item.image ?? item.detail?.imageUrl ?? "",
         quantity: item.quantity,
-        unitPrice: item.unitPrice,
+        unitPrice: item.unitPrice ?? item.detail?.price ?? 0,
       })),
-      paymentType,
     };
+
+    console.log("OrderItems gửi đi:", payload.orderItems);
 
     try {
       const res = await api.post("Orders", payload);
-      toast.success("Đặt hàng thành công!");
-      // Xóa giỏ hàng sau khi đặt hàng thành công
-      // await api.delete(`Cart/${cartId}`);
-      // console.log(cartId);
-      const orderId = res.data.id;
-      navigate(`/order-success/${orderId}`);
-    } catch {
+      const orderId = res.data.order.id;
+
+      if (paymentType === "VNPAY") {
+        const paymentRes = await api.post("Payments/create", {
+          orderId,
+          paymentMethod: 0, // VNPAY
+          description: "Thanh toán qua VNPay",
+        });
+
+        const paymentUrl = paymentRes.data?.paymentUrl || paymentRes.data?.url;
+        if (paymentUrl) {
+          window.location.href = paymentUrl;
+          return; // <-- PHẢI return để không chạy xuống else
+        } else {
+          toast.error("Không lấy được link thanh toán VNPay!");
+          return; // <-- PHẢI return nếu không lấy được link!
+        }
+      } else if (paymentType === "COD") {
+        // Nếu là COD, không cần làm gì thêm, chỉ cần thông báo thành công
+        toast.success("Đặt hàng thành công!");
+        navigate(`/order-success/${orderId}`);
+      } else {
+        toast.error("Phương thức thanh toán không hợp lệ!");
+        return; // <-- PHẢI return nếu phương thức không hợp lệ
+      }
+    } catch (error) {
       toast.error("Đặt hàng thất bại! Vui lòng thử lại.");
     }
   };

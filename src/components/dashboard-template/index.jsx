@@ -1,12 +1,4 @@
-import {
-  Button,
-  Form,
-  Input,
-  Modal,
-  Popconfirm,
-  Table,
-  Typography,
-} from "antd";
+import { Button, Form, Input, Modal, Popconfirm, Table } from "antd";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useForm } from "antd/es/form/Form";
@@ -14,8 +6,8 @@ import PropTypes from "prop-types";
 import React from "react";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import api from "../../config/api";
-import uploadFile from "../../utils/upload";
 import "./index.scss";
+import Swal from "sweetalert2";
 
 function DashboardTemplate(props) {
   const {
@@ -30,6 +22,9 @@ function DashboardTemplate(props) {
     resetImage,
     onEdit,
     dataSource,
+    bulkDeleteApi,
+    bulkDeleteText,
+    hideDelete,
 
     form: propForm,
   } = props;
@@ -45,6 +40,7 @@ function DashboardTemplate(props) {
   const [current, setCurrent] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const fetchDashboard = async (page = 1, size = 10) => {
     try {
@@ -144,10 +140,53 @@ function DashboardTemplate(props) {
     }
   };
 
+  const handleBulkDelete = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to ${bulkDeleteText} ${selectedRowKeys.length} selected items?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        if (typeof bulkDeleteApi === "function") {
+          await bulkDeleteApi(selectedRowKeys);
+        } else {
+          await api.post(bulkDeleteApi, { ids: selectedRowKeys });
+        }
+        toast.success("Bulk delete successful!");
+        setSelectedRowKeys([]);
+        await fetchDashboard();
+      } catch (err) {
+        toast.error("Bulk delete failed!");
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
   const handleSubmit = async (values) => {
     console.log("DATA POST TO BACKEND:", values);
     console.log(values);
     setLoading(true);
+    let images = Array.isArray(values.images)
+      ? values.images
+          .filter((img) => img.url && img.url.trim() !== "") // chỉ giữ ảnh có url thật
+          .map((img) => ({
+            url: img.url,
+            isPrimary: img.isPrimary ?? false,
+          }))
+      : [];
+    // Xây payload cho đúng DTO
+    const payload = {
+      ...values,
+      images,
+    };
     try {
       // if (values.image) {
       //   const img = await uploadFile(values.image.fileList[0].originFileObj);
@@ -159,7 +198,8 @@ function DashboardTemplate(props) {
           ? apiURI(editingRecord ? "put" : "post")
           : apiURI;
       if (editingRecord) {
-        await api.put(`${uri}/${values.id}`, values);
+        await api.put(`${uri}/${values.id}`, { dto: { ...values, images } });
+
         toast.success("Update successful");
       } else {
         const response = await api.post(`${uri}`, values);
@@ -169,7 +209,9 @@ function DashboardTemplate(props) {
       }
       setOpen(false);
       setEditingRecord(null);
-      fetchDashboard();
+      if (!dataSource) {
+        await fetchDashboard(); // <-- luôn fetch lại sau update/create!
+      }
     } catch (err) {
       const errorData = err.response?.data;
 
@@ -243,21 +285,23 @@ function DashboardTemplate(props) {
                         <EditOutlined />
                       </Button>
                     )}
-                    <Popconfirm
-                      title={`Are you sure you want to delete ${record.name}?`}
-                      onConfirm={() => handleDelete(record.id)}
-                    >
-                      <Button
-                        type="primary"
-                        danger
-                        style={{
-                          backgroundColor: "#f44336",
-                          borderColor: "#f44336",
-                        }}
+                    {!hideDelete && (
+                      <Popconfirm
+                        title={`Are you sure you want to delete ${record.name}?`}
+                        onConfirm={() => handleDelete(record.id)}
                       >
-                        <DeleteOutlined />
-                      </Button>
-                    </Popconfirm>
+                        <Button
+                          type="primary"
+                          danger
+                          style={{
+                            backgroundColor: "#f44336",
+                            borderColor: "#f44336",
+                          }}
+                        >
+                          <DeleteOutlined />
+                        </Button>
+                      </Popconfirm>
+                    )}
                   </>
                 )}
               </div>
@@ -284,7 +328,7 @@ function DashboardTemplate(props) {
             formInstance.resetFields();
             setOpen(true);
             setEditingRecord(null);
-            setFileList([]);
+            if (resetImage) resetImage();
           }}
         >
           Create new {title.toLowerCase()}
@@ -309,12 +353,24 @@ function DashboardTemplate(props) {
         Tổng số {title.toLowerCase()}:{" "}
         <span style={{ fontWeight: 700 }}>{total}</span>
       </div>
+      <Button
+        danger
+        disabled={selectedRowKeys.length === 0}
+        onClick={handleBulkDelete}
+        style={{ marginBottom: 12 }}
+      >
+        {bulkDeleteText || "Xoá các mục đã chọn"}
+      </Button>
       <Table
         columns={getColumns()}
         dataSource={dataSource || dashboard}
         loading={loading}
         rowKey="id"
         pagination={tablePagination}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: setSelectedRowKeys,
+        }}
       />
       <Modal
         title={`${editingRecord ? "Edit" : "Create"} ${title}`}

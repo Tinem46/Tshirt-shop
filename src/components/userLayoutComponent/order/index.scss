@@ -1,18 +1,19 @@
 .orders-page-layout {
-  background-color: #f0f2f5; // Nền nhẹ nhàng
-  padding: 0; // Loại bỏ padding tổng thể để search bar có thể full width
-  min-height: calc(100vh - 64px); // Trừ chiều cao header nếu có
+  background-color: #f0f2f5;
+  padding: 0;
+  min-height: 100vh;
+ max-width: 1600px;
+
 
   .orders-header-section {
     background: #fff;
-    padding: 20px; // Giữ padding cho phần tabs
-    border-radius: 0 0 8px 8px; // Chỉ bo góc dưới
-    margin-bottom: 0; // Loại bỏ margin-bottom
+    padding: 20px 24px 16px 24px;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    height: auto;
 
     .orders-status-tabs {
-      margin-bottom: 0; // Loại bỏ margin-bottom
+      margin-bottom: 0;
 
       .ant-tabs-nav {
         margin: 0;
@@ -20,23 +21,20 @@
           justify-content: center;
         }
       }
-
       .ant-tabs-tab {
         font-size: 15px;
         font-weight: 500;
-        padding: 12px 16px;
+        padding: 12px 18px;
         transition: all 0.3s;
 
         &:hover {
           color: #ff4d4f;
         }
       }
-
       .ant-tabs-tab-active .ant-tabs-tab-btn {
         color: #ff4d4f !important;
         font-weight: 600;
       }
-
       .ant-tabs-ink-bar {
         background: #ff4d4f !important;
         height: 3px;
@@ -45,59 +43,43 @@
     }
   }
 
-  .orders-search-bar-container { /* New container for search bar */
-    background-color: #f0f2f5; // Nền xám nhạt cho thanh tìm kiếm
-    padding: 15px 20px; // Padding cho thanh tìm kiếm
-    margin-bottom: 20px; // Khoảng cách với phần nội dung
+  .orders-search-bar-container {
+    background-color: #f0f2f5;
+    padding: 18px 24px 10px 24px;
+    margin-bottom: 0;
 
     .ant-input-search {
-      width: 100%; // Chiếm toàn bộ chiều rộng của container
-      max-width: none; // Đảm bảo không bị giới hạn max-width
-      margin: 0; // Bỏ margin auto
+      width: 100%;
+      max-width: none;
+      margin: 0;
 
       .ant-input-affix-wrapper {
-        height: 48px; // Tăng chiều cao input
-        font-size: 16px; // Tăng kích thước chữ
-        background-color: #e8e8e8; // Màu nền của input search
-        border: none; // Bỏ border
-        border-radius: 4px; // Bo góc nhẹ
-
+        height: 48px;
+        font-size: 16px;
+        background: #e8e8e8;
+        border: none;
+        border-radius: 4px;
         .ant-input {
-          background-color: transparent; // Đảm bảo input không có nền riêng
-          font-size: 16px; // Kích thước chữ trong input
-          color: #555; // Màu chữ
-          &::placeholder {
-            color: #888; // Màu placeholder
-          }
+          background: transparent;
+          color: #555;
+        }
+        .ant-input::placeholder {
+          color: #888;
         }
         .ant-input-prefix {
-          font-size: 18px; // Tăng kích thước icon search
-          color: #888; // Màu icon search
-        }
-        .ant-input-clear-icon {
-          font-size: 16px;
+          font-size: 18px;
           color: #888;
         }
       }
-
       .ant-input-search-button {
-        display: none; // Ẩn nút search bên phải nếu không cần
-        // Nếu muốn giữ nút, hãy điều chỉnh style cho phù hợp
-        // background: #ff4d4f;
-        // border-color: #ff4d4f;
-        // height: 48px;
-        // font-size: 18px;
-        // &:hover {
-        //   background: darken(#ff4d4f, 10%);
-        //   border-color: darken(#ff4d4f, 10%);
-        // }
+        display: none;
       }
     }
   }
 
   .orders-content-section {
-    padding: 0 20px; // Thêm padding ngang cho phần nội dung
-    padding-bottom: 20px; // Thêm padding dưới cùng
+    padding: 0 24px 20px 24px;
+    min-height: 350px;
 
     .loading-container,
     .ant-empty {
@@ -105,24 +87,22 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      min-height: 300px;
+      min-height: 320px;
       background: #fff;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       padding: 40px;
     }
-
     .orders-list {
       display: flex;
       flex-direction: column;
-      gap: 15px;
-
+      gap: 16px;
       .order-item-block {
         background: #fff;
-        padding: 15px;
+        padding: 16px;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        transition: all 0.3s;
         overflow: hidden;
         border: 1px solid #f0f0f0;
 
@@ -135,30 +115,26 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding-bottom: 10px;
+          padding-bottom: 8px;
           margin-bottom: 10px;
           border-bottom: 1px dashed #f0f0f0;
-
           .order-info {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-
+            gap: 3px;
             .order-number {
               font-weight: 700;
               color: #333;
-              font-size: 18px; // Tăng kích thước chữ
+              font-size: 18px;
             }
-
             .order-date {
               color: #999;
-              font-size: 14px; // Tăng kích thước chữ
+              font-size: 14px;
             }
           }
-
           .order-status-tag {
-            font-size: 13px; // Tăng kích thước chữ
-            padding: 5px 12px; // Tăng padding
+            font-size: 13px;
+            padding: 5px 14px;
             border-radius: 15px;
             font-weight: 600;
           }
@@ -166,55 +142,46 @@
 
         .order-card-items {
           margin-bottom: 10px;
-
           .order-item-row {
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 10px 0; // Tăng padding
+            padding: 10px 0;
             border-bottom: 1px solid #f5f5f5;
-
             &:last-child {
               border-bottom: none;
             }
-
             .item-image-wrapper {
               flex-shrink: 0;
-              width: 80px; // Tăng kích thước ảnh
-              height: 80px; // Tăng kích thước ảnh
+              width: 70px;
+              height: 70px;
               border-radius: 4px;
               overflow: hidden;
               border: 1px solid #eee;
-
               img {
                 width: 100%;
                 height: 100%;
                 object-fit: cover;
               }
             }
-
             .item-details {
               flex: 1;
               display: flex;
               flex-direction: column;
-              gap: 2px;
-
+              gap: 1px;
               .item-name {
-                font-size: 16px; // Tăng kích thước chữ
+                font-size: 16px;
                 font-weight: 500;
                 color: #333;
-                line-height: 1.3;
               }
-
               .item-variant,
               .item-quantity {
-                font-size: 14px; // Tăng kích thước chữ
+                font-size: 14px;
                 color: #666;
               }
             }
-
             .item-price {
-              font-size: 16px; // Tăng kích thước chữ
+              font-size: 16px;
               font-weight: 600;
               color: #ff4d4f;
               flex-shrink: 0;
@@ -226,55 +193,45 @@
           display: flex;
           justify-content: space-between;
           flex-wrap: wrap;
-          gap: 10px;
+          gap: 12px;
           padding-top: 10px;
           margin-top: 10px;
           border-top: 1px dashed #f0f0f0;
-
           .shipping-info {
             flex: 1;
-            min-width: 200px;
-
+            min-width: 210px;
             p {
               display: flex;
-              font-size: 15px; // Tăng kích thước chữ
+              font-size: 15px;
               color: #666;
-              line-height: 1.5; // Điều chỉnh line-height
-
+              line-height: 1.5;
               strong {
                 color: #333;
-                flex-shrink: 0;
-                min-width: 100px; // Điều chỉnh min-width
-                margin-right: 5px;
+                min-width: 90px;
+                margin-right: 6px;
               }
             }
           }
-
           .price-summary {
             min-width: 180px;
             text-align: right;
-
             .price-row {
               display: flex;
               justify-content: space-between;
-              margin-bottom: 4px; // Điều chỉnh margin-bottom
-              font-size: 15px; // Tăng kích thước chữ
+              margin-bottom: 4px;
+              font-size: 15px;
               color: #666;
-
               &.discount {
                 color: #52c41a;
               }
-
               &.total {
-                font-size: 18px; // Tăng kích thước chữ
+                font-size: 18px;
                 font-weight: 700;
                 color: #ff4d4f;
-                padding-top: 8px; // Điều chỉnh padding-top
+                padding-top: 8px;
                 border-top: 1px solid #eee;
-                margin-top: 8px; // Điều chỉnh margin-top
-                column-gap: 12px;
+                margin-top: 8px;
               }
-
               span:first-child {
                 color: #333;
               }
@@ -290,23 +247,19 @@
           margin-top: 10px;
           border-top: 1px dashed #f0f0f0;
           gap: 10px;
-
           .ant-btn {
-            font-size: 15px; // Tăng kích thước chữ
-            height: 40px; // Tăng chiều cao nút
-            padding: 0 18px; // Tăng padding
+            font-size: 15px;
+            height: 40px;
+            padding: 0 18px;
             border-radius: 4px;
-
             &.ant-btn-primary {
               background: #ff4d4f;
               border-color: #ff4d4f;
-
               &:hover {
                 background: darken(#ff4d4f, 10%);
                 border-color: darken(#ff4d4f, 10%);
               }
             }
-
             &.ant-btn-dangerous {
               &:hover {
                 background: #ff7875;
@@ -320,65 +273,76 @@
   }
 }
 
-// Responsive adjustments
+// --- RESPONSIVE ---
+@media (max-width: 991px) {
+  .orders-header-section,
+  .orders-search-bar-container,
+  .orders-content-section {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
 @media (max-width: 768px) {
-  .orders-page-layout {
-    padding: 0; // Giữ padding 0
-
-    .orders-header-section {
-      padding: 15px;
-
-      .orders-status-tabs {
-        .ant-tabs-tab {
-          font-size: 13px;
-          padding: 10px 8px;
-        }
+  .orders-header-section {
+    padding: 10px 4px 8px 4px;
+  }
+  .orders-search-bar-container {
+    padding: 8px 4px 8px 4px;
+  }
+  .orders-content-section {
+    padding: 0 4px 8px 4px;
+  }
+  .orders-list .order-item-block {
+    padding: 8px;
+    .order-card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .order-card-summary {
+      flex-direction: column;
+      .shipping-info,
+      .price-summary {
+        min-width: unset;
+        width: 100%;
+        text-align: left;
       }
     }
-
-    .orders-search-bar-container {
-      padding: 10px; // Giảm padding trên mobile
+    .order-card-actions {
+      gap: 8px;
     }
-
-    .orders-content-section {
-      padding: 0 10px; // Giảm padding ngang trên mobile
-      padding-bottom: 10px; // Giảm padding dưới cùng
-
-      .order-item-block {
-        .order-card-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 10px;
-        }
-
-        .order-card-summary {
-          flex-direction: column;
-          .shipping-info, .price-summary {
-            min-width: unset;
-            width: 100%;
-            text-align: left;
-          }
-          .price-summary {
-            .price-row {
-              justify-content: space-between;
-            }
-          }
-        }
-
-        .order-card-actions {
-          flex-direction: row;
-          justify-content: flex-end;
-          flex-wrap: wrap;
-          gap: 8px;
-          .ant-space {
-            width: 100%;
-            justify-content: flex-end;
-            .ant-btn {
-              flex-grow: 0;
-            }
-          }
-        }
+    .order-item-row {
+      .item-image-wrapper {
+        width: 55px;
+        height: 55px;
+      }
+      .item-details .item-name {
+        font-size: 15px;
+      }
+      .item-price {
+        font-size: 15px;
       }
     }
+  }
+}
+@media (max-width: 500px) {
+  .orders-header-section,
+  .orders-search-bar-container,
+  .orders-content-section {
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .orders-list .order-item-block {
+    padding: 4px;
+  }
+  .order-card-header .order-number {
+    font-size: 16px;
+  }
+  .order-card-header .order-date {
+    font-size: 12px;
+  }
+  .order-status-tag {
+    font-size: 12px;
+    padding: 3px 7px;
   }
 }

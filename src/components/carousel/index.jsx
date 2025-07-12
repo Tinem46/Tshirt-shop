@@ -5,15 +5,17 @@ import { useEffect, useState } from "react";
 import "swiper/css";
 import "swiper/css/pagination";
 import "./index.scss"; // Bạn có thể thêm CSS cụ thể trong đây nếu muốn
+import { useNavigate } from "react-router-dom";
 
 const Carousel = ({
   numberOfSlides = 1,
   autoplay = false,
   numberOfItems = 1,
-  img = "https://theme.hstatic.net/1000306633/1001194548/14/slideshow_3.jpg?v=360",
+  imgs = [],
   //   name="name 1"
 }) => {
   const [shirt, setShirt] = useState([]);
+  const navigate = useNavigate();
 
   const fetchShirt = async () => {
     try {
@@ -61,9 +63,14 @@ const Carousel = ({
       modules={autoplay ? [Pagination, Autoplay] : [Pagination]}
       className={`carousel ${numberOfSlides > 2 ? "multi-item" : ""}`}
     >
-      {shirt.slice(0,numberOfItems).map((item) => (
-        <SwiperSlide key={item.id}>
-          <img src={img} alt={item.name || "T-Shirt"} />
+      {imgs.slice(0, numberOfItems).map((img, idx) => (
+        <SwiperSlide
+          key={idx}
+          onClick={() => {
+            navigate("/shop");
+          }}
+        >
+          <img src={img} alt={`slide-${idx}`} />
         </SwiperSlide>
       ))}
     </Swiper>

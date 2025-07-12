@@ -113,26 +113,7 @@ const Profile = () => {
             </Form.Item>
 
             <Form.Item label="Email" name="email">
-              <Input disabled
-              />
-            </Form.Item>
-
-            <Form.Item
-              label="Số điện thoại"
-              name="phoneNumber"
-              rules={[
-                { required: true, message: "Vui lòng nhập số điện thoại!" },
-                {
-                  pattern: /^[0-9]{10,11}$/,
-                  message: "Số điện thoại không hợp lệ!",
-                },
-              ]}
-            >
-              <Input type="tel" placeholder="Nhập số điện thoại"  />
-            </Form.Item>
-
-            <Form.Item label="Địa chỉ" name="Address">
-              <Input.TextArea />
+              <Input disabled />
             </Form.Item>
 
             <Form.Item label="Giới tính" name="gender">
@@ -155,16 +136,7 @@ const Profile = () => {
             </Form.Item>
           </div>
 
-          <div className="avatar-section">
-            <Avatar size={100} icon={<UserOutlined />} />
-            <Button type="default" className="select-img-btn" disabled>
-              Chọn Ảnh
-            </Button>
-            <div className="avatar-hint">
-              <p>Dung lượng file tối đa 1 MB</p>
-              <p>Định dạng: .JPEG, .PNG</p>
-            </div>
-          </div>
+        
         </Form>
       </div>
     </div>

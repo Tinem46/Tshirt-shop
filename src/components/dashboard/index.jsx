@@ -131,6 +131,15 @@ const Dashboard = () => {
                   </Link>
                 ),
               },
+              {
+                key: "completedManagement",
+                icon: <GiftOutlined />, // Đổi icon cho đơn hàng đã hoàn thành
+                label: (
+                  <Link to="/dashboard/completedManagement">
+                    Completed Management
+                  </Link>
+                ),
+              },
             ],
           },
           {

@@ -2,22 +2,29 @@ import { useEffect, useState } from "react";
 import Card from "../card";
 import "./index.scss";
 import { useNavigate } from "react-router-dom";
+import api from "../../config/api";
 
 const HomeList = ({ Type }) => {
   const navigate = useNavigate();
   const [shirt, setShirt] = useState([]);
+
   const fetchShirt = async () => {
     try {
-      const response = await fetch(
-        "https://682f2e5b746f8ca4a4803faf.mockapi.io/product"
-      );
-      const data = await response.json();
-      if (Array.isArray(data)) setShirt(data);
+      const response = await api.get("Product", {
+        params: { PageSize: 12 }
+      });
+      let data = response.data?.data?.data || [];
+      let total = response.data?.data?.totalCount || 0;
+      setShirt(data);
+      console.log("Fetched products:", data);
+      console.log("Total products:", total);
     } catch (error) {
+      setShirt([]);
       console.error("Lỗi khi fetch sản phẩm:", error);
+    } finally {
+      console.log("Fetch completed");
     }
   };
-
   useEffect(() => {
     fetchShirt();
   }, []);
@@ -59,7 +66,7 @@ const HomeList = ({ Type }) => {
       </div>
 
       <div className="shirt-list">
-        {shirt.slice(0, 12).map((item) => (
+        {shirt.map((item) => (
           <Card key={Type ? item.type : item.id} shirt={item} />
         ))}
       </div>
