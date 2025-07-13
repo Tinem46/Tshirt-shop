@@ -3,13 +3,14 @@ import { Avatar, Button, Form, Input, Radio, message } from "antd";
 import React, { useEffect, useState } from "react";
 import "./profile.scss";
 import api from "../../../config/api";
+import { toast } from "react-toastify"
 
 const Profile = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [initialData, setInitialData] = useState(null);
 
-  // Lấy dữ liệu từ API GET /account
+  // ✅ Tải user hiện tại
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -17,15 +18,15 @@ const Profile = () => {
         message.error("Bạn cần đăng nhập để truy cập hồ sơ.");
         return;
       }
+
       const response = await api.get("Auth/current-user");
       const userApiResponse = response.data;
       const userData = userApiResponse.data;
+
+      console.log("✅ Dữ liệu user từ API:", userData);
+
       setInitialData(userData);
 
-      // Lưu userId nếu muốn
-      if (userData?.id) {
-        localStorage.setItem("userid", userData.id);
-      }
 
       if (userData) {
         form.setFieldsValue({
@@ -36,46 +37,53 @@ const Profile = () => {
           lastName: userData.lastName ?? "",
           gender: userData.gender?.toLowerCase() ?? "",
           email: userData.email ?? "",
-          phoneNumber: userData.phoneNumber ?? "",
-          Address: userData.address ?? "",
         });
 
-        console.log("✅ Form values after set:", form.getFieldsValue());
+        console.log("✅ Form values sau khi set:", form.getFieldsValue());
       }
     } catch (error) {
-      console.error("❌ Failed to load user", error);
+      console.error("❌ Lỗi khi load user:", error);
       message.error("Không thể tải thông tin người dùng.");
     }
   };
 
-  // Gọi khi component mount
   useEffect(() => {
     fetchUser();
   }, []);
 
-  // Gọi API PUT để cập nhật
+  // ✅ Submit cập nhật
   const onFinish = async (values) => {
     setLoading(true);
+    console.log("🚀 Giá trị form submit:", values);
+
     try {
       const payload = {
         firstName: values.firstName,
         lastName: values.lastName,
-        email: initialData.email,
-        phoneNumber: initialData.phoneNumber,
         gender:
-          values.gender === "male" ? 0 : values.gender === "female" ? 1 : 2,
-        defaultAddress: values.Address ?? "",
+          values.gender === "male"
+            ? 0
+            : values.gender === "female"
+              ? 1
+              : 2,
       };
 
-      await api.put("Account/account", payload);
-      message.success("Cập nhật thông tin thành công!");
+      console.log("📦 Payload gửi PUT /api/Auth/profile:", payload);
+
+      const response = await api.put("/Auth/profile", payload);
+      console.log("✅ Kết quả từ API:", response.data);
+
+      toast.success("Cập nhật hồ sơ thành công!");
     } catch (err) {
-      console.error("❌ Update failed:", err);
-      message.error("Lỗi khi cập nhật hồ sơ.");
+      console.error("❌ Lỗi khi cập nhật:", err);
+      const msg =
+        err.response?.data?.message || "Đã xảy ra lỗi khi cập nhật hồ sơ.";
+      message.error(msg);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="profile-container">
@@ -116,13 +124,18 @@ const Profile = () => {
               <Input disabled />
             </Form.Item>
 
-            <Form.Item label="Giới tính" name="gender">
+            <Form.Item
+              label="Giới tính"
+              name="gender"
+              rules={[{ required: true, message: "Vui lòng chọn giới tính!" }]}
+            >
               <Radio.Group>
                 <Radio value="male">Nam</Radio>
                 <Radio value="female">Nữ</Radio>
                 <Radio value="other">Khác</Radio>
               </Radio.Group>
             </Form.Item>
+
 
             <Form.Item>
               <Button
@@ -135,8 +148,6 @@ const Profile = () => {
               </Button>
             </Form.Item>
           </div>
-
-        
         </Form>
       </div>
     </div>
