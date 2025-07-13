@@ -1,6 +1,6 @@
 import { Modal } from "antd"
 import { useState } from "react"
-import { cancelOrder as cancelOrderAPI } from "../../../utils/orderService"
+import {  cancelOrderAPI } from "../../../utils/orderService"
 import { toast } from "react-toastify"
 
 const CancelOrderModal = ({ visible, onClose, orderId, onSuccess }) => {

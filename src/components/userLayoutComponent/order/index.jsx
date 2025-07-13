@@ -88,7 +88,7 @@ const Orders = () => {
       toast.success("bạn đã xác nhận đã nhận hàng thành công!");
       await fetchOrders();
     } catch (error) {
-      console.error("❌ Lỗi xác nhận:", err)
+      console.error("❌ Lỗi xác nhận:", error)
       toast.error("Xác nhận thất bại. Vui lòng thử lại sau.")
     }
   }
