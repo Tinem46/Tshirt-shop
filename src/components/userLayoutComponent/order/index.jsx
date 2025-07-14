@@ -2,10 +2,12 @@
 import { useEffect, useState } from "react"
 import { Layout, Tabs, Button, Input, Spin, Empty, Modal, message, Tag, Space } from "antd"
 import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
-import { getMyOrders, cancelOrder as cancelOrderAPI, confirmDelivered } from "../../../utils/orderService"
+import { getMyOrders, confirmDelivered } from "../../../utils/orderService"
 import "./index.scss"
 import { toast } from "react-toastify"
 import CancelOrderModal from "./CancelOrderModal"
+import { createReview } from "../../../utils/reviewService"
+import ProductReviewModal from "./ProductReviewModal"
 const { Header, Content } = Layout
 const { TabPane } = Tabs
 const { Search } = Input
@@ -51,6 +53,8 @@ const Orders = () => {
   const [loading, setLoading] = useState(false)
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedProductList, setSelectedProductList] = useState([]);
 
   const fetchOrders = async () => {
     setLoading(true)
@@ -97,6 +101,32 @@ const Orders = () => {
     setCancelModalOpen(true);
   }
 
+  const hanldeOpenReviewModal = (order) => {
+    const productList = order.orderItems.map((item) => ({
+      productId: item.productId,
+      orderId: order.id,
+      name: item.productName,
+      image: item.productImage || "/placeholder.svg",
+      category: item.variantName || "Không có phân loại",
+    }))
+    setSelectedProductList(productList);
+    setReviewModalOpen(true);
+  }
+
+  const handleSubmitReview = async (reviewList) => {
+    try {
+      await Promise.all(reviewList.map((review) => createReview(review)))
+      toast.success("Gửi đánh giá thành công!");
+      setReviewModalOpen(false);
+      fetchOrders();
+    } catch (error) {
+      console.log("❌ Lỗi khi gửi đánh giá:", error);
+      toast.error("Gửi đánh giá thất bại. Vui lòng thử lại sau.");
+      console.error("❌ Lỗi gửi đánh giá:", error.response?.data);
+
+
+    }
+  }
   const renderOrderActions = (order) => {
     const actions = []
     switch (order.status) {
@@ -120,6 +150,17 @@ const Orders = () => {
           </Button>,
         )
         break
+      case STATUS.delivered:
+        actions.push(
+          <Button
+            key="confirm"
+            type="primary"
+            onClick={() => hanldeOpenReviewModal(order)}
+            icon={<CheckCircleOutlined />}
+          >
+            Đánh giá
+          </Button>
+        )
       default:
         break
     }
@@ -257,6 +298,13 @@ const Orders = () => {
         orderId={selectedOrderId}
         onClose={() => setCancelModalOpen(false)}
         onSuccess={fetchOrders}
+      />
+
+      <ProductReviewModal
+        visible={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        productList={selectedProductList}
+        onSubmit={handleSubmitReview}
       />
     </>
   )
