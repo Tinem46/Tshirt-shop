@@ -146,7 +146,7 @@ const Checkout = () => {
             onChange={handleInputChange}
           />
 
-         
+
 
           <Select
             name="gender"
@@ -189,7 +189,7 @@ const Checkout = () => {
           />
 
           <Input
-            name="phone_number"
+            name="phone"
             placeholder="Số điện thoại"
             value={userDetails.phone}
             onChange={handleInputChange}
