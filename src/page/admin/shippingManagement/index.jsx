@@ -23,7 +23,7 @@ function ShippingManagement() {
     setLoading(true);
     try {
       // API chỉ filter được 1 status/lần, nên Promise.all
-      const [res3, res4, res2] = await Promise.all([
+      const [res3, res4, res2, res5] = await Promise.all([
         api.get("Orders", {
           params: {
             Status: 3,
@@ -54,6 +54,16 @@ function ShippingManagement() {
             SortDescending: customFilter.sortOrder === "desc",
           },
         }),
+        api.get("Orders", {
+          params: {
+            Status: 5,
+            PageSize: 100,
+            ...(customFilter.startDate && { FromDate: customFilter.startDate }),
+            ...(customFilter.endDate && { ToDate: customFilter.endDate }),
+            SortBy: "createdDate",
+            SortDescending: customFilter.sortOrder === "desc",
+          },
+        }),
       ]);
       const data3 = Array.isArray(res3.data)
         ? res3.data
@@ -64,7 +74,10 @@ function ShippingManagement() {
       const data2 = Array.isArray(res2.data)
         ? res2.data
         : res2.data?.data || [];
-      setOrders([...data3, ...data4, ...data2]);
+      const data5 = Array.isArray(res5.data)
+        ? res5.data
+        : res5.data?.data || [];
+      setOrders([...data3, ...data4, ...data2, ...data5]);
     } catch (err) {
       toast.error("Failed to fetch orders");
     } finally {

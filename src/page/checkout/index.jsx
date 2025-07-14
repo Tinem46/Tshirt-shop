@@ -108,7 +108,6 @@ const Checkout = () => {
     setUserDetails((prev) => ({ ...prev, [name]: value }));
   };
 
-
   const handleGenderChange = (value) => {
     setUserDetails((prev) => ({ ...prev, gender: value }));
   };
@@ -145,8 +144,6 @@ const Checkout = () => {
             value={userDetails.fullname}
             onChange={handleInputChange}
           />
-
-         
 
           <Select
             name="gender"
@@ -189,7 +186,7 @@ const Checkout = () => {
           />
 
           <Input
-            name="phone_number"
+            name="phone"
             placeholder="Số điện thoại"
             value={userDetails.phone}
             onChange={handleInputChange}

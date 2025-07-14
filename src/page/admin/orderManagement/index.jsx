@@ -221,7 +221,7 @@ function OrderManagement() {
               Đang xử lý
             </OrderStatusButton>
           )}
-          {![6].includes(record.status) && (
+          {![6, 2].includes(record.status) && (
             <OrderStatusButton
               orderId={record.id}
               status={6}

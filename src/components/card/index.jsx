@@ -45,19 +45,32 @@ function Card({ shirt }) {
   // };
   const handleOnClick = () => {
     window.scrollTo(0, 0);
-    navigate(`/detail/${shirt.id}`,{
+    navigate(`/detail/${shirt.id}`, {
       state: {
-        shirtId: { id: shirt.id},
+        shirtId: { id: shirt.id },
       },
     });
   };
+  let imageUrl = "https://isto.pt/cdn/shop/files/Heavyweight_Black_ef459afb-ff7a-4f9a-b278-9e9621335444.webp?v=1747408912";
 
+  // Nếu shirt.images là mảng object hoặc json string
+  if (shirt.images) {
+    let images =
+      typeof shirt.images === "string"
+        ? JSON.parse(shirt.images)
+        : shirt.images;
+
+    if (Array.isArray(images) && images.length > 0) {
+      const imgObj = images.find((img) => img.isPrimary) || images[0];
+      imageUrl = typeof imgObj === "string" ? imgObj : imgObj.url;
+    }
+  } else if (shirt.image) {
+    // Trường hợp chỉ có 1 trường image (url)
+    imageUrl = shirt.image;
+  }
   return (
     <div className="shirt-card" onClick={handleOnClick}>
-      <img
-        src="https://dosi-in.com/images/detailed/42/CDL10_1.jpg"
-        alt={shirt.name}
-      />
+      <img src={imageUrl} alt={shirt.name} />
       <div className="shirt-card__actions">
         {/* <button className="action-button" onClick={() => alert("hello")}>
           <span className="icon">⇄</span> Compare
