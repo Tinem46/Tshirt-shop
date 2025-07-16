@@ -102,6 +102,10 @@ function App() {
           path: "/order-success/:orderId",
           element: <OrderSuccess />,
         },
+        {
+          path: "/order-success",
+          element: <OrderSuccess />,
+        },
       ],
     },
 

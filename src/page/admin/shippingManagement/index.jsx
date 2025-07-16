@@ -23,7 +23,7 @@ function ShippingManagement() {
     setLoading(true);
     try {
       // API chỉ filter được 1 status/lần, nên Promise.all
-      const [res3, res4, res2, res5] = await Promise.all([
+      const [res3, res4,  res5] = await Promise.all([
         api.get("Orders", {
           params: {
             Status: 3,
@@ -44,16 +44,16 @@ function ShippingManagement() {
             SortDescending: customFilter.sortOrder === "desc",
           },
         }),
-        api.get("Orders", {
-          params: {
-            Status: 2,
-            PageSize: 100,
-            ...(customFilter.startDate && { FromDate: customFilter.startDate }),
-            ...(customFilter.endDate && { ToDate: customFilter.endDate }),
-            SortBy: "createdDate",
-            SortDescending: customFilter.sortOrder === "desc",
-          },
-        }),
+        // api.get("Orders", {
+        //   params: {
+        //     Status: 2,
+        //     PageSize: 100,
+        //     ...(customFilter.startDate && { FromDate: customFilter.startDate }),
+        //     ...(customFilter.endDate && { ToDate: customFilter.endDate }),
+        //     SortBy: "createdDate",
+        //     SortDescending: customFilter.sortOrder === "desc",
+        //   },
+        // }),
         api.get("Orders", {
           params: {
             Status: 5,
@@ -71,13 +71,13 @@ function ShippingManagement() {
       const data4 = Array.isArray(res4.data)
         ? res4.data
         : res4.data?.data || [];
-      const data2 = Array.isArray(res2.data)
-        ? res2.data
-        : res2.data?.data || [];
+      // const data2 = Array.isArray(res2.data)
+      //   ? res2.data
+      //   : res2.data?.data || [];
       const data5 = Array.isArray(res5.data)
         ? res5.data
         : res5.data?.data || [];
-      setOrders([...data3, ...data4, ...data2, ...data5]);
+      setOrders([...data3, ...data4,  ...data5]);
     } catch (err) {
       toast.error("Failed to fetch orders");
     } finally {
@@ -103,8 +103,7 @@ function ShippingManagement() {
 
   const getOrderStatusLabel = (status) => {
     switch (status) {
-      case 2:
-        return "Completed";
+     
       case 3:
         return "Processing";
       case 4:
@@ -161,7 +160,7 @@ function ShippingManagement() {
         record.status === 3 ? (
           <OrderStatusButton
             orderId={record.id}
-            status={4}
+            status={10}
             type="primary"
             style={{ backgroundColor: "#52c41a", color: "#fff" }}
             onSuccess={fetchOrders}
@@ -183,7 +182,7 @@ function ShippingManagement() {
           {record.status === 5 && (
             <OrderStatusButton
               orderId={record.id}
-              status={2}
+              status={12}
               type="primary"
               style={{ backgroundColor: "#52c41a", color: "#fff" }}
               onSuccess={fetchOrders}
@@ -207,6 +206,7 @@ function ShippingManagement() {
           loading={loading}
           disableCreate={true}
           showEditDelete={false}
+          enableBulk={false}
         />
       </Spin>
       <Modal

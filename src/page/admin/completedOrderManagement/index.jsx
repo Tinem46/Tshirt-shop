@@ -88,6 +88,12 @@ function CompletedOrdersManagement() {
       render: () => "Completed",
     },
     {
+      title: "Payment Status",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
+      render: () => "Completed",
+    },
+    {
       title: "View Details",
       key: "viewDetails",
       render: (text, record) => (

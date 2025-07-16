@@ -1,4 +1,4 @@
-import { Button, Input, Select } from "antd";
+import { Button, Input, Select, Card, Radio, Spin } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import "./index.scss";
@@ -16,6 +16,13 @@ const Checkout = () => {
   const { cart = [] } = location.state || {};
   const { cartId, variantIds = [], cartItemIds = [] } = location.state || {};
 
+  // Địa chỉ đã lưu
+  const [addressList, setAddressList] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [isNewAddress, setIsNewAddress] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Dữ liệu form nhập mới
   const [userDetails, setUserDetails] = useState({
     fullname: "",
     detailAddress: "",
@@ -35,34 +42,28 @@ const Checkout = () => {
     totalAmount: 0,
   });
 
+  // Lấy địa chỉ đã lưu và mặc định
   useEffect(() => {
     fetchUserProfile();
     fetchCartSummary();
-    fetchDefaultAddress();
+    fetchAddresses();
     // eslint-disable-next-line
   }, []);
 
-  const fetchDefaultAddress = async () => {
+  const fetchAddresses = async () => {
+    setLoading(true);
     try {
       const res = await getUserAddress();
-      const addresses = res.data.data;
-      const defaultAddress = addresses.find((addr) => addr.isDefault);
-      if (defaultAddress) {
-        setUserDetails((prev) => ({
-          ...prev,
-          fullname: defaultAddress.receiverName || prev.fullname,
-          phone: defaultAddress.phone || "",
-          detailAddress: defaultAddress.detailAddress || "",
-          city: defaultAddress.province || "",
-          district: defaultAddress.district || "",
-          ward: defaultAddress.ward || "",
-        }));
-      }
-      console.log("Địa chỉ mặc định:", defaultAddress);
-      console.log("Tất cả địa chỉ:", userDetails);
+      const addresses = res.data.data || [];
+      setAddressList(addresses);
+      // Set mặc định là địa chỉ default
+      const defaultAddress = addresses.find((a) => a.isDefault);
+      if (defaultAddress) setSelectedAddressId(defaultAddress.id);
+      // Optionally điền luôn form userDetails bằng địa chỉ mặc định (nếu muốn)
     } catch (err) {
-      console.error("❌ Lỗi khi lấy địa chỉ:", err);
-      toast.error("Không thể tải địa chỉ mặc định");
+      toast.error("Không thể tải danh sách địa chỉ");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,8 +82,7 @@ const Checkout = () => {
         fullname:
           (user?.firstName ? user.firstName + " " : "") +
           (user?.lastName || ""),
-        country: "",
-        phone_number: user?.phoneNumber || "",
+        phone: user?.phoneNumber || "",
         email: user?.email || "",
         gender: user?.gender || "",
       }));
@@ -90,9 +90,9 @@ const Checkout = () => {
       toast.error("Không thể tải thông tin người dùng");
     }
   };
+
   const fetchCartSummary = async () => {
     try {
-      // Gọi API calculate-total với variantIds
       if (!cartItemIds.length) return;
       const res = await api.post("Cart/calculate-total", cartItemIds, {
         headers: { "Content-Type": "application/json" },
@@ -102,7 +102,8 @@ const Checkout = () => {
       toast.error("Không thể tính tổng đơn hàng");
     }
   };
-  // Xử lý input
+
+  // Xử lý input form nhập mới
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setUserDetails((prev) => ({ ...prev, [name]: value }));
@@ -112,100 +113,181 @@ const Checkout = () => {
     setUserDetails((prev) => ({ ...prev, gender: value }));
   };
 
-  // Sang trang payment
+  // Chọn địa chỉ cũ hay nhập mới
+  const handleRadioChange = (e) => {
+    const value = e.target.value;
+    if (value === "new") {
+      setIsNewAddress(true);
+      setSelectedAddressId(null);
+    } else {
+      setIsNewAddress(false);
+      setSelectedAddressId(value);
+    }
+  };
+
+  // Tiếp tục sang payment, truyền đúng payload
   const handleGoToPayment = () => {
-    // if (
-    //   !userDetails.fullname ||
-    //   !userDetails.specific_Address ||
-    //   !userDetails.phone_number
-    // ) {
-    //   toast.error("Vui lòng điền đầy đủ thông tin nhận hàng!");
-    //   return;
-    // }
+    // Validate
+    if (isNewAddress) {
+      if (
+        !userDetails.fullname ||
+        !userDetails.detailAddress ||
+        !userDetails.city ||
+        !userDetails.district ||
+        !userDetails.ward ||
+        !userDetails.phone
+      ) {
+        toast.error("Vui lòng nhập đủ thông tin giao hàng!");
+        return;
+      }
+    } else {
+      if (!selectedAddressId) {
+        toast.error("Bạn chưa chọn địa chỉ giao hàng!");
+        return;
+      }
+    }
+
+    // Truyền đúng theo lựa chọn:
     navigate("/payment", {
       state: {
         cart,
-        userDetails,
         cartSummary,
         cartId,
+        // Nếu dùng địa chỉ mới thì chỉ gửi newAddress, ngược lại gửi userAddressId
+        userAddressId: isNewAddress ? null : selectedAddressId,
+        newAddress: isNewAddress
+          ? {
+              receiverName: userDetails.fullname,
+              phone: userDetails.phone,
+              detailAddress: userDetails.detailAddress,
+              ward: userDetails.ward,
+              district: userDetails.district,
+              province: userDetails.city,
+              isDefault: false,
+            }
+          : null,
+        // Có thể truyền thêm userDetails nếu muốn show lại ở PaymentPage
+        userDetails,
       },
     });
   };
+
+  // ---------- Render -------------
   return (
     <div className="checkout-container">
       <div className="checkout">
-        {/* Billing Details */}
         <div className="billing-details">
-          <h2>Thông tin giao hàng</h2>
+          <h2>Chọn địa chỉ giao hàng</h2>
+          {loading ? (
+            <Spin />
+          ) : (
+            <Radio.Group
+              onChange={handleRadioChange}
+              value={isNewAddress ? "new" : selectedAddressId}
+              style={{ width: "100%" }}
+            >
+              {addressList.map((addr) => (
+                <Card
+                  key={addr.id}
+                  style={{
+                    marginBottom: 12,
+                    borderColor: addr.isDefault ? "#52c41a" : "#d9d9d9",
+                  }}
+                >
+                  <Radio value={addr.id} style={{ width: "100%" }}>
+                    <b>{addr.receiverName}</b> | {addr.phone}
+                    <br />
+                    {addr.detailAddress}, {addr.ward}, {addr.district},{" "}
+                    {addr.province}
+                    {addr.isDefault && (
+                      <span style={{ color: "#52c41a", marginLeft: 8 }}>
+                        (Mặc định)
+                      </span>
+                    )}
+                  </Radio>
+                </Card>
+              ))}
+              <Card style={{ marginBottom: 12 }}>
+                <Radio value="new" style={{ width: "100%" }}>
+                  <b>Nhập địa chỉ mới</b>
+                </Radio>
+              </Card>
+            </Radio.Group>
+          )}
 
-          <Input
-            name="fullname"
-            placeholder="Họ và tên"
-            value={userDetails.fullname}
-            onChange={handleInputChange}
-          />
-
-          <Select
-            name="gender"
-            value={userDetails.gender || undefined}
-            onChange={handleGenderChange}
-            style={{ width: "100%" }}
-            placeholder="Giới tính"
-          >
-            <Option value="Male">Nam</Option>
-            <Option value="Female">Nữ</Option>
-            <Option value="other">Khác</Option>
-          </Select>
-
-          <Input
-            name="specific_Address"
-            placeholder="Địa chỉ chi tiết (số nhà, tên đường)"
-            value={userDetails.detailAddress}
-            onChange={handleInputChange}
-          />
-
-          <Input
-            name="city"
-            placeholder="Tỉnh / Thành phố"
-            value={userDetails.city}
-            onChange={handleInputChange}
-          />
-
-          <Input
-            name="district"
-            placeholder="Quận / Huyện"
-            value={userDetails.district}
-            onChange={handleInputChange}
-          />
-
-          <Input
-            name="ward"
-            placeholder="Phường / Xã"
-            value={userDetails.ward}
-            onChange={handleInputChange}
-          />
-
-          <Input
-            name="phone"
-            placeholder="Số điện thoại"
-            value={userDetails.phone}
-            onChange={handleInputChange}
-          />
-
-          <Input
-            name="email"
-            placeholder="Địa chỉ email"
-            value={userDetails.email}
-            onChange={handleInputChange}
-          />
-
-          <TextArea
-            name="additionalInfo"
-            placeholder="Ghi chú thêm (tuỳ chọn)"
-            value={userDetails.additionalInfo}
-            onChange={handleInputChange}
-            rows={4}
-          />
+          {/* Nếu nhập mới thì show form */}
+          {isNewAddress && (
+            <div style={{ marginTop: 16 }}>
+              <Input
+                name="fullname"
+                placeholder="Họ và tên"
+                value={userDetails.fullname}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Select
+                name="gender"
+                value={userDetails.gender || undefined}
+                onChange={handleGenderChange}
+                style={{ width: "100%", marginBottom: 40 }}
+                placeholder="Giới tính"
+              >
+                <Option value="Male">Nam</Option>
+                <Option value="Female">Nữ</Option>
+                <Option value="other">Khác</Option>
+              </Select>
+              <Input
+                name="detailAddress"
+                placeholder="Địa chỉ chi tiết (số nhà, tên đường)"
+                value={userDetails.detailAddress}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                name="city"
+                placeholder="Tỉnh / Thành phố"
+                value={userDetails.city}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                name="district"
+                placeholder="Quận / Huyện"
+                value={userDetails.district}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                name="ward"
+                placeholder="Phường / Xã"
+                value={userDetails.ward}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                name="phone"
+                placeholder="Số điện thoại"
+                value={userDetails.phone}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <Input
+                name="email"
+                placeholder="Địa chỉ email"
+                value={userDetails.email}
+                onChange={handleInputChange}
+                style={{ marginBottom: 8 }}
+              />
+              <TextArea
+                name="additionalInfo"
+                placeholder="Ghi chú thêm (tuỳ chọn)"
+                value={userDetails.additionalInfo}
+                onChange={handleInputChange}
+                rows={3}
+                style={{ marginBottom: 8 }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Order Summary */}

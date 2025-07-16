@@ -1,16 +1,30 @@
-
-import { useEffect, useState } from "react"
-import { Layout, Tabs, Button, Input, Spin, Empty, Modal, message, Tag, Space } from "antd"
-import { SearchOutlined, CheckCircleOutlined, CloseCircleOutlined } from "@ant-design/icons"
-import { getMyOrders, confirmDelivered } from "../../../utils/orderService"
-import "./index.scss"
-import { toast } from "react-toastify"
-import CancelOrderModal from "./CancelOrderModal"
-import { createReview } from "../../../utils/reviewService"
-import ProductReviewModal from "./ProductReviewModal"
-const { Header, Content } = Layout
-const { TabPane } = Tabs
-const { Search } = Input
+import { useEffect, useState } from "react";
+import {
+  Layout,
+  Tabs,
+  Button,
+  Input,
+  Spin,
+  Empty,
+  Modal,
+  message,
+  Tag,
+  Space,
+} from "antd";
+import {
+  SearchOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
+import { getMyOrders, confirmDelivered } from "../../../utils/orderService";
+import "./index.scss";
+import { toast } from "react-toastify";
+import CancelOrderModal from "./CancelOrderModal";
+import { createReview } from "../../../utils/reviewService";
+import ProductReviewModal from "./ProductReviewModal";
+const { Header, Content } = Layout;
+const { TabPane } = Tabs;
+const { Search } = Input;
 
 const STATUS = {
   all: -1,
@@ -22,7 +36,7 @@ const STATUS = {
   completed: 2,
   cancelled: 6,
   returned: 7,
-}
+};
 
 const STATUS_LABEL = {
   [STATUS.pending]: "Chờ thanh toán",
@@ -33,7 +47,7 @@ const STATUS_LABEL = {
   [STATUS.completed]: "Đã hoàn thành",
   [STATUS.cancelled]: "Đã huỷ",
   [STATUS.returned]: "Đã trả hàng/Hoàn tiền",
-}
+};
 
 const STATUS_COLORS = {
   [STATUS.pending]: "orange",
@@ -44,47 +58,64 @@ const STATUS_COLORS = {
   [STATUS.completed]: "success",
   [STATUS.cancelled]: "red",
   [STATUS.returned]: "magenta",
-}
+};
 
 const Orders = () => {
-  const [activeTab, setActiveTab] = useState("all")
-  const [search, setSearch] = useState("")
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedProductList, setSelectedProductList] = useState([]);
 
-  const fetchOrders = async () => {
-    setLoading(true)
-    try {
-
-      const res = await getMyOrders()
-
-      console.log("Orders after confirm:", res.data)
-
-      setOrders(res.data)
-    } catch (err) {
-      console.error("Error loading orders", err)
-      message.error("Không thể tải danh sách đơn hàng")
-    } finally {
-      setLoading(false)
+  function isOrderListStatusChanged(oldOrders, newOrders) {
+    if (oldOrders.length !== newOrders.length) return true;
+    // Map theo id để tránh phụ thuộc thứ tự
+    const oldMap = new Map(oldOrders.map((o) => [o.id, o.status]));
+    for (let i = 0; i < newOrders.length; i++) {
+      const newOrder = newOrders[i];
+      if (!oldMap.has(newOrder.id)) return true; // order mới
+      if (oldMap.get(newOrder.id) !== newOrder.status) return true; // status đổi
     }
+    return false;
   }
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const res = await getMyOrders();
+      const newOrders = res.data || [];
+      console.log("Fetched orders:", newOrders);
+      if (isOrderListStatusChanged(orders, newOrders)) {
+        setOrders(newOrders);
+        // toast.success("Đơn hàng đã được cập nhật!");
+      }
+    } catch (err) {
+      console.error("Error loading orders", err);
+      message.error("Không thể tải danh sách đơn hàng");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchOrders()
-  }, [])
+    fetchOrders(); // Lần đầu load
+    const interval = setInterval(fetchOrders, 5000); // Polling 5s/lần
+    return () => clearInterval(interval);
+  }, []);
 
   const filteredOrders = orders.filter((o) => {
-    const matchesTab = activeTab === "all" ? true : o.status === STATUS[activeTab]
+    const matchesTab =
+      activeTab === "all" ? true : o.status === STATUS[activeTab];
     const matchesSearch =
       o.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
       o.receiverName?.toLowerCase().includes(search.toLowerCase()) ||
-      o.orderItems?.some((it) => it.productName?.toLowerCase().includes(search.toLowerCase()))
-    return matchesTab && matchesSearch
-  })
+      o.orderItems?.some((it) =>
+        it.productName?.toLowerCase().includes(search.toLowerCase())
+      );
+    return matchesTab && matchesSearch;
+  });
 
   const handleConfirmReceived = async (id) => {
     try {
@@ -92,14 +123,14 @@ const Orders = () => {
       toast.success("bạn đã xác nhận đã nhận hàng thành công!");
       await fetchOrders();
     } catch (error) {
-      console.error("❌ Lỗi xác nhận:", error)
-      toast.error("Xác nhận thất bại. Vui lòng thử lại sau.")
+      console.error("❌ Lỗi xác nhận:", error);
+      toast.error("Xác nhận thất bại. Vui lòng thử lại sau.");
     }
-  }
+  };
   const openCancelModal = (id) => {
     setSelectedOrderId(id);
     setCancelModalOpen(true);
-  }
+  };
 
   const hanldeOpenReviewModal = (order) => {
     const productList = order.orderItems.map((item) => ({
@@ -108,14 +139,14 @@ const Orders = () => {
       name: item.productName,
       image: item.productImage || "/placeholder.svg",
       category: item.variantName || "Không có phân loại",
-    }))
+    }));
     setSelectedProductList(productList);
     setReviewModalOpen(true);
-  }
+  };
 
   const handleSubmitReview = async (reviewList) => {
     try {
-      await Promise.all(reviewList.map((review) => createReview(review)))
+      await Promise.all(reviewList.map((review) => createReview(review)));
       toast.success("Gửi đánh giá thành công!");
       setReviewModalOpen(false);
       fetchOrders();
@@ -123,21 +154,24 @@ const Orders = () => {
       console.log("❌ Lỗi khi gửi đánh giá:", error);
       toast.error("Gửi đánh giá thất bại. Vui lòng thử lại sau.");
       console.error("❌ Lỗi gửi đánh giá:", error.response?.data);
-
-
     }
-  }
+  };
   const renderOrderActions = (order) => {
-    const actions = []
+    const actions = [];
     switch (order.status) {
       case STATUS.pending:
       case STATUS.paid:
         actions.push(
-          <Button key="cancel" danger onClick={() => openCancelModal(order.id)} icon={<CloseCircleOutlined />}>
+          <Button
+            key="cancel"
+            danger
+            onClick={() => openCancelModal(order.id)}
+            icon={<CloseCircleOutlined />}
+          >
             Hủy đơn hàng
-          </Button>,
-        )
-        break
+          </Button>
+        );
+        break;
       case STATUS.shipping:
         actions.push(
           <Button
@@ -147,9 +181,9 @@ const Orders = () => {
             icon={<CheckCircleOutlined />}
           >
             Đã nhận được hàng
-          </Button>,
-        )
-        break
+          </Button>
+        );
+        break;
       case STATUS.delivered:
         actions.push(
           <Button
@@ -160,15 +194,18 @@ const Orders = () => {
           >
             Đánh giá
           </Button>
-        )
+        );
       default:
-        break
+        break;
     }
-    return actions
-  }
+    return actions;
+  };
 
-
-  const formatVND = (n) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n)
+  const formatVND = (n) =>
+    new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(n);
   const formatDate = (d) =>
     new Date(d).toLocaleString("vi-VN", {
       hour: "2-digit",
@@ -176,14 +213,17 @@ const Orders = () => {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
-    })
+    });
 
   return (
     <>
-
       <Layout className="orders-page-layout">
         <Header className="orders-header-section">
-          <Tabs activeKey={activeTab} onChange={setActiveTab} className="orders-status-tabs">
+          <Tabs
+            activeKey={activeTab}
+            onChange={setActiveTab}
+            className="orders-status-tabs"
+          >
             <TabPane tab="Tất cả" key="all" />
             <TabPane tab="Chờ Thanh Toán" key="pending" />
             <TabPane tab="Đã Thanh Toán" key="paid" />
@@ -213,7 +253,10 @@ const Orders = () => {
               <Spin size="large" />
             </div>
           ) : filteredOrders.length === 0 ? (
-            <Empty description="Chưa có đơn hàng nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+            <Empty
+              description="Chưa có đơn hàng nào"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
           ) : (
             <div className="orders-list">
               {filteredOrders.map((order) => (
@@ -221,9 +264,14 @@ const Orders = () => {
                   <div className="order-card-header">
                     <div className="order-info">
                       <span className="order-number">#{order.orderNumber}</span>
-                      <span className="order-date">{formatDate(order.createdAt)}</span>
+                      <span className="order-date">
+                        {formatDate(order.createdAt)}
+                      </span>
                     </div>
-                    <Tag color={STATUS_COLORS[order.status]} className="order-status-tag">
+                    <Tag
+                      color={STATUS_COLORS[order.status]}
+                      className="order-status-tag"
+                    >
                       {STATUS_LABEL[order.status]}
                     </Tag>
                   </div>
@@ -239,10 +287,16 @@ const Orders = () => {
                         </div>
                         <div className="item-details">
                           <div className="item-name">{item.productName}</div>
-                          {item.variantName && <div className="item-variant">Phân loại: {item.variantName}</div>}
+                          {item.variantName && (
+                            <div className="item-variant">
+                              Phân loại: {item.variantName}
+                            </div>
+                          )}
                           <div className="item-quantity">x{item.quantity}</div>
                         </div>
-                        <div className="item-price">{formatVND(item.unitPrice)}</div>
+                        <div className="item-price">
+                          {formatVND(item.unitPrice)}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -280,7 +334,9 @@ const Orders = () => {
                       )}
                       <div className="price-row total">
                         <span>Thành tiền:</span>
-                        <span className="total-amount">{formatVND(order.totalAmount)}</span>
+                        <span className="total-amount">
+                          {formatVND(order.totalAmount)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -307,7 +363,7 @@ const Orders = () => {
         onSubmit={handleSubmitReview}
       />
     </>
-  )
-}
+  );
+};
 
-export default Orders
+export default Orders;

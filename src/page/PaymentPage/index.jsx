@@ -17,7 +17,8 @@ const { Option } = Select;
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { cart, userDetails, cartSummary, cartId } = location.state || {};
+  const { cart, userDetails, cartSummary, userAddressId, newAddress } =
+    location.state || {};
 
   // Lấy userId từ localStorage để đọc đúng coupon
   const userId = localStorage.getItem("userId");
@@ -63,21 +64,11 @@ const PaymentPage = () => {
     }
     console.log("Cart gửi sang order:", cart);
     const payload = {
-      userAddressId: null,
-      newAddress: {
-        receiverName: userDetails.fullname,
-        phone: userDetails.phone_number,
-        detailAddress: userDetails.specific_Address,
-        ward: userDetails.ward,
-        district: userDetails.district,
-        province: userDetails.country,
-        postalCode: "",
-        isDefault: false,
-      },
-      customerNotes: userDetails.additionalInfo,
+      userAddressId: userAddressId || null, // Nếu là null sẽ bỏ qua field này
+      newAddress: newAddress || null, // Nếu là null sẽ bỏ qua field này
+      customerNotes: userDetails?.additionalInfo || "",
       couponId: selectedCoupon?.id || null,
       shippingMethodId,
-
       orderItems: cart.map((item) => ({
         cartItemId: item.id,
         productId: item.productId ?? item.detail?.productId ?? null,
@@ -90,9 +81,11 @@ const PaymentPage = () => {
         quantity: item.quantity,
         unitPrice: item.unitPrice ?? item.detail?.price ?? 0,
       })),
+      paymentMethod: paymentType === "COD" ? 0 : 1, // 0: COD, 1: VNPAY
     };
 
     console.log("OrderItems gửi đi:", payload.orderItems);
+    console.log("Payload gửi đi:", payload);
 
     try {
       const res = await api.post("Orders", payload);
@@ -123,6 +116,7 @@ const PaymentPage = () => {
       }
     } catch (error) {
       toast.error("Đặt hàng thất bại! Vui lòng thử lại.");
+      console.error("Error placing order:", error);
     }
   };
 
@@ -131,10 +125,50 @@ const PaymentPage = () => {
     shippingMethods.find((x) => x.id === shippingMethodId)?.fee ??
     cartSummary?.estimatedShipping ??
     0;
-  const estimatedTotal =
-    (cartSummary?.totalAmount || 0) +
-    shippingFee -
-    (cartSummary?.estimatedShipping || 0);
+  // const estimatedTotal =
+  //   (cartSummary?.totalAmount || 0) +
+  //   shippingFee -
+  //   (cartSummary?.estimatedShipping || 0);
+
+  const handleApplyCoupon = async (couponId) => {
+    const coupon = userCoupons.find((c) => c.id === couponId);
+    if (!coupon) {
+      dispatch(selectCoupon(null));
+      return;
+    }
+    try {
+      const res = await api.post("Coupons/apply", {
+        code: coupon.code,
+        orderAmount: cartSummary?.totalAmount || 0,
+        userId: userId || null,
+      });
+
+      const data = res.data?.data;
+      if (!data.isValid) {
+        dispatch(selectCoupon(null));
+        toast.error(
+          data.message ||
+            "Mã giảm giá không hợp lệ hoặc không đáp ứng điều kiện!"
+        );
+        return;
+      }
+
+      dispatch(
+        selectCoupon({
+          ...coupon,
+          discountAmount: data.discountAmount,
+        })
+      );
+      toast.success("Áp dụng mã thành công!");
+      console.log("Coupon áp dụng:", res.data);
+    } catch (err) {
+      dispatch(selectCoupon(null));
+      toast.error(
+        err?.response?.data?.message ||
+          "Mã giảm giá không hợp lệ hoặc không đáp ứng điều kiện!"
+      );
+    }
+  };
 
   return (
     <div className="payment-page-root">
@@ -175,10 +209,7 @@ const PaymentPage = () => {
               style={{ width: "100%" }}
               placeholder="Chọn mã giảm giá"
               value={selectedCoupon?.id}
-              onChange={(id) => {
-                const coupon = userCoupons.find((c) => c.id === id);
-                dispatch(selectCoupon(coupon));
-              }}
+              onChange={handleApplyCoupon} // Gọi hàm kiểm tra & áp dụng khi chọn
               allowClear
             >
               {userCoupons.map((c) => (
@@ -236,8 +267,21 @@ const PaymentPage = () => {
               Shipping: <FormatCost value={shippingFee} />
             </p>
 
+            {selectedCoupon?.discountAmount > 0 && (
+              <p style={{ color: "#0ab308" }}>
+                Giảm giá: -<FormatCost value={selectedCoupon.discountAmount} />
+              </p>
+            )}
             <h3>
-              Total: <FormatCost value={estimatedTotal} />
+              Total:{" "}
+              <FormatCost
+                value={
+                  (cartSummary?.totalAmount || 0) +
+                  shippingFee -
+                  (cartSummary?.estimatedShipping || 0) -
+                  (selectedCoupon?.discountAmount || 0)
+                }
+              />
             </h3>
           </div>
         </div>

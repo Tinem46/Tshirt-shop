@@ -25,6 +25,7 @@ function DashboardTemplate(props) {
     bulkDeleteApi,
     bulkDeleteText,
     hideDelete,
+    enableBulk = true,
 
     form: propForm,
   } = props;
@@ -152,24 +153,52 @@ function DashboardTemplate(props) {
       cancelButtonText: "Cancel",
     });
 
-    if (result.isConfirmed) {
-      try {
-        setLoading(true);
-        if (typeof bulkDeleteApi === "function") {
-          await bulkDeleteApi(selectedRowKeys);
+    if (!result.isConfirmed) return;
+
+    try {
+      setLoading(true);
+
+      // Nếu là hàm custom → gọi trực tiếp
+      if (typeof bulkDeleteApi === "function") {
+        await bulkDeleteApi(selectedRowKeys);
+      }
+      // Nếu là endpoint string
+      else {
+        // Nếu API cần lý do hủy (ví dụ: bulk-cancel)
+        if (bulkDeleteApi.toLowerCase().includes("cancel")) {
+          const { value: reason } = await Swal.fire({
+            title: "Enter Reason",
+            input: "text",
+            inputPlaceholder: "Reason for cancellation",
+            inputLabel: "Cancellation reason",
+            showCancelButton: true,
+            inputValidator: (value) => {
+              if (!value || !value.trim()) return "Reason is required!";
+            },
+          });
+
+          if (!reason) return;
+
+          await api.post(bulkDeleteApi, {
+            orderIds: selectedRowKeys,
+            reason: reason.trim(),
+          });
         } else {
+          // Mặc định cho các API không cần lý do
           await api.post(bulkDeleteApi, { ids: selectedRowKeys });
         }
-        toast.success("Bulk delete successful!");
-        setSelectedRowKeys([]);
-        await fetchDashboard();
-      } catch (err) {
-        toast.error("Bulk delete failed!");
-      } finally {
-        setLoading(false);
       }
+
+      toast.success("Bulk delete successful!");
+      setSelectedRowKeys([]);
+      await fetchDashboard();
+    } catch (err) {
+      toast.error("Bulk delete failed!");
+    } finally {
+      setLoading(false);
     }
   };
+
   const handleSubmit = async (values) => {
     console.log("DATA POST TO BACKEND:", values);
     console.log(values);
@@ -353,24 +382,30 @@ function DashboardTemplate(props) {
         Tổng số {title.toLowerCase()}:{" "}
         <span style={{ fontWeight: 700 }}>{total}</span>
       </div>
-      <Button
-        danger
-        disabled={selectedRowKeys.length === 0}
-        onClick={handleBulkDelete}
-        style={{ marginBottom: 12 }}
-      >
-        {bulkDeleteText || "Xoá các mục đã chọn"}
-      </Button>
+      {enableBulk && (
+        <Button
+          danger
+          disabled={selectedRowKeys.length === 0}
+          onClick={handleBulkDelete}
+          style={{ marginBottom: 12 }}
+        >
+          {bulkDeleteText || "Xoá các mục đã chọn"}
+        </Button>
+      )}
       <Table
         columns={getColumns()}
         dataSource={dataSource || dashboard}
         loading={loading}
         rowKey="id"
         pagination={tablePagination}
-        rowSelection={{
-          selectedRowKeys,
-          onChange: setSelectedRowKeys,
-        }}
+        rowSelection={
+          enableBulk
+            ? {
+                selectedRowKeys,
+                onChange: setSelectedRowKeys,
+              }
+            : null
+        }
       />
       <Modal
         title={`${editingRecord ? "Edit" : "Create"} ${title}`}

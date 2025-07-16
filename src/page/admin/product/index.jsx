@@ -16,6 +16,8 @@ import api from "../../../config/api";
 import DashboardTemplate from "../../../components/dashboard-template";
 import "./index.scss";
 import uploadFile from "../../../utils/upload";
+import { toast } from "react-toastify";
+import ReviewStatsModal from "../../../components/reviewModal";
 
 function ManagementProducts() {
   // ----------- State cho Sản phẩm -----------
@@ -29,6 +31,23 @@ function ManagementProducts() {
   const [detailModalVariants, setDetailModalVariants] = useState([]);
   const [loading, setLoading] = useState(false);
   const [totalCate, setTotalCate] = useState(0);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedReviewVariant, setSelectedReviewVariant] = useState(null);
+  const [reviewStatsLoading, setReviewStatsLoading] = useState(false);
+  const [reviewStats, setReviewStats] = useState(null);
+
+  const fetchReviewStats = async (variantId) => {
+    try {
+      setReviewStatsLoading(true);
+      const res = await api.get(`reviews/stats/${variantId}`);
+      setReviewStats(res.data);
+    } catch (err) {
+      toast.error("Không thể lấy dữ liệu đánh giá.");
+      setReviewStats(null);
+    } finally {
+      setReviewStatsLoading(false);
+    }
+  };
 
   // ----------- State cho Variant -----------
   const [variantModal, setVariantModal] = useState({
@@ -543,6 +562,22 @@ function ManagementProducts() {
                       />
                     ) : null,
                 },
+                {
+                  title: "Đánh giá",
+                  key: "reviews",
+                  render: (_, record) => (
+                    <Button
+                      type="link"
+                      onClick={async () => {
+                        setSelectedReviewVariant(record);
+                        await fetchReviewStats(record.id);
+                        setIsReviewModalOpen(true);
+                      }}
+                    >
+                      Xem đánh giá
+                    </Button>
+                  ),
+                },
               ]}
               dataSource={detailModalVariants.map((v) => ({ ...v, key: v.id }))}
               pagination={false}
@@ -588,7 +623,7 @@ function ManagementProducts() {
         open={!!detailModalRecord}
         onCancel={() => setDetailModalRecord(null)}
         footer={null}
-        width={600}
+        width={1000}
         destroyOnClose
       >
         {renderModalContent(detailModalRecord)}
@@ -780,6 +815,14 @@ function ManagementProducts() {
           style={{ marginTop: 16 }}
         />
       </Modal>
+      {/* Review Stats Modal */}
+      <ReviewStatsModal
+        open={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        variant={selectedReviewVariant}
+        reviewStats={reviewStats}
+        loading={reviewStatsLoading}
+      />
     </>
   );
 }

@@ -20,6 +20,7 @@ const OrderSuccess = () => {
   const navigate = useNavigate();
   const { orderId } = useParams();
   const location = useLocation();
+  const [paymentId, setPaymentId] = useState(null);
 
   // Lấy query params
   const queryParams = useMemo(
@@ -28,6 +29,8 @@ const OrderSuccess = () => {
   );
   const vnpStatus = queryParams.get("vnp_TransactionStatus");
   const vnpTxnRef = queryParams.get("vnp_TxnRef");
+  4;
+  const vnpResponseCode = queryParams.get("vnp_ResponseCode");
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,42 +45,58 @@ const OrderSuccess = () => {
   }, [orderId, vnpTxnRef]);
 
   // Gọi API lấy chi tiết đơn hàng
+  const fetchOrder = async () => {
+    try {
+      let orderData = null;
+
+      // Nếu đang xử lý VNPAY, lấy từ API payment
+      if (vnpStatus !== null && realOrderId) {
+        let paymentGuid = extractGuid(vnpTxnRef);
+        if (paymentGuid) {
+          setPaymentId(paymentGuid);
+          const res = await api.get(`Payments/${paymentGuid}/order`);
+
+          orderData = res.data.data;
+          console.log("Order data from VNPAY:", orderData);
+        }
+      }
+
+      // Nếu không phải VNPAY hoặc thất bại thì dùng API cũ
+      if (!orderData && realOrderId) {
+        const res = await api.get(`/Orders/${realOrderId}`);
+        orderData = res.data;
+      }
+
+      setOrder(orderData);
+    } catch (error) {
+      setOrder(null);
+      console.error("Lỗi khi lấy chi tiết đơn hàng:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!realOrderId) {
       navigate("/");
       return;
     }
     setLoading(true);
-    api
-      .get(`Orders/${realOrderId}`)
-      .then((res) => setOrder(res.data))
-      .catch(() => setOrder(null))
-      .finally(() => setLoading(false));
-  }, [realOrderId, navigate]);
+    fetchOrder();
+  }, [realOrderId, vnpStatus, vnpTxnRef, navigate]);
 
   // Hàm xác định cách hiển thị phương thức thanh toán
   const getPaymentDisplay = () => {
-    if (!order) return "";
-    // COD
+    if (vnpResponseCode) return "VNPAY";
+
     if (
       order.paymentType === "COD" ||
-      order.paymentType === null ||
-      order.paymentType === undefined
+      !order.paymentType // null, undefined hoặc ""
     )
       return "Thanh toán khi nhận hàng (COD)";
 
-    // VNPAY
-    if (order.paymentType === "VNPAY") {
-      if (vnpStatus === "00") return "VNPAY (Đã thanh toán thành công)";
-      if (vnpStatus) return "VNPAY (Thanh toán thất bại hoặc bị hủy)";
-      if (order.paymentStatus === "Completed" || order.paymentStatus === 1)
-        return "VNPAY (Đã thanh toán thành công)";
-      if (order.paymentStatus === "Failed" || order.paymentStatus === 2)
-        return "VNPAY (Thanh toán thất bại)";
-      return "VNPAY (Chờ thanh toán)";
-    }
     // Các loại khác nếu có
-    return order.paymentType || "";
+    return order.paymentType;
   };
 
   if (loading)

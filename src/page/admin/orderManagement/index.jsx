@@ -68,6 +68,7 @@ function OrderManagement() {
     "Refunded", // 4
     "Partially Refunded", // 5
     "Failed", // 6
+    "Paid", // 7
   ];
   function getPaymentStatusLabel(status) {
     return PAYMENT_STATUS_LABELS_EN[status] || `Unknown (${status})`;
@@ -213,7 +214,7 @@ function OrderManagement() {
           {[0, 1].includes(record.status) && (
             <OrderStatusButton
               orderId={record.id}
-              status={3}
+              status={9}
               type="primary"
               style={{ backgroundColor: "#1677ff", color: "#fff" }}
               onSuccess={fetchOrders}
@@ -276,6 +277,9 @@ function OrderManagement() {
           loading={loading}
           disableCreate={true}
           showEditDelete={false}
+          bulkDeleteApi="Orders/bulk-cancel"
+          bulkDeleteText="Cancel đơn hàng đã chọn"
+          enableBulk={false}
         />
       </Spin>
       <Modal
