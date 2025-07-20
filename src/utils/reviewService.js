@@ -49,3 +49,11 @@ export const markReviewHelpful = (reviewId, isHelpful) =>
  */
 export const getUserReviews = (userId) =>
   api.get(`reviews/user/${userId}`)
+
+export const getProductVariantsReviews = (variantId) =>
+  api.get("reviews", {
+    params: { productVariantId: variantId },
+  }).then(res => {
+    console.log("📦 API response tại service:", res); // Kiểm tra chính xác cấu trúc
+    return res.data;
+  });
