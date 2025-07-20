@@ -5,8 +5,10 @@ import api from "../config/api" // axios instance có token, baseURL...
  * Dành cho user đã đăng nhập và đã mua hàng.
  * @param {Object} data - Dữ liệu đánh giá (CreateReviewDto)
  */
-export const createReview = (data) => api.post("reviews", data)
-
+export const createReview = (data) => {
+  console.log("[DEBUG] API POST /reviews payload:", data);
+  return api.post("reviews", data);
+}
 /**
  * Lấy danh sách đánh giá của một sản phẩm.
  * Dùng để hiển thị ở trang chi tiết sản phẩm (Product Detail).
@@ -49,3 +51,18 @@ export const markReviewHelpful = (reviewId, isHelpful) =>
  */
 export const getUserReviews = (userId) =>
   api.get(`reviews/user/${userId}`)
+
+export const getProductVariantsReviews = (variantId) =>
+  api.get("reviews", {
+    params: { productVariantId: variantId },
+  }).then(res => {
+    console.log("📦 API response tại service:", res); // Kiểm tra chính xác cấu trúc
+    return res.data;
+  });
+
+export const updateReview = (reviewId, data) => {
+  console.log("[DEBUG] API PUT /reviews/" + reviewId, data);
+  return api.put(`reviews/${reviewId}`, data);
+}
+export const getUserReviewsByUserID = (userId) =>
+  api.get(`reviews`, { params: { UserId: userId } });
