@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://localhost:7266/api/",
+  baseURL: "http://localhost:5265/api/",
 });
 
 let isRefreshing = false;
@@ -98,3 +98,27 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+
+// productMaterial.js
+// constants/productMaterial.js
+export const MATERIAL_OPTIONS = [
+  { value: 0, label: "Cotton 100%" },
+  { value: 1, label: "Cotton Polyester" },
+  { value: 2, label: "Polyester" },
+  { value: 3, label: "Cotton Organic" },
+  { value: 4, label: "Modal" },
+  { value: 5, label: "Bamboo" },
+  { value: 6, label: "Cotton Spandex" },
+  { value: 7, label: "Jersey" },
+  { value: 8, label: "Canvas" }
+];
+
+// constants/productSeason.js
+export const SEASON_OPTIONS = [
+  { value: 0, label: "Xuân" },
+  { value: 1, label: "Hè" },
+  { value: 2, label: "Thu" },
+  { value: 3, label: "Đông" },
+  { value: 4, label: "Tất cả mùa" }
+];

@@ -5,12 +5,14 @@ import {
   SearchOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Wallet as WalletIcon } from "@mui/icons-material";
 import { Dropdown, Menu } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/features/userSlice";
 import { toast } from "react-toastify";
+
+import { MdAutoAwesome } from "react-icons/md";
 import api from "../../config/api";
 
 const Header = () => {
@@ -23,81 +25,44 @@ const Header = () => {
   const isLoggedIn = user?.isLoggedIn;
   const cart = useSelector((store) => store.cart.products) || [];
   const cartItemCount = cart.length;
+  const [categories, setCategories] = useState([]);
 
-  const shopMenuItems = [
-    {
-      key: "1",
-      label: (
-        <div style={{ color: "white" }} onClick={() => navigate("/topShop")}>
-          TOPS
-        </div>
-      ),
-    },
-    {
-      key: "2",
-      label: (
-        <div
-          style={{ color: "white" }}
-          onClick={() => navigate("/shop/bottoms")}
-        >
-          BOTTOMS
-        </div>
-      ),
-    },
-    {
-      key: "3",
-      label: (
-        <div
-          style={{ color: "white" }}
-          onClick={() => navigate("/shop/accessories")}
-        >
-          OUTTERWEAR
-        </div>
-      ),
-    },
-  ];
+  // Lấy danh mục từ API
+  useEffect(() => {
+    api
+      .get("Category")
+      .then((res) => {
+        // Kiểm tra kỹ đường dẫn data
+        let cats = res.data?.data.data || res.data || res;
+        // Đảm bảo là mảng
+        if (!Array.isArray(cats)) cats = [];
+        setCategories(cats);
+        console.log("Fetched categories:", cats);
+      })
+      .catch((err) => {
+        setCategories([]); // Lỗi cũng set mảng rỗng
+        console.error("Lỗi lấy danh mục:", err);
+      });
+  }, []);
 
-  const userMenu = (
-    <Menu>
-      <Menu.Item key="profile" onClick={handleProfile}>
-        Profile
-      </Menu.Item>
-
-      <Menu.Item key="logout" onClick={handleLogout}>
-        Logout
-      </Menu.Item>
-    </Menu>
-  );
+  const shopMenuItems = categories.map((cat) => ({
+    key: cat.id?.toString() || cat.Id?.toString() || cat.slug || cat.name,
+    label: (
+      <div
+        style={{ color: "white" }}
+        onClick={() => navigate(`/shop?categoryId=${cat.id}`)}
+      >
+        {cat.name || cat.Name}
+      </div>
+    ),
+  }));
 
   function handleProfile() {
     const token = localStorage.getItem("token");
     token ? navigate("/userLayout") : navigate("/login");
   }
 
-  function handleLogout() {
-    // Lấy refreshToken từ localStorage
-    const refreshToken = localStorage.getItem("refreshToken");
 
-    // Gửi request logout lên backend nếu có refreshToken
-    if (refreshToken) {
-      api.post("Auth/logout", { refreshToken }).catch((err) => {
-        // Nếu fail vẫn tiếp tục logout ở FE, không cần báo lỗi cho người dùng
-        console.error("Logout backend failed:", err);
-      });
-    }
-
-    // Xoá toàn bộ thông tin trên localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-
-    // Redux logout (nếu có), điều hướng về trang login, show toast
-    dispatch(logout());
-    navigate("/login");
-    toast.success("Đã đăng xuất");
-  }
   const handleSearch = () => {
     if (!searchValue.trim()) {
       alert("Vui lòng nhập từ khóa tìm kiếm");
@@ -141,6 +106,15 @@ const Header = () => {
               </span>
             </Dropdown>
             <li onClick={() => navigate("/aboutUs")}>About Us</li>
+            <li
+              className="ai-menu-item"
+              onClick={() => navigate("/custom-design")}
+            >
+              AI
+              <span className="ai-sparkle">
+                <MdAutoAwesome size={20} color="#927d05ff" />
+              </span>
+            </li>
           </ul>
         </div>
 
@@ -174,11 +148,10 @@ const Header = () => {
 
             <li>
               {isLoggedIn ? (
-                <Dropdown overlay={userMenu} trigger={["hover"]}>
-                  <UserOutlined
-                    style={{ cursor: "pointer", fontSize: "24px" }}
-                  />
-                </Dropdown>
+                <UserOutlined
+                  style={{ cursor: "pointer", fontSize: "24px" }}
+                  onClick={handleProfile}
+                />
               ) : (
                 <UserOutlined
                   style={{ cursor: "pointer", fontSize: "24px" }}

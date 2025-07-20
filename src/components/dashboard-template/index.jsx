@@ -58,16 +58,19 @@ function DashboardTemplate(props) {
         dataArr = response.data.data;
       } else if (response.data.data && Array.isArray(response.data.data.data)) {
         dataArr = response.data.data.data;
+      } else if (response.data.items && Array.isArray(response.data.items)) {
+        // CHỈ lọc khi là items
+        dataArr = response.data.items.filter((x) => x.status !== 0);
       } else {
         dataArr = [];
       }
+
       setDashboard(dataArr);
 
-      // Lấy tổng số bản ghi
       setTotal(
         response.data?.totalCount ||
-          response.data?.data?.totalCount || // thử nhiều key khác nhau (tuỳ backend)
-          dataArr.length // fallback
+          response.data?.data?.totalCount ||
+          dataArr.length
       );
     } catch (err) {
       toast.error(
@@ -280,10 +283,12 @@ function DashboardTemplate(props) {
     ...(showEditDelete || (customActions && customActions.length > 0)
       ? [
           {
-            title: "Actions",
+            title: <div style={{ textAlign: "center", width: "100%", justifyContent: "center" }}>Actions</div>,
+            className: "actions-column",
             key: "actions",
+            align: "center", // Thêm dòng này để căn giữa nội dung cột
             render: (_, record) => (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", width: "100%", justifyContent: "center" }}>
                 {customActions &&
                   customActions.map(
                     (action, index) =>
@@ -293,7 +298,7 @@ function DashboardTemplate(props) {
                           key={`custom-${index}`}
                           onClick={() =>
                             handleCustomAction(action, record.id, record)
-                          } // <-- PHẢI truyền thêm `record` ở đây!
+                          }
                           loading={
                             actionLoading[`${action.label}-${record.id}`]
                           }

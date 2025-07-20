@@ -1,0 +1,285 @@
+// General page layout
+.order-success-page {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; // Align to top
+    min-height: 100vh; // Full viewport height
+    padding: 2rem;
+    background-color: #f0f2f5; // Light gray background for the page
+    box-sizing: border-box; // Include padding in element's total width and height
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
+}
+
+// Container for the main content card
+.order-success-container {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); // Subtle shadow
+    max-width: 1400px;
+    width: 100%;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem; // Space between major sections
+
+    @media (max-width: 768px) {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
+}
+
+// Loading spinner container
+.loading-spinner-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+}
+
+// Ant Design Result component styling
+.ant-result {
+    padding: 0; // Remove default AntD padding to control it from parent
+    .ant-result-icon {
+        .anticon {
+            font-size: 4rem; // Larger icon
+            color: #52c41a; // Ant Design success green
+        }
+    }
+    .ant-result-title {
+        font-size: 2.25rem; // text-4xl equivalent
+        font-weight: 700; // font-bold
+        color: #333;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    .ant-result-subtitle {
+        font-size: 1rem;
+        color: #666;
+        line-height: 1.5;
+        b {
+            color: #333;
+        }
+    }
+    .order-success-code {
+        font-weight: 700;
+        color: #1890ff; // Ant Design primary blue for emphasis
+    }
+    .ant-result-extra {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+
+        .ant-btn {
+            height: 40px;
+            padding: 0 1.5rem;
+            font-size: 1rem;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+
+            &.ant-btn-default {
+                border-color: #d9d9d9;
+                color: #333;
+                &:hover {
+                    border-color: #1890ff;
+                    color: #1890ff;
+                }
+            }
+            &.ant-btn-primary {
+                background-color: #1890ff;
+                border-color: #1890ff;
+                color: #fff;
+                &:hover {
+                    background-color: #40a9ff;
+                    border-color: #40a9ff;
+                }
+            }
+        }
+    }
+}
+
+// Shipping Information section
+.shipping-info {
+    .ant-descriptions {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        overflow: hidden; // Ensures border-radius applies to inner elements
+        background-color: #fafafa;
+
+        .ant-descriptions-title {
+            font-size: 1.25rem; // text-xl equivalent
+            font-weight: 600;
+            color: #333;
+            padding: 1rem 1.5rem;
+            margin-bottom: 0;
+            background-color: #f7f7f7;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ant-descriptions-view {
+            table {
+                width: 100%;
+                .ant-descriptions-row {
+                    .ant-descriptions-item {
+                        padding: 12px 24px; // Consistent padding
+                        border-bottom: 1px dashed #f0f0f0; // Dashed line for items
+                        &:last-child {
+                            border-bottom: none;
+                        }
+                        .ant-descriptions-item-label {
+                            font-weight: 500;
+                            color: #666;
+                            width: 150px; // Fixed width for labels
+                            min-width: 120px;
+                        }
+                        .ant-descriptions-item-content {
+                            color: #333;
+                            word-break: break-word; // Ensure long addresses wrap
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Order Items section
+.order-items-section {
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .ant-list {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: #fafafa;
+
+        .ant-list-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+
+    .order-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        width: 100%;
+
+        .order-item-image {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 4px;
+            flex-shrink: 0; // Prevent image from shrinking
+        }
+
+        .order-item-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+
+            b {
+                font-weight: 600;
+                color: #333;
+            }
+        }
+
+        .order-item-options {
+            font-size: 0.875rem; // text-sm
+            color: #888;
+        }
+
+        .order-item-price {
+            font-weight: 500;
+            color: #333;
+            text-align: right;
+            white-space: nowrap; // Prevent wrapping for price
+            flex-shrink: 0; // Prevent price from shrinking
+
+            b {
+                font-weight: 700;
+                color: #1890ff; // Highlight quantity
+            }
+        }
+
+        @media (max-width: 600px) {
+            flex-wrap: wrap;
+            .order-item-info {
+                flex-basis: 100%;
+            }
+            .order-item-price {
+                flex-basis: 100%;
+                text-align: left;
+                margin-top: 0.5rem;
+            }
+        }
+    }
+}
+
+// Order Summary section
+.order-summary1 {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.5rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background-color: #fafafa;
+
+    div {
+        display: flex;
+        justify-content: space-between;
+        font-size: 1rem;
+        color: #666;
+
+        b {
+            font-weight: 600;
+            color: #333;
+        }
+    }
+
+    .order-total {
+        font-size: 1.5rem; // Larger for total
+        font-weight: 700;
+        color: #333;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px dashed #e0e0e0; // Separator for total
+
+        span:last-child {
+            color: #ff4d4f; // Ant Design error red for total amount
+        }
+    }
+}
+
+// Payment Method section
+.payment-method {
+    font-size: 1rem;
+    color: #333;
+    padding: 1.5rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background-color: #fafafa;
+
+    b {
+        font-weight: 600;
+        color: #333;
+    }
+}

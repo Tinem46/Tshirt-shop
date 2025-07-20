@@ -1,244 +1,586 @@
-/* ========== DASHBOARD LAYOUT ROOT ========== */
-.dashboard-layout {
-  height: 100%;
-  width: 100%;
+// Simplified Dashboard SCSS Styling
+// Color Variables - Simple and Clean
+$primary: #4f46e5; // Indigo
+$primary-light: #6366f1;
+$primary-dark: #3730a3;
+$secondary: #64748b; // Slate
+$accent: #0ea5e9; // Sky blue
+$success: #10b981; // Emerald
+$warning: #f59e0b; // Amber
+$error: #ef4444; // Red
+
+// Background Colors
+$bg-primary: #ffffff; // White
+$bg-secondary: #f8fafc; // Very light gray
+$bg-dark: #1e293b; // Dark slate
+$bg-sidebar: #0f172a; // Very dark slate
+$bg-card: #ffffff; // White cards
+
+// Text Colors
+$text-primary: #1e293b; // Dark slate
+$text-secondary: #64748b; // Medium slate
+$text-light: #94a3b8; // Light slate
+$text-white: #ffffff; // White
+$text-muted: #6b7280; // Gray
+
+// Border Colors
+$border-light: #e2e8f0; // Light border
+$border-medium: #cbd5e1; // Medium border
+$border-dark: #475569; // Dark border
+
+// Shadow
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin flex-center {
   display: flex;
-  background: #f5f5f5;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ========== SIDEBAR (Sider) ========== */
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card {
+  background: $bg-card;
+
+  box-shadow: $shadow-sm;
+}
+
+@mixin button-primary {
+  background: $primary;
+  border: 1px solid $primary;
+  color: $text-white;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: $primary-dark;
+    border-color: $primary-dark;
+    box-shadow: $shadow-md;
+  }
+}
+
+// Main Dashboard Layout
+.dashboard-layout {
+  min-height: 100vh;
+  background: $bg-secondary;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  
+
+  .ant-layout {
+    background: transparent;
+  }
+}
+
+// Sidebar Styling
 .dashboard-sider {
-  background: #0b0e23 !important;
-  color: #fff !important;
   position: fixed !important;
+  height: 100%;
   left: 0;
   top: 0;
-  bottom: 0;
-  width: 250px !important;
-  height: 120vh !important;
-  min-height: 120vh;
   z-index: 1000;
-  display: flex;
-  flex-direction: column;
-  transition: width 0.2s;
+  background: $bg-sidebar !important;
+  border-right: 1px solid $border-dark;
+  box-shadow: $shadow-lg;
+  // border-radius: 0 18px 18px 0;
+
+  .ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: transparent;
+  }
+
+  .ant-layout-sider-trigger {
+    display: none;
+  }
+
+  // Logo Section
+  .sider-logo {
+    padding: 20px 16px;
+    background: $primary;
+    border-bottom: 1px solid $primary-dark;
+
+    .sider-logo-inner {
+      @include flex-center;
+      gap: 12px;
+
+      .sider-logo-icon {
+        @include flex-center;
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: $text-white;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .sider-logo-text {
+        color: $text-white;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .anticon {
+          font-size: 18px;
+        }
+      }
+    }
+  }
+
+  // Menu Section
+  .sider-menu-wrapper {
+    flex: 1;
+    padding: 16px 0;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: $primary;
+      border-radius: 2px;
+    }
+
+    .ant-menu {
+      border: none;
+      background: transparent !important;
+
+      .ant-menu-item {
+        margin: 2px 12px;
+        border-radius: 6px;
+        height: 40px;
+        line-height: 40px;
+        color: $text-light;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: $text-white;
+        }
+
+        &.ant-menu-item-selected {
+          background: $primary;
+          color: $text-white;
+
+          &::after {
+            display: none;
+          }
+        }
+
+        a {
+          color: inherit;
+          text-decoration: none;
+          font-size: 14px;
+        }
+      }
+
+      .ant-menu-submenu {
+        .ant-menu-submenu-title {
+          margin: 2px 12px;
+          border-radius: 6px;
+          height: 40px;
+          line-height: 40px;
+          color: $text-light;
+          font-weight: 500;
+
+          &:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: $text-white;
+          }
+
+          .ant-menu-submenu-arrow {
+            color: inherit;
+          }
+        }
+
+        &.ant-menu-submenu-open {
+          .ant-menu-submenu-title {
+            background: rgba(255, 255, 255, 0.1);
+            color: $text-white;
+          }
+        }
+
+        .ant-menu-sub {
+          background: rgba(0, 0, 0, 0.2) !important;
+          border-radius: 6px;
+          margin: 4px 12px;
+          padding: 4px 0;
+
+          .ant-menu-item {
+            margin: 2px 8px;
+            padding-left: 32px !important;
+          }
+        }
+      }
+    }
+  }
+
+  // Collapse Trigger
+  .sider-trigger-wrapper {
+    padding: 16px;
+    border-top: 1px solid $border-dark;
+
+    .custom-trigger {
+      @include button-primary;
+      @include flex-center;
+      width: 100%;
+      height: 32px;
+      font-size: 12px;
+    }
+  }
+
+  // Collapsed State
+  &.ant-layout-sider-collapsed {
+    .sider-logo {
+      .sider-logo-inner {
+        justify-content: center;
+
+        .sider-logo-text {
+          display: none;
+        }
+      }
+    }
+
+    .sider-menu-wrapper {
+      .ant-menu {
+        .ant-menu-item,
+        .ant-menu-submenu-title {
+          text-align: center;
+          padding: 0 !important;
+        }
+      }
+    }
+  }
 }
 
-/* Sidebar logo */
-.sider-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-  border-bottom: 1px solid #333;
-  background: #0b0e23;
-}
-.sider-logo-inner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-.sider-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: #fff;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: #000;
-  font-size: 18px;
-}
-.sider-logo-text {
-  color: #fff;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Sidebar Menu */
-.sider-menu-wrapper {
-  flex: 1;
-  overflow-y: auto;
-}
-.ant-menu {
-  background: #0b0e23 !important;
-}
-.ant-menu-submenu-title,
-.ant-menu-item {
-  color: #fff !important;
-  border-radius: 6px;
-  margin: 4px 8px;
-  font-size: 15px;
-  transition: all 0.3s;
-}
-.ant-menu-submenu-title:hover,
-.ant-menu-item:hover {
-  background: rgba(255, 251, 250, 0.15) !important;
-  color: #fff !important;
-}
-.ant-menu-item-selected {
-  background: #af0808 !important;
-}
-.ant-menu-item-selected a {
-  color: #fff !important;
-}
-.ant-menu-item a {
-  color: rgba(255, 255, 255, 0.65);
-}
-.ant-menu-item a:hover {
-  color: #fff;
-}
-.sider-trigger-wrapper {
-  padding: 10px;
-  text-align: center;
-  border-top: 1px solid #333;
-}
-.custom-trigger {
-  height: 40px;
-  width: 100%;
-  background: #3c4b5a !important;
-  color: #fff !important;
-  border: none;
-  transition: background 0.2s;
-}
-.custom-trigger:hover {
-  background: #868181 !important;
-}
-
-/* Scrollbar sidebar */
-.sider-menu-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-.sider-menu-wrapper::-webkit-scrollbar-thumb {
-  background: #2d3650;
-  border-radius: 3px;
-}
-
-/* ========== MAIN CONTENT ========== */
+// Main Content Area
 .dashboard-main {
   margin-left: 250px;
-  transition: margin-left 0.2s;
-  display: flex;
-  flex-direction: column;
-  min-height: 120vh;
-  height: 120vh;
-  width: 100%;
-  background: #f5f5f5;
-}
-.dashboard-main.collapsed {
-  margin-left: 80px;
+  transition: margin-left 0.3s ease;
+  min-height: 122dvh;
+  background: $bg-sidebar !important;
+  border-radius: 0 18px 18px 0;
+
+  &.collapsed {
+    margin-left: 80px;
+  }
+
+  .ant-layout-header {
+    padding: 0;
+    background: $bg-sidebar !important;
+  }
+
+  .ant-layout-content {
+    margin: 0;
+    background: transparent;
+  }
+
+  .ant-layout-footer {
+    padding: 12px;
+    text-align: center;
+    background: transparent;
+  }
 }
 
-/* Header */
+// Header Styling
 .dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 64px;
-  background: #0b0e23;
-  position: relative;
-}
-.dashboard-header h1 {
-  color: #fff;
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0;
-}
-.header-wallet {
-  position: absolute;
-  right: 110px;
-  color: #fff;
-  cursor: pointer;
-  font-size: 30px !important;
-}
-.header-logout {
-  position: absolute;
-  right: 35px;
-  background: #fff !important;
-  border: none !important;
-  cursor: pointer;
-  width: 40px;
-  height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.header-logout .MuiSvgIcon-root {
-  font-size: 24px;
-  color: #000;
-}
+  @include card;
+  @include flex-between;
+  position: sticky;
+  top: 0;
+  z-index: 100; // cao hơn content/table/modal...
+  margin: 16px 30px 0;
+  background: $bg-card;
+  height: 80px;
+  border-radius: 18px;
 
-/* Content + Breadcrum + Table wrapper */
-.dashboard-content {
-  flex: 1 1 0%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0 16px;
-  background: #f5f5f5;
-  overflow: auto;
-  height: 100%;
-}
-.dashboard-breadcrumb {
-  margin: 16px 0;
-}
-.dashboard-content-inner {
-  /* Thêm max-width hoặc width lớn hơn nếu muốn */
-  max-width: 100%; /* hoặc 100%, tùy ý */
-  width: 100%; /* luôn full theo parent */
-  margin: 0 auto; /* căn giữa nếu cần */
-  padding: 32px 32px; /* tăng padding cho bự hơn */
-  border-radius: 18px; /* bo góc lớn hơn */
-  background: #fff;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
-  margin-bottom: 16px;
-}
-.dashboard-table-wrapper {
-  background: #fff;
-  border-radius: 12px;
-  width: 100%;
-  height: 80%;
-  box-sizing: border-box;
-}
 
-/* Footer */
-.dashboard-footer {
-  text-align: center;
-  background: #fff;
-  padding: 12px 0;
-  border-top: 1px solid #eee;
-  /* Không set position/fixed/absolute ở đây! */
-}
+  h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    margin-left: 20px;
+  }
 
-/* ========== RESPONSIVE ========== */
-@media (max-width: 991px) {
-  .dashboard-sider {
-    width: 80px !important;
-    min-width: 80px !important;
-    max-width: 80px !important;
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
-  .dashboard-main {
-    margin-left: 80px !important;
-  }
-  .dashboard-header h1 {
-    font-size: 16px;
-  }
+
   .header-wallet {
-    right: 70px;
-    font-size: 24px !important;
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    background: $bg-secondary;
+    border: 1px solid $border-light;
+    border-radius: 6px;
+    color: $primary;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $primary;
+      color: $text-white;
+      border-color: $primary;
+    }
   }
+
   .header-logout {
-    right: 15px;
-    width: 34px;
-    height: 22px;
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    background: $error;
+    border: 1px solid $error;
+    border-radius: 6px;
+    color: $text-white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 12px;
+
+    &:hover {
+      background: #dc2626;
+      border-color: #dc2626;
+    }
   }
-  .sider-logo-text {
-    display: none;
+}
+
+// Content Styling
+.dashboard-content {
+  padding: 20px;
+
+  .dashboard-breadcrumb {
+    @include card;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+
+    .ant-breadcrumb {
+      .ant-breadcrumb-link {
+        color: $text-secondary;
+        font-size: 14px;
+
+        &:hover {
+          color: $primary;
+        }
+      }
+
+      .ant-breadcrumb-separator {
+        color: $text-muted;
+      }
+    }
+  }
+
+  .dashboard-content-inner {
+    @include card;
+    padding: 24px;
+    min-height: calc(100vh - 280px);
+
+    .dashboard-table-wrapper {
+      .ant-table {
+        background: transparent;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid $border-light;
+
+        .ant-table-thead {
+          > tr > th {
+            background: $bg-secondary;
+            color: $text-primary;
+            font-weight: 600;
+            border-bottom: 1px solid $border-light;
+            padding: 12px 16px;
+          }
+        }
+
+        .ant-table-tbody {
+          > tr {
+            background: $bg-card;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+              background: $bg-secondary;
+            }
+
+            > td {
+              padding: 12px 16px;
+              border-bottom: 1px solid $border-light;
+              color: $text-primary;
+            }
+          }
+        }
+
+        .ant-empty {
+          .ant-empty-description {
+            color: $text-muted;
+          }
+        }
+      }
+
+      // Form Controls
+      .ant-btn {
+        &.ant-btn-primary {
+          @include button-primary;
+        }
+
+        &.ant-btn-default {
+          background: $bg-card;
+          border-color: $border-light;
+          color: $text-primary;
+
+          &:hover {
+            background: $bg-secondary;
+            border-color: $primary;
+            color: $primary;
+          }
+        }
+      }
+
+      .ant-input,
+      .ant-select-selector {
+        background: $bg-card !important;
+        border-color: $border-light !important;
+        color: $text-primary !important;
+
+        &:hover,
+        &:focus {
+          border-color: $primary !important;
+          box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1) !important;
+        }
+      }
+
+      .ant-select-dropdown {
+        background: $bg-card !important;
+        border: 1px solid $border-light !important;
+        box-shadow: $shadow-lg !important;
+
+        .ant-select-item {
+          color: $text-primary !important;
+
+          &:hover {
+            background: $bg-secondary !important;
+          }
+
+          &.ant-select-item-option-selected {
+            background: $primary !important;
+            color: $text-white !important;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Footer Styling
+.dashboard-footer {
+  background: transparent;
+  color: white;
+  font-size: 14px;
+  border-top: 1px solid $border-light;
+  margin-top: 10px;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  text-align: center;
+  padding: 16px 0;
+  max-height: 100px;
+}
+
+// Responsive Design
+@media (max-width: 1200px) {
+  .dashboard-main {
+    margin-left: 80px;
+
+    &.collapsed {
+      margin-left: 0;
+    }
+  }
+
+  .dashboard-sider {
+    transform: translateX(-100%);
+
+    &:not(.ant-layout-sider-collapsed) {
+      transform: translateX(0);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 0;
+  }
+
+  .dashboard-sider {
+    transform: translateX(-100%);
+    width: 100% !important;
+    max-width: 280px;
+
+    &:not(.ant-layout-sider-collapsed) {
+      transform: translateX(0);
+    }
+  }
+
+  .dashboard-header {
+    margin: 12px;
+    padding: 0 16px;
+
+    h1 {
+      font-size: 16px;
+    }
+
+    .header-wallet,
+    .header-logout {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .dashboard-content {
+    padding: 12px;
+
+    .dashboard-content-inner {
+      padding: 16px;
+    }
+
+    .dashboard-breadcrumb {
+      padding: 8px 16px;
+    }
+  }
+}
+
+// Custom scrollbar
+* {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $bg-secondary;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $border-medium;
+    border-radius: 3px;
+
+    &:hover {
+      background: $primary;
+    }
   }
 }

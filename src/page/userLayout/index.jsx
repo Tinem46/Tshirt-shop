@@ -1,13 +1,27 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Profile from "../../components/userLayoutComponent/profile";
 import Address from "../../components/userLayoutComponent/address";
 import ChangePassword from "../../components/userLayoutComponent/changePassword";
 import Orders from "../../components/userLayoutComponent/order";
 import Sidebar from "../../components/userLayoutComponent/sidebar";
 import Coupon from "../../components/userLayoutComponent/coupon";
+import { useLocation } from "react-router-dom";
+import CustomDesign from "../../components/userLayoutComponent/customDesign";
+
 
 const UserLayout = () => {
-  const [activeTab, setActiveTab] = useState("profile");
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialTab = queryParams.get("tab") || "profile";
+
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const tabFromUrl = new URLSearchParams(location.search).get("tab");
+    if (tabFromUrl) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [location.search]);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -21,6 +35,8 @@ const UserLayout = () => {
         return <ChangePassword />;
       case "orders":
         return <Orders />;
+      case "customDesign":
+        return <CustomDesign />;
       default:
         return <Profile />;
     }
@@ -30,7 +46,7 @@ const UserLayout = () => {
     <div
       style={{
         display: "flex",
-        backgroundColor: "#f4f4f4",
+        backgroundColor: " rgba(233, 229, 229, 1)",
         justifyContent: "center",
         padding: "20px",
       }}
