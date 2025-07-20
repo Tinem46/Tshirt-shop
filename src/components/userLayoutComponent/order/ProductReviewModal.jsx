@@ -18,7 +18,7 @@ import { CameraOutlined, DeleteOutlined } from "@ant-design/icons"
 const { TextArea } = Input
 const { Text, Title } = Typography
 
-const ProductReviewModal = ({ visible, onCancel, productList = [], onSubmit }) => {
+const ProductReviewModal = ({ visible, onCancel, productList = [], onSubmit, mode = ' create' }) => {
   const ratingTexts = {
     1: "Rất Tệ",
     2: "Tệ",
@@ -32,15 +32,34 @@ const ProductReviewModal = ({ visible, onCancel, productList = [], onSubmit }) =
   useEffect(() => {
     if (visible && productList.length > 0) {
       setReviews(
-        productList.map(() => ({
-          rating: 5,
-          content: "",
-          images: [],
-          fileList: [],
+        productList.map((product) => ({
+          rating: product.rating || 5,
+          content: product.content || "",
+          images: product.images || [],
+          fileList: (product.images || []).map((img, idx) => ({
+            uid: String(idx),
+            name: `image-${idx}`,
+            status: "done",
+            url: img,
+          })),
+          reviewId: product.reviewId || null,
         }))
       )
     }
+    // Không cần else setReviews([]), đã reset lúc mở/đóng modal rồi!
   }, [visible, productList])
+
+
+  useEffect(() => {
+    if (!visible) setReviews([]);
+  }, [visible]);
+
+
+  useEffect(() => {
+    if (visible) {
+      console.log('[DEBUG] productList truyền vào modal:', productList);
+    }
+  }, [visible, productList]);
 
   const handleChange = (index, key, value) => {
     const updated = [...reviews]
@@ -76,16 +95,17 @@ const ProductReviewModal = ({ visible, onCancel, productList = [], onSubmit }) =
         return message.warning(`Vui lòng nhập nội dung đánh giá cho sản phẩm thứ ${i + 1}`)
       }
     }
-    
+
     const reviewDataList = productList.map((p, i) => ({
-      productId: p.productId,
+      productVariantId: p.productVariantId,
       orderId: p.orderId,
       rating: reviews[i].rating,
       content: reviews[i].content.trim(),
       images: reviews[i].images,
+      reviewId: reviews[i].reviewId,
     }))
 
-    onSubmit(reviewDataList)
+    onSubmit(reviewDataList, mode)
     setReviews([])
     onCancel()
   }
@@ -121,7 +141,7 @@ const ProductReviewModal = ({ visible, onCancel, productList = [], onSubmit }) =
       {productList.map((product, index) => {
         const review = reviews[index] || {}
         console.log("Review for product:", product.productVariantId, review);
-        
+
         return (
           <div key={product.productVariantId} style={{ marginBottom: 32 }}>
             <Row gutter={16} style={{ marginBottom: 12 }}>

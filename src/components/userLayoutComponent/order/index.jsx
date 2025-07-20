@@ -20,7 +20,7 @@ import { getMyOrders, confirmDelivered } from "../../../utils/orderService";
 import "./index.scss";
 import { toast } from "react-toastify";
 import CancelOrderModal from "./CancelOrderModal";
-import { createReview } from "../../../utils/reviewService";
+import { createReview, getUserReviewsByUserID, updateReview } from "../../../utils/reviewService";
 import ProductReviewModal from "./ProductReviewModal";
 const { Header, Content } = Layout;
 const { TabPane } = Tabs;
@@ -69,6 +69,9 @@ const Orders = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedProductList, setSelectedProductList] = useState([]);
+  const [reviewMode, setReviewMode] = useState("create");
+  const [userReviews, setUserReviews] = useState([]);
+
 
   function isOrderListStatusChanged(oldOrders, newOrders) {
     if (oldOrders.length !== newOrders.length) return true;
@@ -101,9 +104,21 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders(); // Lần đầu load
-    const interval = setInterval(fetchOrders, 5000); // Polling 5s/lần
-    return () => clearInterval(interval);
+    fetchReviews();
   }, []);
+
+
+    const fetchReviews = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+        const res = await getUserReviewsByUserID(userId);
+        setUserReviews(res.data?.data || []);
+        console.log("Dữ liệu review được lọc theo UserId:", res.data?.data);
+      } catch (error) {
+        setUserReviews([]);
+      }
+    }
+ 
 
   const filteredOrders = orders.filter((o) => {
     const matchesTab =
@@ -132,30 +147,76 @@ const Orders = () => {
     setCancelModalOpen(true);
   };
 
-  const hanldeOpenReviewModal = (order) => {
-    const productList = order.orderItems.map((item) => ({
-      productId: item.productId,
-      orderId: order.id,
-      name: item.productName,
-      image: item.productImage || "/placeholder.svg",
-      category: item.variantName || "Không có phân loại",
-    }));
+
+
+  const handleSubmitReview = async (reviewList, mode) => {
+    try {
+      const results = await Promise.all(
+        reviewList.map(review => {
+
+          if (mode === "update" && review.reviewId) {
+            return updateReview(review.reviewId, {
+              rating: review.rating,
+              content: review.content,
+              images: review.images,
+            });
+          } else {
+            console.log("[DEBUG] Create review - data:", review);
+            return createReview({
+              productVariantId: review.productVariantId,
+              orderId: review.orderId,
+              rating: review.rating,
+              content: review.content,
+              images: review.images,
+            });
+          }
+        })
+      );
+      console.log("[DEBUG] Review API results:", results);
+      toast.success(mode === "update" ? "Cập nhật đánh giá thành công!" : "Gửi đánh giá thành công!");
+      setReviewModalOpen(false);
+      fetchOrders();
+      fetchReviews();
+    } catch (error) {
+      console.error("❌ Lỗi khi gửi đánh giá:", error, error?.response);
+      if (error?.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("Gửi đánh giá thất bại. Vui lòng thử lại sau.");
+      }
+    }
+  };
+
+
+  function findReviewOfItem(item, orderId) {
+    return userReviews.find(
+      r =>
+        r.productVariantId === item.productVariantId &&
+        r.orderId === orderId
+    );
+  }
+
+  const handleOpenReviewModal = (order, mode = "create") => {
+    const productList = order.orderItems.map(item => {
+      const oldReview = findReviewOfItem(item, order.id);
+      return {
+        productId: item.productId,
+        productVariantId: item.productVariantId,
+        orderId: order.id,
+        name: item.productName,
+        image: item.productImage || "/placeholder.svg",
+        category: item.variantName || "Không có phân loại",
+        reviewId: oldReview?.id || null,
+        rating: oldReview?.rating || 5,
+        content: oldReview?.content || "",
+        images: oldReview?.images || [],
+      };
+    });
     setSelectedProductList(productList);
+    setReviewMode(mode);
     setReviewModalOpen(true);
   };
 
-  const handleSubmitReview = async (reviewList) => {
-    try {
-      await Promise.all(reviewList.map((review) => createReview(review)));
-      toast.success("Gửi đánh giá thành công!");
-      setReviewModalOpen(false);
-      fetchOrders();
-    } catch (error) {
-      console.log("❌ Lỗi khi gửi đánh giá:", error);
-      toast.error("Gửi đánh giá thất bại. Vui lòng thử lại sau.");
-      console.error("❌ Lỗi gửi đánh giá:", error.response?.data);
-    }
-  };
   const renderOrderActions = (order) => {
     const actions = [];
     switch (order.status) {
@@ -185,16 +246,32 @@ const Orders = () => {
         );
         break;
       case STATUS.delivered:
-        actions.push(
-          <Button
-            key="confirm"
-            type="primary"
-            onClick={() => hanldeOpenReviewModal(order)}
-            icon={<CheckCircleOutlined />}
-          >
-            Đánh giá
-          </Button>
-        );
+        const allReviewed = order.orderItems.every(item => findReviewOfItem(item, order.id));
+        const noneReviewed = order.orderItems.every(item => !findReviewOfItem(item, order.id));
+
+        if (noneReviewed) {
+          actions.push(
+            <Button
+              key="review"
+              type="primary"
+              onClick={() => handleOpenReviewModal(order, 'create')}
+              icon={<CheckCircleOutlined />}
+            >
+              Đánh giá
+            </Button>
+          );
+        } else if (allReviewed) {
+          actions.push(
+            <Button
+              key="review-again"
+              type="primary"
+              onClick={() => handleOpenReviewModal(order, 'update')}
+              icon={<CheckCircleOutlined />}
+            >
+              Đánh giá lại
+            </Button>
+          );
+        };
       default:
         break;
     }
@@ -361,6 +438,7 @@ const Orders = () => {
         onCancel={() => setReviewModalOpen(false)}
         productList={selectedProductList}
         onSubmit={handleSubmitReview}
+        mode={reviewMode}
       />
     </>
   );
