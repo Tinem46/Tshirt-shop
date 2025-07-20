@@ -6,6 +6,7 @@ import Carousel from "../../components/carousel";
 import "./detailPage.scss";
 import api from "../../config/api";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 // Enum mapping
 const COLOR_ENUM_MAP = { 0: "Black", 1: "Red", 2: "Blue", 3: "Green" };
@@ -159,7 +160,7 @@ const DetailPage = () => {
     try {
       const res = await api.post("Cart", cartItemPayload);
       console.log("Thêm vào giỏ hàng:", res);
-      alert("Thêm vào giỏ hàng thành công!");
+      toast.success("Thêm vào giỏ hàng thành công!");
       navigate("/cart");
     } catch (error) {
       alert(

@@ -11,6 +11,7 @@ import {
   TeamOutlined,
   UserOutlined,
   DashboardOutlined,
+  RobotFilled,
 } from "@ant-design/icons";
 import { Breadcrumb, Button, Layout, Menu, theme } from "antd";
 import { Link, Outlet, useNavigate } from "react-router-dom";
@@ -140,6 +141,15 @@ const Dashboard = () => {
                   </Link>
                 ),
               },
+              {
+                key: "customDesignManagement",
+                icon: <RobotFilled />,
+                label: (
+                  <Link to="/dashboard/customDesignManagement">
+                    Custom Design Management
+                  </Link>
+                ),
+              },
             ],
           },
           {
@@ -252,11 +262,7 @@ const Dashboard = () => {
       {/* MAIN */}
       <Layout className={`dashboard-main ${collapsed ? "collapsed" : ""}`}>
         <Header className="dashboard-header">
-          <h1>{role === "MANAGER" ? "Manager" : "Staff"}</h1>
-          <WalletIcon
-            onClick={() => navigate("/dashboard/walletManager")}
-            className="header-wallet"
-          />
+          <h1>{role === "Admin" ? "Admin" : "Staff"}</h1>
           <Button onClick={handleLogout} className="header-logout">
             <LogoutIcon />
           </Button>

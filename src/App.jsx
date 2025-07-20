@@ -11,7 +11,6 @@ import Login from "./page/loginPage";
 import Register from "./page/registerPage";
 import AboutUs from "./page/aboutUsPage";
 import Dashboard from "./components/dashboard";
-import TopShop from "./page/topShop";
 import ManagementProducts from "./page/admin/product";
 import ManageCategory from "./page/admin/category";
 import Checkout from "./page/checkout";
@@ -26,6 +25,9 @@ import ResetPassword from "./page/resetPasswordPage";
 import OrderManagement from "./page/admin/orderManagement";
 import CompletedOrdersManagement from "./page/admin/completedOrderManagement";
 import CancelledOrdersManagement from "./page/admin/cancelManagement";
+
+import CustomDesignManagement from "./page/admin/customDesignManagement";
+import CustomDesign from "./page/customDesignPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -83,10 +85,6 @@ function App() {
           element: <Shop />,
         },
         {
-          path: "/topShop",
-          element: <TopShop />,
-        },
-        {
           path: "/search",
           element: <SearchPage />,
         },
@@ -105,6 +103,10 @@ function App() {
         {
           path: "/order-success",
           element: <OrderSuccess />,
+        },
+        {
+          path: "/custom-design",
+          element: <CustomDesign />,
         },
       ],
     },
@@ -144,6 +146,10 @@ function App() {
         {
           path: "cancelManagement", // Remove the leading slash
           element: <CancelledOrdersManagement />,
+        },
+        {
+          path: "customDesignManagement",
+          element: <CustomDesignManagement />,
         },
       ],
     },

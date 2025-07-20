@@ -70,27 +70,27 @@ const Orders = () => {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedProductList, setSelectedProductList] = useState([]);
 
-  function isOrderListStatusChanged(oldOrders, newOrders) {
-    if (oldOrders.length !== newOrders.length) return true;
-    // Map theo id để tránh phụ thuộc thứ tự
-    const oldMap = new Map(oldOrders.map((o) => [o.id, o.status]));
-    for (let i = 0; i < newOrders.length; i++) {
-      const newOrder = newOrders[i];
-      if (!oldMap.has(newOrder.id)) return true; // order mới
-      if (oldMap.get(newOrder.id) !== newOrder.status) return true; // status đổi
-    }
-    return false;
-  }
+  // function isOrderListStatusChanged(oldOrders, newOrders) {
+  //   if (oldOrders.length !== newOrders.length) return true;
+  //   // Map theo id để tránh phụ thuộc thứ tự
+  //   const oldMap = new Map(oldOrders.map((o) => [o.id, o.status]));
+  //   for (let i = 0; i < newOrders.length; i++) {
+  //     const newOrder = newOrders[i];
+  //     if (!oldMap.has(newOrder.id)) return true; // order mới
+  //     if (oldMap.get(newOrder.id) !== newOrder.status) return true; // status đổi
+  //   }
+  //   return false;
+  // }
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const res = await getMyOrders();
       const newOrders = res.data || [];
       console.log("Fetched orders:", newOrders);
-      if (isOrderListStatusChanged(orders, newOrders)) {
+      // if (isOrderListStatusChanged(orders, newOrders)) {
         setOrders(newOrders);
         // toast.success("Đơn hàng đã được cập nhật!");
-      }
+      // }
     } catch (err) {
       console.error("Error loading orders", err);
       message.error("Không thể tải danh sách đơn hàng");
@@ -101,8 +101,8 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders(); // Lần đầu load
-    const interval = setInterval(fetchOrders, 5000); // Polling 5s/lần
-    return () => clearInterval(interval);
+    // const interval = setInterval(fetchOrders, 5000); // Polling 5s/lần
+    // return () => clearInterval(interval);
   }, []);
 
   const filteredOrders = orders.filter((o) => {
@@ -195,6 +195,7 @@ const Orders = () => {
             Đánh giá
           </Button>
         );
+        break;
       default:
         break;
     }

@@ -280,7 +280,7 @@ function AccountManagement() {
       <DashboardTemplate
         columns={columns}
         formItems={formItems}
-        apiURI={"User"}
+        apiURI={"User/admin/register"}
         title="Accounts"
         customActions={customActions}
         showEditDelete={false}

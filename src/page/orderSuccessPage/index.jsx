@@ -1,10 +1,11 @@
 // pages/user/OrderSuccess.jsx
 import { Result, Button, Descriptions, List, Spin } from "antd";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { SmileOutlined, HomeOutlined } from "@ant-design/icons";
+import { SmileOutlined, HomeOutlined, FileDoneOutlined } from "@ant-design/icons";
 import { useEffect, useState, useMemo } from "react";
 import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
+import "./index.scss";
 
 function extractGuid(str) {
   // Chuẩn regex GUID
@@ -119,16 +120,8 @@ const OrderSuccess = () => {
   } = order || {};
 
   return (
-    <div
-      className="order-success-page"
-      style={{
-        minHeight: 540,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div style={{ maxWidth: 750, width: "100%" }}>
+    <div className="order-success-page">
+      <div className="order-success-container">
         <Result
           status="success"
           icon={<SmileOutlined />}
@@ -136,7 +129,7 @@ const OrderSuccess = () => {
           subTitle={
             <div>
               <b>Mã đơn hàng:</b>{" "}
-              <span style={{ color: "#52c41a" }}>{orderNumber}</span>
+              <span className="order-success-code">{orderNumber}</span>
               <br />
               <span>
                 Ngày đặt:{" "}
@@ -152,19 +145,22 @@ const OrderSuccess = () => {
             >
               Về trang chủ
             </Button>,
-            <Button key="orders" onClick={() => navigate("/my-orders")}>
-              Xem đơn hàng của tôi
+            <Button
+              key="orders"
+              onClick={() => navigate("/userLayout?tab=orders")}
+              icon={<FileDoneOutlined />}
+            >
+              Xem đơn hàng của tôi 
             </Button>,
           ]}
         />
 
-        <div style={{ margin: "16px 0" }}>
+        <div className="shipping-info">
           <Descriptions
             title="Thông tin giao hàng"
             bordered
             size="middle"
             column={1}
-            style={{ marginBottom: 16 }}
           >
             <Descriptions.Item label="Người nhận">
               {receiverName}
@@ -181,39 +177,22 @@ const OrderSuccess = () => {
           </Descriptions>
         </div>
 
-        <div>
-          <h3 style={{ marginBottom: "20px", marginTop: "24px" }}>
-            Thông tin đơn hàng
-          </h3>
+        <div className="order-items-section">
+          <h3>Thông tin đơn hàng</h3>
           <List
             bordered
             dataSource={orderItems}
             renderItem={(item) => (
               <List.Item>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    width: "100%",
-                  }}
-                >
+                <div className="order-item">
                   {item.image && (
-                    <img
-                      src={item.image}
-                      alt=""
-                      style={{
-                        width: 52,
-                        marginRight: 14,
-                        borderRadius: 6,
-                        objectFit: "cover",
-                      }}
-                    />
+                    <img src={item.image} alt="" className="order-item-image" />
                   )}
-                  <div style={{ flex: 1 }}>
+                  <div className="order-item-info">
                     <div>
                       <b>{item.itemName}</b>
                     </div>
-                    <div style={{ color: "#666" }}>
+                    <div className="order-item-options">
                       {item.selectedColor && (
                         <span>Màu: {item.selectedColor} </span>
                       )}
@@ -222,7 +201,7 @@ const OrderSuccess = () => {
                       )}
                     </div>
                   </div>
-                  <div>
+                  <div className="order-item-price">
                     SL: <b>{item.quantity}</b> &nbsp;|&nbsp;
                     <FormatCost value={item.unitPrice * item.quantity} />
                   </div>
@@ -232,22 +211,28 @@ const OrderSuccess = () => {
           />
         </div>
 
-        <div style={{ marginTop: 30, textAlign: "right" }}>
-          <div style={{ marginBottom: 8 }}>
-            Phí vận chuyển: <b>{<FormatCost value={shippingFee} />}</b>
+        <div className="order-summary1">
+          <div>
+            Phí vận chuyển:{" "}
+            <b>
+              <FormatCost value={shippingFee} />
+            </b>
           </div>
-          <div style={{ marginBottom: 20 }}>
-            Tổng tiền hàng: <b>{<FormatCost value={subtotalAmount} />}</b>
+          <div>
+            Tổng tiền hàng:{" "}
+            <b>
+              <FormatCost value={subtotalAmount} />
+            </b>
           </div>
-          <div style={{ fontSize: 20, marginTop: 8 }}>
-            Tổng thanh toán:{" "}
-            <span style={{ color: "#e02828", fontWeight: 700 }}>
+          <div className="order-total">
+            Tổng thanh toán:
+            <span>
               <FormatCost value={totalAmount} />
             </span>
           </div>
         </div>
 
-        <div style={{ marginTop: 24, textAlign: "center", color: "#888" }}>
+        <div className="payment-method">
           <b>Phương thức thanh toán:</b> {getPaymentDisplay()}
         </div>
       </div>

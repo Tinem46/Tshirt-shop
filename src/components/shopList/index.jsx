@@ -2,26 +2,57 @@ import { useEffect, useState } from "react";
 import "./index.scss";
 import Card from "../card";
 import FilterBar from "../filter/filterBar";
-import api from "../../config/api";
+import api, { MATERIAL_OPTIONS, SEASON_OPTIONS } from "../../config/api";
 import { Spin } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const ShopList = ({ searchKeyword = "", productType = "" }) => {
+const ShopList = ({ searchKeyword = "", categories, setSelectedMenu }) => {
   const [shirt, setShirt] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const productType = queryParams.get("categoryId") || "";
+  const navigate = useNavigate();
 
   // Lưu bộ lọc hiện tại
   const defaultFilters = {
-    price: null,
-    type: null,
-    size: null,
-    color: null,
+    price: "",
+    type: productType || "",
+    size: "",
+    color: "",
     order: "",
+    material: "",
+    season: "",
   };
 
+  useEffect(() => {
+    // Chỉ khi categories đã có data, mới xử lý
+    if (!categories.length) return;
+
+    if (!productType) {
+      setSelectedMenu("All Shirt");
+    } else {
+      const cat = categories.find((c) => c.id === productType);
+      setSelectedMenu(cat?.name || "Category");
+    }
+  }, [productType, categories, setSelectedMenu]);
+
   const [filters, setFilters] = useState(defaultFilters);
+
+  useEffect(() => {
+    setFilters({
+      price: "",
+      type: productType || "",
+      size: "",
+      color: "",
+      order: "",
+      material: "",
+      season: "",
+    });
+  }, [productType]);
 
   // Xây dựng params gửi lên API dựa trên filter và search
   const buildParams = () => {
@@ -30,11 +61,28 @@ const ShopList = ({ searchKeyword = "", productType = "" }) => {
       PageSize: itemsPerPage,
       SortDirection: filters.order || "",
     };
+    if (
+      filters.material !== null &&
+      filters.material !== undefined &&
+      filters.material !== ""
+    ) {
+      params.Material = filters.material; // value phải là số (int)
+    }
+    if (
+      filters.season !== null &&
+      filters.season !== undefined &&
+      filters.season !== ""
+    ) {
+      params.Season = filters.season; // value phải là số (int)
+    }
+
     if (searchKeyword && searchKeyword.trim())
       params.Name = searchKeyword.trim();
     if (filters.type) params.CategoryId = filters.type;
     if (filters.size) params.Size = filters.size;
     if (filters.color) params.Color = filters.color;
+    if (productType) params.CategoryId = productType;
+    console.log("Params gửi lên API:", params);
 
     // Lọc giá
     if (filters.price) {
@@ -74,11 +122,13 @@ const ShopList = ({ searchKeyword = "", productType = "" }) => {
       const response = await api.get("Product", {
         params: buildParams(),
       });
+
       await sleep(500); // Giả lập độ trễ để thấy loading
       let data = response.data?.data?.data || [];
       let total = response.data?.data?.totalCount || 0;
       setShirt(data);
       setTotalItems(total);
+      console.log("Fetched shirt data:", data);
     } catch (error) {
       setShirt([]);
       setTotalItems(0);
@@ -100,25 +150,53 @@ const ShopList = ({ searchKeyword = "", productType = "" }) => {
 
   // Khi filter bar đổi filter thì gọi hàm này
   const handleFilterChange = (key, value) => {
+    // Nếu chọn reset
     if (key === "reset") {
       setFilters(defaultFilters);
-    } else {
-      setFilters((prev) => ({
-        ...prev,
-        [key === "Lọc giá"
-          ? "price"
-          : key === "Loại"
-          ? "type"
-          : key === "Kích thước"
-          ? "size"
-          : key === "Màu sắc"
-          ? "color"
-          : key === "Thứ tự"
-          ? "order"
-          : key]: value,
-      }));
+      navigate("/shop");
+      return;
     }
-    setCurrentPage(1); // reset về page 1 khi thay đổi
+
+    // Nếu chọn "Loại"
+    if (key === "Loại") {
+      // Nếu chọn Tất cả ("" hoặc null) thì trở về /shop
+      if (!value) {
+        navigate("/shop");
+        setFilters((prev) => ({
+          ...prev,
+          type: "",
+        }));
+      } else {
+        // Ngược lại, set CategoryId lên URL (và đồng bộ filter)
+        navigate(`/shop?categoryId=${value}`);
+        setFilters((prev) => ({
+          ...prev,
+          type: value,
+        }));
+      }
+      return;
+    }
+
+    // Xử lý các filter khác
+    setFilters((prev) => ({
+      ...prev,
+      [key === "Lọc giá"
+        ? "price"
+        : key === "Loại"
+        ? "type"
+        : key === "Kích thước"
+        ? "size"
+        : key === "Màu sắc"
+        ? "color"
+        : key === "Thứ tự"
+        ? "order"
+        : key === "Chất liệu"
+        ? "material"
+        : key === "Mùa"
+        ? "season"
+        : key]: value,
+    }));
+    setCurrentPage(1);
   };
 
   // Tính tổng số trang
@@ -203,6 +281,22 @@ const ShopList = ({ searchKeyword = "", productType = "" }) => {
       )}
 
       {/* Nội dung trang */}
+      <FilterBar
+        onFilterChange={handleFilterChange}
+        categories={categories}
+        materialOptions={MATERIAL_OPTIONS}
+        seasonOptions={SEASON_OPTIONS}
+        filters={filters} // <-- BẮT BUỘC PHẢI THÊM DÒNG NÀY!
+      />
+      <div
+        style={{
+          height: "2px",
+          width: "100%",
+          maxWidth: "1117px",
+          backgroundColor: "black",
+          margin: "0 auto 50px auto",
+        }}
+      ></div>
       {shirt.length === 0 && !loading ? (
         <div className="empty-search">
           <img
@@ -215,16 +309,6 @@ const ShopList = ({ searchKeyword = "", productType = "" }) => {
         </div>
       ) : (
         <>
-          <FilterBar onFilterChange={handleFilterChange} />
-          <div
-            style={{
-              height: "2px",
-              width: "100%",
-              maxWidth: "1117px",
-              backgroundColor: "black",
-              margin: "0 auto 50px auto",
-            }}
-          ></div>
           <div className="shop-list">
             {shirt.map((item) => (
               <Card key={item.id} shirt={item} />

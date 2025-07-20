@@ -3,7 +3,13 @@ import FilterDropdown from "../filterDrop";
 import "./index.scss";
 const { Option } = Select;
 
-const FilterBar = ({ onFilterChange }) => {
+const FilterBar = ({
+  onFilterChange,
+  categories = [],
+  materialOptions = [],
+  seasonOptions = [],
+  filters = {},
+}) => {
   const handleFilterChange = (key, value) => {
     onFilterChange(key, value);
   };
@@ -20,22 +26,32 @@ const FilterBar = ({ onFilterChange }) => {
             "300.000đ - 500.000đ",
             "Giá trên 500.000đ",
           ]}
+          selectedValue={filters.price} // <-- DÒNG NÀY PHẢI CÓ
           onSelect={(v) => handleFilterChange("Lọc giá", v)}
         />
+
+        {/* Tạo options từ categories */}
         <FilterDropdown
           title="Loại"
-          options={["Shirt", "Áo sơ mi", "Áo khoác", "Áo hoodie"]}
+          options={categories.map((cat) => ({
+            value: cat.id,
+            label: cat.name,
+          }))}
+          selectedValue={filters.type} // Truyền value chọn
           onSelect={(v) => handleFilterChange("Loại", v)}
         />
+
         <FilterDropdown
-          title="Kích thước"
-          options={["S", "M", "L", "XL"]}
-          onSelect={(v) => handleFilterChange("Kích thước", v)}
+          title="Chất liệu"
+          options={materialOptions}
+          selectedValue={filters.material}
+          onSelect={(v) => handleFilterChange("Chất liệu", v)}
         />
         <FilterDropdown
-          title="Màu sắc"
-          options={["Đen", "Trắng", "Xanh", "Đỏ", "Vàng"]}
-          onSelect={(v) => handleFilterChange("Màu sắc", v)}
+          title="Mùa"
+          options={seasonOptions}
+          selectedValue={filters.season}
+          onSelect={(v) => handleFilterChange("Mùa", v)}
         />
       </div>
       <div className="filter-right">
