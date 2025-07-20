@@ -1,12 +1,20 @@
-import { Button, Flex, Form, Input, Row, Spin } from "antd";
+import { Button, Form, Input, Spin } from "antd";
 import { useState } from "react";
-import "./index.scss"; // Ensure you have the correct path to your CSS file
+import "./index.scss";
 import api from "../../../config/api";
 import { toast } from "react-toastify";
 
 const ChangePassword = () => {
   const [loading, setLoading] = useState(false);
+  const [form] = Form.useForm();
+
   const changePassword = async (values) => {
+    // ✅ Check mật khẩu mới có trùng mật khẩu cũ không
+    if (values.oldPassword === values.newPassword) {
+      toast.error("Mật khẩu mới không được trùng với mật khẩu cũ!");
+      return;
+    }
+
     setLoading(true);
     const apiData = {
       oldPassword: values.oldPassword,
@@ -15,18 +23,21 @@ const ChangePassword = () => {
     };
     try {
       const res = await api.post("Auth/change-password", apiData);
-      console.log("Response:", res);
-      if (res.status === 200) {
-        toast.success("Đổi mật khẩu thành công!");
+      console.log("Change password response:", res);
+      if (res.data?.isSuccess) {
+        toast.success(res.data?.data || "Đổi mật khẩu thành công!");
+        console.log("RESET FORM");
+        form.resetFields();
+        console.log("AFTER RESET", form.getFieldsValue()); // log sau
       } else {
-        const data = await res.json();
-        toast.error(data.message || "Đổi mật khẩu thất bại!");
+        toast.error(res.data?.message || "Đổi mật khẩu thất bại!");
       }
     } catch (error) {
       toast.error("Có lỗi xảy ra, vui lòng thử lại!");
     }
     setLoading(false);
   };
+
   return (
     <div className="register1-form">
       <div className="password-header">
@@ -34,20 +45,37 @@ const ChangePassword = () => {
         <p>Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu</p>
       </div>
       <div className="line3"></div>
-      <div className="form-container">
+      <div className="form-container1 ">
         <Form
+          form={form}
           layout="vertical"
           name="changePasswordForm"
           onFinish={changePassword}
           className="register1-form"
+          autoComplete="off" // Có thể giúp thêm nhưng không đủ, vẫn cần input ẩn
         >
+          {/* Các input ẩn để chặn Chrome autofill */}
+          <input
+            type="text"
+            name="fakeusernameremembered"
+            style={{ display: "none" }}
+          />
+          <input
+            type="password"
+            name="fakepasswordremembered"
+            style={{ display: "none" }}
+          />
+
           <Form.Item
             name="oldPassword"
             label="Mật khẩu cũ"
             rules={[{ required: true, message: "Vui lòng nhập mật khẩu cũ!" }]}
             hasFeedback
           >
-            <Input.Password placeholder="Nhập mật khẩu cũ" />
+            <Input.Password
+              placeholder="Nhập mật khẩu cũ"
+              autoComplete="new-password"
+            />
           </Form.Item>
 
           <Form.Item
@@ -59,7 +87,10 @@ const ChangePassword = () => {
             ]}
             hasFeedback
           >
-            <Input.Password placeholder="Nhập mật khẩu mới" />
+            <Input.Password
+              placeholder="Nhập mật khẩu mới"
+              autoComplete="new-password"
+            />
           </Form.Item>
 
           <Form.Item
@@ -81,7 +112,10 @@ const ChangePassword = () => {
               }),
             ]}
           >
-            <Input.Password placeholder="Xác nhận mật khẩu mới" />
+            <Input.Password
+              placeholder="Xác nhận mật khẩu mới"
+              autoComplete="new-password"
+            />
           </Form.Item>
 
           <Form.Item>

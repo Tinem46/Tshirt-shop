@@ -1,7 +1,14 @@
-// pages/user/Coupon/index.jsx
 import { useEffect, useState } from "react";
 import { Button, Card, message } from "antd";
 import { useDispatch, useSelector } from "react-redux";
+import {
+  Gift,
+  Percent,
+  Calendar,
+  ShoppingCart,
+  Star,
+  Trash2,
+} from "lucide-react";
 import {
   addSavedCoupon,
   removeSavedCoupon,
@@ -15,18 +22,15 @@ const Coupon = () => {
   const [loading, setLoading] = useState(true);
 
   const dispatch = useDispatch();
-  // Lấy userId hiện tại từ localStorage (bạn nên đảm bảo luôn đúng khi login/logout)
   const userId = localStorage.getItem("userId");
   const LOCAL_KEY = userId ? `user_coupons_${userId}` : "user_coupons_guest";
   const saved = useSelector((state) => state.coupon.savedCoupons);
 
-  // Khi userId đổi (login/logout), đồng bộ Redux với localStorage
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
     dispatch(setSavedCoupons(data));
   }, [userId, dispatch]);
 
-  // Fetch tất cả coupon từ API (danh sách để người dùng chọn lấy về)
   useEffect(() => {
     const fetchCoupons = async () => {
       try {
@@ -40,7 +44,6 @@ const Coupon = () => {
     fetchCoupons();
   }, []);
 
-  // Lưu 1 coupon vào kho user
   const handleSave = (coupon) => {
     if (saved.find((c) => c.id === coupon.id)) {
       message.info("Bạn đã lưu mã này rồi.");
@@ -52,7 +55,6 @@ const Coupon = () => {
     message.success("Đã lưu mã giảm giá!");
   };
 
-  // Xóa coupon khỏi kho user
   const handleRemove = (id) => {
     const updated = saved.filter((c) => c.id !== id);
     localStorage.setItem(LOCAL_KEY, JSON.stringify(updated));
@@ -60,93 +62,176 @@ const Coupon = () => {
     message.info("Đã xóa mã khỏi kho của bạn.");
   };
 
+  const formatValue = (coupon) => {
+    if (coupon.type === 0) {
+      return `${coupon.value}%`;
+    }
+    return `${coupon.value?.toLocaleString("vi-VN")}đ`;
+  };
+
   return (
-    <div className="coupon-list-page">
-      <h2 style={{ fontWeight: 600, fontSize: 22, marginBottom: 6 }}>
-        Ngân hàng mã giảm giá
-      </h2>
-      <p style={{ marginBottom: 26 }}>
-        Chọn mã giảm giá để lưu vào kho của bạn, dùng khi thanh toán.
-      </p>
-      <div className="coupon-list">
-        {loading ? "Đang tải..." : null}
-        {coupons.map((coupon) => {
-          const isSaved = saved.some((c) => c.id === coupon.id);
-          return (
-            <Card
-              key={coupon.id}
-              className={`coupon-card ${isSaved ? "coupon-card--saved" : ""}`}
-              title={
-                <span style={{ color: "#1677ff", fontWeight: 600 }}>
-                  {coupon.code}
-                </span>
-              }
-              extra={
-                isSaved ? (
-                  <Button danger onClick={() => handleRemove(coupon.id)}>
-                    Xóa
-                  </Button>
-                ) : (
-                  <Button type="primary" onClick={() => handleSave(coupon)}>
-                    Lưu
-                  </Button>
-                )
-              }
-              style={{ marginBottom: 16 }}
-            >
-              <div>
-                <b>{coupon.name}</b>
-                <div style={{ color: "#666" }}>{coupon.description}</div>
-                <div style={{ margin: "6px 0" }}>
-                  <span>
-                    Giá trị:{" "}
-                    <span style={{ color: "#bf0909", fontWeight: 500 }}>
-                      {coupon.type === 0
-                        ? coupon.value + "%"
-                        : coupon.value?.toLocaleString("vi-VN") + "đ"}
-                    </span>
-                  </span>
-                  {coupon.minOrderAmount && (
-                    <span style={{ marginLeft: 18 }}>
-                      Đơn tối thiểu:{" "}
-                      {coupon.minOrderAmount.toLocaleString("vi-VN")}đ
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: 12, color: "#888" }}>
-                  {coupon.startDate
-                    ? `Từ: ${new Date(coupon.startDate).toLocaleDateString()}`
-                    : ""}
-                  {coupon.endDate
-                    ? ` - Đến: ${new Date(coupon.endDate).toLocaleDateString()}`
-                    : ""}
-                </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
-      <div style={{ marginTop: 24 }}>
-        <h3>Mã của bạn ({saved.length}):</h3>
-        {saved.length === 0 ? (
-          <p>Bạn chưa lưu mã nào.</p>
-        ) : (
-          <div className="coupon-saved-list">
-            {saved.map((c) => (
-              <span className="coupon-saved-item" key={c.id}>
-                <b>{c.code}</b> - {c.name}
-                <Button
-                  size="small"
-                  type="link"
-                  onClick={() => handleRemove(c.id)}
-                  style={{ color: "#af0808" }}
-                >
-                  X
-                </Button>
-              </span>
-            ))}
+    <div className="coupon-page">
+      <div className="coupon-page__container">
+        <div className="coupon-page__header">
+          <div className="header-content">
+            <div className="header-icon">
+              <Gift className="icon" />
+            </div>
+            <div className="header-text">
+              <h1 className="header-title">Ưu đãi dành cho bạn</h1>
+              <p className="header-subtitle">
+                Chọn mã giảm giá để lưu vào kho của bạn, dùng khi thanh toán.
+              </p>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div className="coupon-section">
+          <div className="section-header">
+            <h2 className="section-title">Mã giảm giá có sẵn</h2>
+            <div className="section-divider"></div>
+          </div>
+
+          {loading ? (
+            <div className="loading-state">
+              <div className="loading-spinner"></div>
+              <p>Đang tải danh sách mã giảm giá...</p>
+            </div>
+          ) : (
+            <div className="coupon-grid">
+              {coupons.map((coupon) => {
+                const isSaved = saved.some((c) => c.id === coupon.id);
+                return (
+                  <div
+                    key={coupon.id}
+                    className={`coupon-card ${
+                      isSaved ? "coupon-card--saved" : ""
+                    }`}
+                  >
+                    <div className="coupon-card__header">
+                      <div className="coupon-code">
+                        <Percent className="code-icon" />
+                        <span className="code-text">{coupon.code}</span>
+                      </div>
+                      {isSaved && (
+                        <div className="saved-badge">
+                          <Star className="star-icon" />
+                          Đã lưu
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="coupon-card__body">
+                      <h3 className="coupon-name">{coupon.name}</h3>
+                      <p className="coupon-description">{coupon.description}</p>
+
+                      <div className="coupon-details">
+                        <div className="detail-item">
+                          <span className="detail-label">Giá trị:</span>
+                          <span className="detail-value detail-value--primary">
+                            {formatValue(coupon)}
+                          </span>
+                        </div>
+
+                        {coupon.minOrderAmount && (
+                          <div className="detail-item">
+                            <ShoppingCart className="detail-icon" />
+                            <span className="detail-label">Đơn tối thiểu:</span>
+                            <span className="detail-value">
+                              {coupon.minOrderAmount.toLocaleString("vi-VN")}đ
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {(coupon.startDate || coupon.endDate) && (
+                        <div className="coupon-validity">
+                          <Calendar className="validity-icon" />
+                          <span className="validity-text">
+                            {coupon.startDate &&
+                              `Từ: ${new Date(
+                                coupon.startDate
+                              ).toLocaleDateString()}`}
+                            {coupon.startDate && coupon.endDate && " - "}
+                            {coupon.endDate &&
+                              `Đến: ${new Date(
+                                coupon.endDate
+                              ).toLocaleDateString()}`}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="coupon-card__footer">
+                      {isSaved ? (
+                        <Button
+                          danger
+                          className="remove-btn"
+                          onClick={() => handleRemove(coupon.id)}
+                          icon={<Trash2 size={16} />}
+                        >
+                          Xóa khỏi kho
+                        </Button>
+                      ) : (
+                        <Button
+                          type="primary"
+                          className="save-btn"
+                          onClick={() => handleSave(coupon)}
+                        >
+                          Lưu vào kho
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        <div className="saved-section">
+          <div className="section-header">
+            <h2 className="section-title">
+              Kho mã của bạn
+              <span className="count-badge">({saved.length})</span>
+            </h2>
+            <div className="section-divider"></div>
+          </div>
+
+          {saved.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">
+                <Gift size={48} />
+              </div>
+              <h3 className="empty-title">Chưa có mã nào được lưu</h3>
+              <p className="empty-description">
+                Hãy chọn những mã giảm giá ưa thích ở trên để lưu vào kho của
+                bạn
+              </p>
+            </div>
+          ) : (
+            <div className="saved-coupons">
+              {saved.map((coupon) => (
+                <div key={coupon.id} className="saved-coupon-item">
+                  <div className="saved-coupon-content">
+                    <div className="saved-coupon-code">{coupon.code}</div>
+                    <div className="saved-coupon-name">{coupon.name}</div>
+                    <div className="saved-coupon-value">
+                      {formatValue(coupon)}
+                    </div>
+                  </div>
+                  <Button
+                    type="text"
+                    danger
+                    className="saved-coupon-remove"
+                    onClick={() => handleRemove(coupon.id)}
+                    icon={<Trash2 size={14} />}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

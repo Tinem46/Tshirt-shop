@@ -1,19 +1,41 @@
-import { useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import { DownOutlined } from "@ant-design/icons";
 import "./index.scss";
 
-const FilterDropdown = ({ title, options, onSelect }) => {
+const FilterDropdown = ({ title, options = [], onSelect, selectedValue }) => {
   const [open, setOpen] = useState(false);
-  const [selected, setSelected] = useState(null);
+  const ref = useRef(null);
+
+  // Bắt sự kiện click ra ngoài để đóng dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
+  // Helper để lấy value/label
+  const getValue = (option) =>
+    typeof option === "object" ? option.value : option;
+  const getLabel = (option) =>
+    typeof option === "object" ? option.label : option;
 
   const handleSelect = (option) => {
-    setSelected(option);
-    onSelect(option);
+    onSelect(getValue(option));
     setOpen(false);
   };
 
   return (
-    <div className="filter-dropdown">
+    <div className="filter-dropdown" ref={ref}>
       <button onClick={() => setOpen(!open)} className="filter-button">
         {title} <DownOutlined className="icon" />
       </button>
@@ -24,8 +46,8 @@ const FilterDropdown = ({ title, options, onSelect }) => {
               type="radio"
               name={title}
               value=""
-              checked={selected === null}
-              onChange={() => handleSelect(null)}
+              checked={selectedValue === null || selectedValue === ""}
+              onChange={() => handleSelect("")}
             />
             Tất cả
           </label>
@@ -34,11 +56,11 @@ const FilterDropdown = ({ title, options, onSelect }) => {
               <input
                 type="radio"
                 name={title}
-                value={option}
-                checked={selected === option}
+                value={getValue(option)}
+                checked={selectedValue === getValue(option)}
                 onChange={() => handleSelect(option)}
               />
-              {option}
+              {getLabel(option)}
             </label>
           ))}
         </div>

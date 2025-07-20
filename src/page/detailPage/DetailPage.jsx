@@ -1,4 +1,3 @@
-"use client"
 
 import { useEffect, useRef, useState } from "react"
 import { Button, Spin, Badge } from "antd"
@@ -249,10 +248,12 @@ const DetailPage = () => {
     console.log("Thêm vào giỏ hàng:", cartItemPayload)
     setLoading(true)
     try {
-      const res = await api.post("Cart", cartItemPayload)
-      console.log("Thêm vào giỏ hàng:", res)
-      alert("Thêm vào giỏ hàng thành công!")
-      navigate("/cart")
+
+      const res = await api.post("Cart", cartItemPayload);
+      console.log("Thêm vào giỏ hàng:", res);
+      toast.success("Thêm vào giỏ hàng thành công!");
+      navigate("/cart");
+
     } catch (error) {
       alert(error?.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại.")
     } finally {

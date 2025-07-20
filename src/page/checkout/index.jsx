@@ -1,3 +1,5 @@
+"use client";
+
 import { Button, Input, Select, Card, Radio, Spin } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -184,52 +186,50 @@ const Checkout = () => {
             <Radio.Group
               onChange={handleRadioChange}
               value={isNewAddress ? "new" : selectedAddressId}
-              style={{ width: "100%" }}
+              className="address-radio-group" // Class for styling
             >
               {addressList.map((addr) => (
                 <Card
                   key={addr.id}
-                  style={{
-                    marginBottom: 12,
-                    borderColor: addr.isDefault ? "#52c41a" : "#d9d9d9",
-                  }}
+                  className={addr.isDefault ? "is-default-address" : ""} // Class for default address styling
                 >
-                  <Radio value={addr.id} style={{ width: "100%" }}>
+                  <Radio value={addr.id} className="address-radio-option">
+                    {" "}
+                    {/* Class for radio option */}
                     <b>{addr.receiverName}</b> | {addr.phone}
                     <br />
                     {addr.detailAddress}, {addr.ward}, {addr.district},{" "}
                     {addr.province}
                     {addr.isDefault && (
-                      <span style={{ color: "#52c41a", marginLeft: 8 }}>
-                        (Mặc định)
-                      </span>
+                      <span className="default-address-label">(Mặc định)</span>
                     )}
                   </Radio>
                 </Card>
               ))}
-              <Card style={{ marginBottom: 12 }}>
-                <Radio value="new" style={{ width: "100%" }}>
+              <Card className="new-address-card">
+                {" "}
+                {/* Class for new address card */}
+                <Radio value="new" className="address-radio-option">
                   <b>Nhập địa chỉ mới</b>
                 </Radio>
               </Card>
             </Radio.Group>
           )}
-
           {/* Nếu nhập mới thì show form */}
           {isNewAddress && (
-            <div style={{ marginTop: 16 }}>
+            <div className="new-address-form">
+              {" "}
+              {/* Class for new address form */}
               <Input
                 name="fullname"
                 placeholder="Họ và tên"
                 value={userDetails.fullname}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Select
                 name="gender"
                 value={userDetails.gender || undefined}
                 onChange={handleGenderChange}
-                style={{ width: "100%", marginBottom: 40 }}
                 placeholder="Giới tính"
               >
                 <Option value="Male">Nam</Option>
@@ -241,42 +241,36 @@ const Checkout = () => {
                 placeholder="Địa chỉ chi tiết (số nhà, tên đường)"
                 value={userDetails.detailAddress}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Input
                 name="city"
                 placeholder="Tỉnh / Thành phố"
                 value={userDetails.city}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Input
                 name="district"
                 placeholder="Quận / Huyện"
                 value={userDetails.district}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Input
                 name="ward"
                 placeholder="Phường / Xã"
                 value={userDetails.ward}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Input
                 name="phone"
                 placeholder="Số điện thoại"
                 value={userDetails.phone}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <Input
                 name="email"
                 placeholder="Địa chỉ email"
                 value={userDetails.email}
                 onChange={handleInputChange}
-                style={{ marginBottom: 8 }}
               />
               <TextArea
                 name="additionalInfo"
@@ -284,12 +278,10 @@ const Checkout = () => {
                 value={userDetails.additionalInfo}
                 onChange={handleInputChange}
                 rows={3}
-                style={{ marginBottom: 8 }}
               />
             </div>
           )}
         </div>
-
         {/* Order Summary */}
         <div className="order-summary">
           <h2>Đơn hàng của bạn</h2>
@@ -297,11 +289,7 @@ const Checkout = () => {
             {cart.map((item) => (
               <li key={item.id}>
                 <div className="item-info">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    style={{ width: 50, marginRight: 8 }}
-                  />
+                  <img src={item.image || "/placeholder.svg"} alt={item.name} />
                   <span className="item-name">{item.name}</span>
                 </div>
                 <div className="item-details">
@@ -313,23 +301,15 @@ const Checkout = () => {
               </li>
             ))}
           </ul>
-
           <div className="cart-totals">
             <h3>
               Tổng cộng: <FormatCost value={cartSummary?.totalAmount || 0} />
             </h3>
           </div>
-
           <Button
             type="primary"
             onClick={handleGoToPayment}
-            style={{
-              width: "200px",
-              backgroundColor: "black",
-              height: "50px",
-              fontSize: "18px",
-              marginTop: "20px",
-            }}
+            className="btn-checkout" // Class for styling
           >
             Tiếp tục thanh toán
           </Button>

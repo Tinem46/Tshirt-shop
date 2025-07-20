@@ -220,7 +220,16 @@ const PaymentPage = () => {
             </Select>
           </div>
           <div className="payment-section" style={{ marginBottom: 0 }}>
-            <Button type="primary" onClick={handlePlaceOrder}>
+            <Button
+              type="primary"
+              onClick={handlePlaceOrder}
+              style={{
+                width: "100%",
+                marginTop: 20,
+                background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                color: "#fff",
+              }}
+            >
               Đặt hàng
             </Button>
           </div>
@@ -228,7 +237,7 @@ const PaymentPage = () => {
 
         {/* Cột chi tiết đơn hàng */}
         <div className="payment-summary">
-          <h2>Chi tiết đơn hàng</h2>
+          <h2 style={{ color: "white" }}>Chi tiết đơn hàng</h2>
           <ul>
             {cart?.map((item) => (
               <li key={item.id}>

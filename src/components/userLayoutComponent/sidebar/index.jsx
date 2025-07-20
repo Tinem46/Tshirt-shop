@@ -8,11 +8,24 @@ import {
   UpOutlined,
 } from "@ant-design/icons";
 import api from "../../../config/api";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useDispatch } from "react-redux";
+import { logout } from "../../../redux/features/userSlice";
 
 function Sidebar({ activeTab, setActiveTab }) {
   const [isAccountOpen, setIsAccountOpen] = useState(true); // Mặc định mở
   const [isPaymentOpen, setIsPaymentOpen] = useState(true); // Nếu muốn thanh toán cũng có toggle
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const handleTabChange = (tabKey) => {
+    // Nếu đang có status trong URL, bỏ nó đi khi sang tab khác
+    const newSearch = `?tab=${tabKey}`;
+    navigate(`/userLayout${newSearch}`);
+    setActiveTab(tabKey); // Giữ lại để state react update nhanh, nhưng navigate là chính
+  };
 
   const isActive = (tab) => activeTab === tab;
   const fetchUser = async () => {
@@ -29,6 +42,31 @@ function Sidebar({ activeTab, setActiveTab }) {
   useEffect(() => {
     fetchUser();
   }, []);
+
+  const handleLogout = () => {
+    // Lấy refreshToken từ localStorage
+    const refreshToken = localStorage.getItem("refreshToken");
+
+    // Gửi request logout lên backend nếu có refreshToken
+    if (refreshToken) {
+      api.post("Auth/logout", { refreshToken }).catch((err) => {
+        // Nếu fail vẫn tiếp tục logout ở FE, không cần báo lỗi cho người dùng
+        console.error("Logout backend failed:", err);
+      });
+    }
+
+    // Xoá toàn bộ thông tin trên localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+
+    // Redux logout (nếu có), điều hướng về trang login, show toast
+    dispatch(logout());
+    navigate("/login");
+    toast.success("Đã đăng xuất");
+  };
 
   return (
     <div className="sidebar">
@@ -65,13 +103,13 @@ function Sidebar({ activeTab, setActiveTab }) {
         <ul className="tab-list">
           <li
             className={isActive("profile") ? "tab-item active" : "tab-item"}
-            onClick={() => setActiveTab("profile")}
+            onClick={() => handleTabChange("profile")}
           >
             Hồ Sơ
           </li>
           <li
             className={isActive("address") ? "tab-item active" : "tab-item"}
-            onClick={() => setActiveTab("address")}
+            onClick={() => handleTabChange("address")}
           >
             Địa Chỉ
           </li>
@@ -79,7 +117,7 @@ function Sidebar({ activeTab, setActiveTab }) {
             className={
               isActive("changePassword") ? "tab-item active" : "tab-item"
             }
-            onClick={() => setActiveTab("changePassword")}
+            onClick={() => handleTabChange("changePassword")}
           >
             Đổi Mật Khẩu
           </li>
@@ -106,19 +144,35 @@ function Sidebar({ activeTab, setActiveTab }) {
         <ul className="tab-list">
           <li
             className={isActive("orders") ? "tab-item active" : "tab-item"}
-            onClick={() => setActiveTab("orders")}
+            onClick={() => handleTabChange("orders")}
           >
             Đơn Mua
           </li>
           <li
             className={isActive("coupon") ? "tab-item active" : "tab-item"}
-            onClick={() => setActiveTab("coupon")}
+            onClick={() => handleTabChange("coupon")}
           >
             Mã giảm giá
           </li>
+          <li
+            className={
+              isActive("customDesign") ? "tab-item active" : "tab-item"
+            }
+            onClick={() => handleTabChange("customDesign")}
+          >
+            Thiết Kế Tùy Chỉnh
+          </li>
         </ul>
       )}
+      <div style={{ marginBottom: "10px" }}></div>
+
+      <div className="logout-section">
+        <button className="logout-button" onClick={handleLogout}>
+          Đăng Xuất
+        </button>
+      </div>
     </div>
+    
   );
 }
 

@@ -1,29 +1,27 @@
 import { Breadcrumb } from "antd";
-
 import "./index.scss";
 import { useNavigate } from "react-router-dom";
 
-function Naviagtion({
+function Navigation({
+  mainName = "Shop",
   selectedMenu = "",
   triggerReset = () => {},
-  standOn = "shop",
-  link = "/",
+  shopLink = "/shop",
 }) {
   const navigate = useNavigate();
+
   return (
     <div className="navigation">
       <img
         className="pictureOutline"
-        src={
-          "https://down-vn.img.susercontent.com/file/8bd57cda68fc7a4a2076feaae894b3fe"
-        }
+        src="https://down-vn.img.susercontent.com/file/8bd57cda68fc7a4a2076feaae894b3fe"
         alt="background"
       />
       <div className="container">
-        <h1 className="shopTitle">{standOn}</h1>
+        <h1 className="shopTitle">{mainName}</h1>
         <div className="breadcrumbBar">
           <Breadcrumb>
-            {/* Home should navigate to / */}
+            {/* Home breadcrumb */}
             <Breadcrumb.Item>
               <span
                 onClick={() => navigate("/")}
@@ -33,21 +31,23 @@ function Naviagtion({
               </span>
             </Breadcrumb.Item>
 
-            {/* Shop should be clickable and reset the fish list */}
+            {/* Shop breadcrumb */}
             <Breadcrumb.Item>
               <span
                 onClick={() => {
-                  triggerReset(); // Trigger the reset function to reset the fish list
-                  navigate({ link }); // Navigate to /FishShop
+                  triggerReset();
+                  navigate(shopLink);
                 }}
                 style={{
                   cursor: "pointer",
                   fontWeight: !selectedMenu ? "bold" : "normal",
                 }}
               >
-                {name}
+                {mainName}
               </span>
             </Breadcrumb.Item>
+
+            {/* Selected menu/category breadcrumb */}
             {selectedMenu && (
               <Breadcrumb.Item style={{ fontWeight: "bold" }}>
                 {selectedMenu.charAt(0).toUpperCase() + selectedMenu.slice(1)}
@@ -60,4 +60,4 @@ function Naviagtion({
   );
 }
 
-export default Naviagtion;
+export default Navigation;

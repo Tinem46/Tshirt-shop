@@ -35,6 +35,17 @@ function ManagementProducts() {
   const [selectedReviewVariant, setSelectedReviewVariant] = useState(null);
   const [reviewStatsLoading, setReviewStatsLoading] = useState(false);
   const [reviewStats, setReviewStats] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewVisible, setPreviewVisible] = useState(false);
+
+  const handlePreviewImage = (url) => {
+    setPreviewImage(url);
+    setPreviewVisible(true);
+  };
+  const closePreviewImage = () => {
+    setPreviewVisible(false);
+    setPreviewImage(null);
+  };
 
   const fetchReviewStats = async (variantId) => {
     try {
@@ -323,6 +334,7 @@ function ManagementProducts() {
                   border: "1px solid #ddd",
                   objectFit: "cover",
                 }}
+                onClick={() => handlePreviewImage(img.url)}
               />
               <button
                 type="button"
@@ -436,7 +448,12 @@ function ManagementProducts() {
         const imgObj = arr.find((i) => i.isPrimary) || arr[0];
         const url = typeof imgObj === "string" ? imgObj : imgObj.url;
         return url ? (
-          <img src={url} alt="" style={{ width: 40, borderRadius: 6 }} />
+          <img
+            src={url}
+            alt=""
+            style={{ width: 40, borderRadius: 6, cursor: "zoom-in" }}
+            onClick={() => handlePreviewImage(url)}
+          />
         ) : null;
       },
     },
@@ -488,6 +505,12 @@ function ManagementProducts() {
               src={typeof images[0] === "string" ? images[0] : images[0].url}
               alt="product-img"
               className="product-detail-image"
+              style={{ cursor: "zoom-in", width: 120 }}
+              onClick={() =>
+                handlePreviewImage(
+                  typeof images[0] === "string" ? images[0] : images[0].url
+                )
+              }
             />
           </div>
         )}
@@ -701,6 +724,7 @@ function ManagementProducts() {
                 src={variantImage}
                 alt=""
                 style={{ width: 60, marginTop: 8, borderRadius: 6 }}
+                onClick={() => handlePreviewImage(variantImage)}
               />
             )}
           </Form.Item>
@@ -774,7 +798,9 @@ function ManagementProducts() {
                       height: 38,
                       objectFit: "cover",
                       borderRadius: 5,
+                      cursor: "zoom-in",
                     }}
+                    onClick={() => handlePreviewImage(url)}
                   />
                 ) : null,
             },
@@ -823,6 +849,27 @@ function ManagementProducts() {
         reviewStats={reviewStats}
         loading={reviewStatsLoading}
       />
+
+      <Modal
+        open={previewVisible}
+        footer={null}
+        onCancel={closePreviewImage}
+        width={600}
+        centered
+        zIndex={3000}
+        bodyStyle={{ textAlign: "center", padding: 0, background: "#222" }}
+      >
+        <img
+          src={previewImage}
+          alt="Preview"
+          style={{
+            width: "100%",
+            maxHeight: "80vh",
+            objectFit: "contain",
+            background: "#222",
+          }}
+        />
+      </Modal>
     </>
   );
 }

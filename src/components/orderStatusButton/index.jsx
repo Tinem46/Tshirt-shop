@@ -49,16 +49,18 @@ const OrderStatusButton = ({
         if (onSuccess) onSuccess();
         return;
       }
-
+      console.log(isBatch);
+      console.log(endpointMap);
       // ✅ Nếu là batch + status 3-6 → dùng PUT
-      if (isBatch && endpointMap[status]) {
+      if (endpointMap[status]) {
         await api.put(endpointMap[status], ids);
+        toast.success("hello");
       } else {
         // ✅ Fallback: PATCH đơn lẻ
         await api.patch(`Orders/${orderId}/status`, { status });
+        toast.success("Cập nhật trạng thái thành công!");
       }
 
-      toast.success("Cập nhật trạng thái thành công!");
       if (onSuccess) onSuccess();
     } catch (error) {
       toast.error(

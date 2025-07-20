@@ -1,0 +1,386 @@
+.design-page {
+    min-height: 100vh;
+    background: #ffffff;
+    padding: 2rem;
+    color: #1f2937;
+
+    .notification {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        z-index: 1000;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        animation: slideIn 0.3s ease-out;
+
+        &.success {
+            background: #10b981;
+            color: white;
+        }
+
+        &.error {
+            background: #ef4444;
+            color: white;
+        }
+    }
+
+    .design-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+
+            .search-box {
+                position: relative;
+                display: flex;
+                align-items: center;
+
+                svg {
+                    position: absolute;
+                    left: 1rem;
+                    color: #6b7280;
+                }
+
+                input {
+                    padding: 0.75rem 1rem 0.75rem 3rem;
+                    border: 2px solid #e5e7eb;
+                    border-radius: 8px;
+                    font-size: 0.875rem;
+                    min-width: 300px;
+                    transition: all 0.2s ease;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #111827;
+                        box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+                    }
+
+                    &::placeholder {
+                        color: #9ca3af;
+                    }
+                }
+            }
+        }
+    }
+
+    .design-tabs {
+        display: flex;
+        overflow-x: auto;
+        margin-bottom: 2rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border-radius: 12px;
+        overflow-x: auto;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        justify-content: space-between;
+
+        .tab-item {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-size: 0.875rem;
+
+            &:hover {
+                color: #374151;
+                background: rgba(17, 24, 39, 0.05);
+            }
+
+            &.active {
+                background: #111827;
+                color: white;
+                box-shadow: 0 2px 8px rgba(17, 24, 39, 0.15);
+            }
+        }
+    }
+
+    .design-content {
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+
+            .loading-spinner {
+                margin-bottom: 1rem;
+
+                .spinning {
+                    animation: spin 1s linear infinite;
+                }
+            }
+
+            p {
+                color: #6b7280;
+                font-size: 1rem;
+                margin: 0;
+            }
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+
+            .empty-icon {
+                margin-bottom: 1.5rem;
+                color: #d1d5db;
+            }
+
+            h3 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: #374151;
+                margin: 0 0 0.5rem 0;
+            }
+
+            p {
+                color: #6b7280;
+                font-size: 1rem;
+                margin: 0;
+            }
+        }
+
+        .design-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 1rem;
+
+            .design-card {
+                background: white;
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                transition: all 0.3s ease;
+                border: 1px solid #e5e7eb;
+
+                &:hover {
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                    transform: translateY(-2px);
+                }
+
+                .card-image {
+                    position: relative;
+                    height: 200px;
+                    overflow: hidden;
+
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        transition: transform 0.3s ease;
+                    }
+
+                    .card-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: rgba(0, 0, 0, 0.3);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        opacity: 0;
+                        transition: opacity 0.3s ease;
+
+                        .like-button {
+                            background: rgba(0, 0, 0, 0.5);
+                            border: none;
+                            border-radius: 50%;
+                            width: 48px;
+                            height: 48px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            cursor: pointer;
+                            transition: all 0.2s ease;
+                            backdrop-filter: blur(10px);
+
+                            &:hover {
+                                background: rgba(0, 0, 0, 0.7);
+                                transform: scale(1.1);
+                            }
+                        }
+                    }
+
+                    &:hover {
+                        img {
+                            transform: scale(1.05);
+                        }
+
+                        .card-overlay {
+                            opacity: 1;
+                        }
+                    }
+                }
+
+                .card-content {
+                    padding: 1.5rem;
+
+                    .design-name {
+                        font-size: 1.125rem;
+                        font-weight: 600;
+                        color: #111827;
+                        margin: 0 0 1rem 0;
+                        line-height: 1.4;
+                    }
+
+                    .design-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.5rem;
+                        margin-bottom: 1rem;
+
+                        .info-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            color: #6b7280;
+                            font-size: 0.875rem;
+
+                            svg {
+                                color: #9ca3af;
+                            }
+                        }
+                    }
+
+                    .design-status {
+                        display: inline-flex;
+                        align-items: center;
+                        padding: 0.375rem 0.75rem;
+                        border-radius: 6px;
+                        font-size: 0.75rem;
+                        font-weight: 500;
+                        color: white;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+    .design-page {
+        padding: 1rem;
+
+        .design-header {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .header-actions {
+                width: 100%;
+
+                .search-box input {
+                    min-width: 100%;
+                }
+            }
+        }
+
+        .design-tabs {
+            padding: 0.25rem;
+
+            .tab-item {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .design-content {
+            .design-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .design-page {
+        padding: 0.5rem;
+
+        .design-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .design-content {
+            .design-grid {
+                .design-card {
+                    .card-image {
+                        height: 150px;
+                    }
+
+                    .card-content {
+                        padding: 1rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.preview-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    outline: none;
+    border-radius: 100px;
+    padding: 6px;
+    cursor: pointer;
+    color: #fff;
+    margin-left: 16px;
+    transition: background 0.15s;
+    &:hover {
+        background: #000;
+    }
+}
