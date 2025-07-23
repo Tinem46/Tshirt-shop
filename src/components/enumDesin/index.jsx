@@ -16,7 +16,7 @@ export const DESIGN_LABEL = {
   [DESIGN_STATUS.liked]: "Đã thích",
   [DESIGN_STATUS.accepted]: "Được duyệt",
   [DESIGN_STATUS.request]: "Yêu cầu đặt hàng",
-  [DESIGN_STATUS.order]: "Chờ đặt hàng",
+  [DESIGN_STATUS.order]: "Đang xử lý đơn",
   [DESIGN_STATUS.shipping]: "Đang vận chuyển",
   [DESIGN_STATUS.delivered]: "Đã giao",
   [DESIGN_STATUS.done]: "Hoàn thành",

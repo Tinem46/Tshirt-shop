@@ -1,6 +1,6 @@
 .sidebar {
   width: 260px;
-  background-color:rgba(233, 229, 229, 1);
+  background-color: rgba(233, 229, 229, 1);
   padding: 20px;
   font-family: Arial, sans-serif;
   margin-top: 30px;
@@ -91,40 +91,42 @@
 }
 
 .logout-button {
-  
-      width: 60%;
-      padding: 14px 20px;
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      letter-spacing: -0.025em;
-      box-shadow: 
-        0 4px 6px -1px rgba(239, 68, 68, 0.3),
-        0 2px 4px -1px rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: -0.025em;
+  box-shadow:
+    0 4px 6px -1px rgba(239, 68, 68, 0.3),
+    0 2px 4px -1px rgba(239, 68, 68, 0.2);
 
-      &:hover {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        transform: translateY(-2px);
-        box-shadow: 
-          0 8px 16px -4px rgba(239, 68, 68, 0.4),
-          0 4px 8px -2px rgba(239, 68, 68, 0.3);
-      }
+  &:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 16px -4px rgba(239, 68, 68, 0.4),
+      0 4px 8px -2px rgba(239, 68, 68, 0.3);
+  }
 
-      &:active {
-        transform: translateY(0);
-        box-shadow: 
-          0 4px 6px -1px rgba(239, 68, 68, 0.3),
-          0 2px 4px -1px rgba(239, 68, 68, 0.2);
-      }
-    }
+  &:active {
+    transform: translateY(0);
+    box-shadow:
+      0 4px 6px -1px rgba(239, 68, 68, 0.3),
+      0 2px 4px -1px rgba(239, 68, 68, 0.2);
+  }
+}
 
-    .logout-section {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-    }
+.logout-section {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}

@@ -6,12 +6,15 @@ import {
   UserOutlined,
   DownOutlined,
   UpOutlined,
+  UserAddOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import api from "../../../config/api";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useDispatch } from "react-redux";
 import { logout } from "../../../redux/features/userSlice";
+import Swal from "sweetalert2";
 
 function Sidebar({ activeTab, setActiveTab }) {
   const [isAccountOpen, setIsAccountOpen] = useState(true); // Mặc định mở
@@ -43,31 +46,43 @@ function Sidebar({ activeTab, setActiveTab }) {
     fetchUser();
   }, []);
 
-  const handleLogout = () => {
-    // Lấy refreshToken từ localStorage
-    const refreshToken = localStorage.getItem("refreshToken");
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "Xác nhận đăng xuất",
+      text: "Bạn có chắc chắn muốn đăng xuất không?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Đăng xuất",
+      cancelButtonText: "Huỷ",
+    });
 
-    // Gửi request logout lên backend nếu có refreshToken
-    if (refreshToken) {
-      api.post("Auth/logout", { refreshToken }).catch((err) => {
-        // Nếu fail vẫn tiếp tục logout ở FE, không cần báo lỗi cho người dùng
-        console.error("Logout backend failed:", err);
-      });
+    if (result.isConfirmed) {
+      // Lấy refreshToken từ localStorage
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      // Gửi request logout lên backend nếu có refreshToken
+      if (refreshToken) {
+        api.post("Auth/logout", { refreshToken }).catch((err) => {
+          // Nếu fail vẫn tiếp tục logout ở FE, không cần báo lỗi cho người dùng
+          console.error("Logout backend failed:", err);
+        });
+      }
+
+      // Xoá toàn bộ thông tin trên localStorage
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+
+      // Redux logout (nếu có), điều hướng về trang login, show toast
+      dispatch(logout());
+      navigate("/login");
+      toast.success("Đã đăng xuất");
     }
-
-    // Xoá toàn bộ thông tin trên localStorage
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userId");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-
-    // Redux logout (nếu có), điều hướng về trang login, show toast
-    dispatch(logout());
-    navigate("/login");
-    toast.success("Đã đăng xuất");
   };
-
   return (
     <div className="sidebar">
       {/* Thông tin người dùng */}
@@ -168,11 +183,10 @@ function Sidebar({ activeTab, setActiveTab }) {
 
       <div className="logout-section">
         <button className="logout-button" onClick={handleLogout}>
-          Đăng Xuất
+          <LogoutOutlined style={{ marginRight: 10 }} /> Đăng Xuất
         </button>
       </div>
     </div>
-    
   );
 }
 

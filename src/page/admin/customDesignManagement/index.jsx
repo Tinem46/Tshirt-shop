@@ -119,7 +119,7 @@ export default function CustomDesignManagement() {
             </DesignStatusButton>
           )}
           {/* Request: chỉ cho status = 2 */}
-          {[2].includes(record.status) && (
+          {/* {[2].includes(record.status) && (
             <DesignStatusButton
               designId={record.id}
               status={3}
@@ -130,7 +130,7 @@ export default function CustomDesignManagement() {
             >
               Đặt hàng
             </DesignStatusButton>
-          )}
+          )} */}
           {/* Order: chỉ cho status = 3 */}
           {[3].includes(record.status) && (
             <DesignStatusButton

@@ -6,7 +6,7 @@ import api, { MATERIAL_OPTIONS, SEASON_OPTIONS } from "../../config/api";
 import { Spin } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const ShopList = ({ searchKeyword = "", categories, setSelectedMenu }) => {
+const ShopList = ({ searchKeyword = "", categories =[], setSelectedMenu }) => {
   const [shirt, setShirt] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);

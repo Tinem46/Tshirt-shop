@@ -787,3 +787,71 @@
     border-radius: 50%;
     display: flex;
 }
+
+.request-btn-container {
+    margin-top: 8px;
+    .request-btn {
+        font-size: 15px;
+        font-weight: 600;
+        padding: 7px 20px;
+        border-radius: 7px;
+        outline: none;
+        border: 1.5px solid #1976d2;
+        background: #fff;
+        color: #1976d2;
+        cursor: pointer;
+        transition: 0.18s;
+        &:hover,
+        &:focus {
+            background: #e6f0ff;
+            color: #1253b4;
+            border-color: #1253b4;
+        }
+        &.requested {
+            background: #1976d2;
+            color: #fff;
+            border-color: #1976d2;
+            &:hover,
+            &:focus {
+                background: #144c96;
+                border-color: #144c96;
+                color: #fff;
+            }
+        }
+    }
+}
+.order-status {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 2px 0 6px 0;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: #f1f7ff;
+    color: #1976d2;
+
+    &.status-1 {
+        background: #ffe29a;
+        color: #be9100;
+    } // Chờ duyệt
+    &.status-2 {
+        background: #d2ffe6;
+        color: #22a26b;
+    } // Đã duyệt
+    &.status-3 {
+        background: #d7eaff;
+        color: #1976d2;
+    } // Đã yêu cầu
+    &.status-4 {
+        background: #e8eaff;
+        color: #6145bd;
+    } // Đang sản xuất
+    &.status-5 {
+        background: #daf5c6;
+        color: #379a23;
+    } // Hoàn thành
+    &.status-6 {
+        background: #ffeded;
+        color: #d32f2f;
+    } // Đã hủy
+}

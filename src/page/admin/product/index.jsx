@@ -9,7 +9,11 @@ import {
   message,
   Table,
 } from "antd";
-import { EyeOutlined, ClusterOutlined } from "@ant-design/icons";
+import {
+  EyeOutlined,
+  ClusterOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 import { useState, useEffect } from "react";
 import { useForm } from "antd/es/form/Form";
 import api from "../../../config/api";
@@ -37,6 +41,7 @@ function ManagementProducts() {
   const [reviewStats, setReviewStats] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // ----------- SEARCH TERM
 
   const handlePreviewImage = (url) => {
     setPreviewImage(url);
@@ -181,10 +186,13 @@ function ManagementProducts() {
       if (editingVariantId) {
         await api.put(`ProductVariant/${editingVariantId}`, {
           ...values,
+          color: String(values.color),
+          size: String(values.size),
           productId: variantModal.productId,
           id: editingVariantId,
         });
         message.success("Cập nhật biến thể thành công!");
+        toast.success("Cập nhật biến thể thành công!");
       } else {
         await api.post("ProductVariant", {
           ...values,
@@ -198,6 +206,7 @@ function ManagementProducts() {
       loadVariants(variantModal.productId);
     } catch {
       message.error("Lỗi khi lưu biến thể!");
+      toast.error("Lỗi khi lưu biến thể!");
     }
   };
 
@@ -205,7 +214,7 @@ function ManagementProducts() {
   const handleEditVariant = (record) => {
     setEditingVariantId(record.id);
     variantForm.setFieldsValue(record);
-    setVariantImage(record.imageUrl || ""); // <-- CHỈ set variant image!
+    setVariantImage(record.imageUrl || "");
   };
 
   // --------- Xoá variant ---------
@@ -313,7 +322,7 @@ function ManagementProducts() {
       <Form.Item name="images" label="Ảnh sản phẩm" required>
         <input
           type="file"
-          multiple // <-- CHO PHÉP NHIỀU ẢNH
+          multiple
           accept="image/*"
           onChange={handleSelectFiles}
         />
@@ -371,7 +380,6 @@ function ManagementProducts() {
   // --------- Chuẩn hóa khi edit sản phẩm ---------
   const prepareFormForEdit = (record) => {
     if (!record) return;
-    // Lấy đúng ảnh đầu tiên thôi
     let images =
       typeof record.images === "string"
         ? JSON.parse(record.images || "[]")
@@ -387,7 +395,6 @@ function ManagementProducts() {
       ...record,
       images: firstImg ? [firstImg] : [],
     });
-    // KHÔNG reset ảnh variant ở đây!
   };
 
   // --------- Enum mapping ---------
@@ -445,16 +452,29 @@ function ManagementProducts() {
           arr = [];
         }
         if (!Array.isArray(arr) || arr.length === 0) return null;
-        const imgObj = arr.find((i) => i.isPrimary) || arr[0];
-        const url = typeof imgObj === "string" ? imgObj : imgObj.url;
-        return url ? (
-          <img
-            src={url}
-            alt=""
-            style={{ width: 40, borderRadius: 6, cursor: "zoom-in" }}
-            onClick={() => handlePreviewImage(url)}
-          />
-        ) : null;
+        return (
+          <div style={{ display: "flex", gap: 4 }}>
+            {arr.slice(0, 3).map((img, idx) => {
+              const url = typeof img === "string" ? img : img.url;
+              return (
+                <img
+                  key={idx}
+                  src={url}
+                  alt=""
+                  style={{
+                    width: 36,
+                    height: 36,
+                    objectFit: "cover",
+                    borderRadius: 5,
+                    border: "1px solid #eee",
+                    cursor: "zoom-in",
+                  }}
+                  onClick={() => handlePreviewImage(url)}
+                />
+              );
+            })}
+          </div>
+        );
       },
     },
   ];
@@ -479,6 +499,21 @@ function ManagementProducts() {
       action: (id, record) => openVariantModal(id, record?.name || ""),
     },
   ];
+
+  // --- SEARCH FILTER ---
+  const filteredProducts = products.filter((item) => {
+    if (!searchTerm.trim()) return true;
+    const composite = [
+      item.name,
+      item.sku,
+      item.description,
+      categories.find((c) => c.id === item.categoryId)?.name,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return composite.includes(searchTerm.trim().toLowerCase());
+  });
 
   // --------- Modal chi tiết sản phẩm ---------
   const renderModalContent = (record) => {
@@ -533,7 +568,6 @@ function ManagementProducts() {
         />
         <DetailRow label="Màu sắc" value={colors.join(", ")} />
         <DetailRow label="Size" value={sizes.join(", ")} />
-        {/* --- DANH SÁCH BIẾN THỂ --- */}
         {detailModalVariants.length > 0 && (
           <div className="product-detail-variants">
             <div style={{ fontWeight: 600, margin: "16px 0 8px" }}>
@@ -617,6 +651,24 @@ function ManagementProducts() {
   // --------- Render ---------
   return (
     <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
+        <h2 style={{ fontWeight: 700, margin: 0 }}>Danh sách sản phẩm</h2>
+        <Input
+          placeholder="Tìm kiếm sản phẩm, mã, mô tả, danh mục..."
+          style={{ width: 320 }}
+          prefix={<SearchOutlined />}
+          allowClear
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <DashboardTemplate
         title="Product"
         columns={columns}
@@ -631,7 +683,7 @@ function ManagementProducts() {
         loading={loading}
         showEditDelete={true}
         customActions={customActions}
-        // dataSource={products}
+        dataSource={filteredProducts} // <-- filter search
         products={products}
         setProducts={setProducts}
         resetImage={() => setImageList([])}
@@ -646,7 +698,7 @@ function ManagementProducts() {
         open={!!detailModalRecord}
         onCancel={() => setDetailModalRecord(null)}
         footer={null}
-        width={1000}
+        width={1200}
         destroyOnClose
       >
         {renderModalContent(detailModalRecord)}

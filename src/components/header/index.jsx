@@ -8,8 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Wallet as WalletIcon } from "@mui/icons-material";
 import { Dropdown, Menu } from "antd";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../redux/features/userSlice";
+import { useSelector } from "react-redux";
+
 import { toast } from "react-toastify";
 
 import { MdAutoAwesome } from "react-icons/md";
@@ -17,7 +17,6 @@ import api from "../../config/api";
 
 const Header = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -62,7 +61,6 @@ const Header = () => {
     token ? navigate("/userLayout") : navigate("/login");
   }
 
-
   const handleSearch = () => {
     if (!searchValue.trim()) {
       alert("Vui lòng nhập từ khóa tìm kiếm");
@@ -76,7 +74,7 @@ const Header = () => {
     <header className="header">
       <div className="header__logo" onClick={() => navigate("/")}>
         <img
-          src="https://keedo.vn/wp-content/uploads/2020/08/logo-keedo.png"
+          src="https://play-lh.googleusercontent.com/CiViLLdxeQXbMm58leR2-H_HR4JS9mq6_73Pg6EqtGq1bcKX_R2iaTOqkavlBtxzbyY"
           alt="logo"
         />
       </div>

@@ -206,19 +206,17 @@ function DashboardTemplate(props) {
     console.log("DATA POST TO BACKEND:", values);
     console.log(values);
     setLoading(true);
-    let images = Array.isArray(values.images)
+    const images = Array.isArray(values.images)
       ? values.images
-          .filter((img) => img.url && img.url.trim() !== "") // chỉ giữ ảnh có url thật
+          .filter((img) => img.url && img.url.trim() !== "")
           .map((img) => ({
+            ...img, // bao gồm cả id nếu là update
             url: img.url,
             isPrimary: img.isPrimary ?? false,
           }))
       : [];
-    // Xây payload cho đúng DTO
-    const payload = {
-      ...values,
-      images,
-    };
+    const payload = { ...values, images };
+
     try {
       // if (values.image) {
       //   const img = await uploadFile(values.image.fileList[0].originFileObj);
@@ -230,7 +228,7 @@ function DashboardTemplate(props) {
           ? apiURI(editingRecord ? "put" : "post")
           : apiURI;
       if (editingRecord) {
-        await api.put(`${uri}/${values.id}`, { dto: { ...values, images } });
+        await api.put(`${uri}/${values.id}`, payload);
 
         toast.success("Update successful");
       } else {
@@ -283,12 +281,30 @@ function DashboardTemplate(props) {
     ...(showEditDelete || (customActions && customActions.length > 0)
       ? [
           {
-            title: <div style={{ textAlign: "center", width: "100%", justifyContent: "center" }}>Actions</div>,
+            title: (
+              <div
+                style={{
+                  textAlign: "center",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
+                Actions
+              </div>
+            ),
             className: "actions-column",
             key: "actions",
             align: "center", // Thêm dòng này để căn giữa nội dung cột
             render: (_, record) => (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", width: "100%", justifyContent: "center" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  flexWrap: "wrap",
+                  width: "100%",
+                  justifyContent: "center",
+                }}
+              >
                 {customActions &&
                   customActions.map(
                     (action, index) =>

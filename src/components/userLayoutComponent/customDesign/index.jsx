@@ -13,10 +13,8 @@ import { Modal } from "antd";
 const tabList = [
   { key: "all", label: "Tất cả", status: -1 },
   { key: "draft", label: "Nháp", status: DESIGN_STATUS.draft },
-  { key: "liked", label: "Đã thích", status: DESIGN_STATUS.liked },
-  { key: "accepted", label: "Được duyệt", status: DESIGN_STATUS.accepted },
   { key: "request", label: "Yêu cầu ", status: DESIGN_STATUS.request },
-  { key: "order", label: "Chờ đặt hàng", status: DESIGN_STATUS.order },
+  { key: "order", label: "Đang xử lý đơn", status: DESIGN_STATUS.order },
   { key: "shipping", label: "Đang vận chuyển", status: DESIGN_STATUS.shipping },
   { key: "delivered", label: "Đã giao", status: DESIGN_STATUS.delivered },
   { key: "done", label: "Hoàn thành", status: DESIGN_STATUS.done },
@@ -198,27 +196,6 @@ const DesignPage = () => {
                     alt={design.designName}
                   />
                   <div className="card-overlay">
-                    {(design.status === DESIGN_STATUS.liked ||
-                      design.status === DESIGN_STATUS.draft) && (
-                      <button
-                        className="like-button"
-                        onClick={() => handleToggleLike(design)}
-                      >
-                        <Heart
-                          size={24}
-                          color={
-                            design.status === DESIGN_STATUS.liked
-                              ? "#ef4444"
-                              : "#ffffff"
-                          }
-                          fill={
-                            design.status === DESIGN_STATUS.liked
-                              ? "#ef4444"
-                              : "none"
-                          }
-                        />
-                      </button>
-                    )}
                     <button
                       className="preview-btn"
                       onClick={() => {
@@ -255,7 +232,7 @@ const DesignPage = () => {
                   </div>
 
                   {/* === Nút chuyển trạng thái (chỉ hiện đúng sản phẩm hợp lệ) === */}
-                  {design.status === DESIGN_STATUS.accepted && (
+                  {design.status === DESIGN_STATUS.draft && (
                     <DesignStatusButton
                       designId={design.id}
                       status={DESIGN_STATUS.request}
@@ -267,13 +244,34 @@ const DesignPage = () => {
                         height: "40px",
                       }}
                       onSuccess={() => {
-                        fetchDesigns(); // Reload lại danh sách thiết kế
+                        fetchDesigns();
                         toast.success(
                           "Vui lòng kiểm tra email để xác nhận đơn đặt hàng!"
                         );
                       }}
                     >
                       Đặt hàng
+                    </DesignStatusButton>
+                  )}
+
+                  {design.status === DESIGN_STATUS.request && (
+                    <DesignStatusButton
+                      designId={design.id}
+                      status={DESIGN_STATUS.draft} // Trả về draft khi hủy
+                      danger
+                      style={{
+                        marginTop: 8,
+                        width: "100%",
+                        borderRadius: 8,
+                        height: "40px",
+                      }}
+                      withConfirm // custom prop, xử lý ở trong component để hỏi confirm
+                      onSuccess={() => {
+                        fetchDesigns();
+                        toast.success("Yêu cầu đã được hủy!");
+                      }}
+                    >
+                      Hủy yêu cầu
                     </DesignStatusButton>
                   )}
 
@@ -317,7 +315,7 @@ const DesignPage = () => {
           style={{
             width: "100%",
             borderRadius: 12,
-            maxHeight: "70vh",    
+            maxHeight: "70vh",
           }}
         />
       </Modal>

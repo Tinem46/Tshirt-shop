@@ -16,7 +16,7 @@ import api from "../../config/api"
 import { useNavigate, useParams } from "react-router-dom"
 import ProductReviews from "../../components/review/index"
 import "../../components/review/index.scss"
-import { getProductVariantsReviews, getReviewByProductId } from "../../utils/reviewService"
+import { getReviewByProductId } from "../../utils/reviewService"
 import { toast } from "react-toastify"
 // Enum mappings (keeping original)
 const COLOR_NAME_MAP = {
