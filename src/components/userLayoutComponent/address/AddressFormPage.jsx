@@ -30,10 +30,11 @@ const AddressFormPage = ({ mode, address, onCancel, onSuccess }) => {
             return;
         }
 
-        if (!/^(0|\+84)(3[2-9]|5[6-9]|7[0-9]|8[1-9]|9[0-9])[0-9]{7,8}$/.test(phone)) {
+        if (!/^(09|03)([0-9]{7,8})$/.test(phone)) {
             toast.error("Số điện thoại không hợp lệ");
             return;
         }
+
         try {
             setLoading(true);
             if (mode === "edit") {
@@ -84,7 +85,7 @@ const AddressFormPage = ({ mode, address, onCancel, onSuccess }) => {
                         <Input placeholder="VD: Nguyễn Văn A" />
                     </Form.Item>
 
-                    <Form.Item name="phone" label="Số điện thoại" >
+                    <Form.Item name="phone" label="Số điện thoại" rules={[{ required: true}]} >
                         <Input placeholder="0964xxxxxx" />
                     </Form.Item>
 

@@ -1,6 +1,6 @@
 
 import { useEffect, useRef, useState } from "react"
-import { Button, Spin, Badge } from "antd"
+import { Button, Spin, Badge, Tag } from "antd"
 import {
   LeftOutlined,
   RightOutlined,
@@ -16,7 +16,8 @@ import api from "../../config/api"
 import { useNavigate, useParams } from "react-router-dom"
 import ProductReviews from "../../components/review/index"
 import "../../components/review/index.scss"
-import { getProductVariantsReviews } from "../../utils/reviewService"
+import { getProductVariantsReviews, getReviewByProductId } from "../../utils/reviewService"
+import { toast } from "react-toastify"
 // Enum mappings (keeping original)
 const COLOR_NAME_MAP = {
   Black: "Đen",
@@ -65,8 +66,8 @@ const SEASON_NAME_MAP = {
 }
 
 const COLOR_CSS_MAP = {
-  Black: "black",
-  White: "white",
+  Black: "#000000ff",
+  White: "#e0e5eaff",
   Gray: "gray",
   Red: "red",
   Blue: "blue",
@@ -85,10 +86,17 @@ function getSizeName(size) {
   return SIZE_NAME_MAP[key] || size
 }
 
+
 function getColorName(color) {
   const key = typeof color === "number" ? Object.keys(COLOR_NAME_MAP)[color] : color
-  return COLOR_NAME_MAP[key] || color
+  return COLOR_NAME_MAP[key] || key || "Không rõ"
 }
+
+function getColorCssValue(color) {
+  const key = typeof color === "number" ? Object.keys(COLOR_NAME_MAP)[color] : color
+  return COLOR_CSS_MAP[key]
+}
+
 
 function getMaterialName(material) {
   const key = typeof material === "number" ? Object.keys(MATERIAL_NAME_MAP)[material] : material
@@ -116,6 +124,8 @@ const DetailPage = () => {
   const navigate = useNavigate()
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [displayImages, setDisplayImages] = useState([]);
+
 
   // Lấy thông tin sản phẩm & biến thể
   useEffect(() => {
@@ -133,24 +143,33 @@ const DetailPage = () => {
         // 1. Lấy sản phẩm
         const res = await api.get(`Product/${id}`)
         const data = res.data?.data
+
         // 2. Lấy biến thể sản phẩm
         const resVariant = await api.get(`ProductVariant/product/${id}`)
         const variantData = Array.isArray(resVariant.data?.data) ? resVariant.data.data : []
 
         if (data) {
+          const firstColorInVariants = variantData[0]?.color;
+          const imagesForFirstColor = variantData
+            .filter(v => v.color === firstColorInVariants)
+            .map(v => v.imageUrl)
+            .filter(Boolean);
+
+          // Gọi setProduct chỉ 1 lần
           setProduct({
             ...data,
-            images: safeJsonParse(data.images),
-          })
-          setVariants(variantData)
-          const variantIds = [...new Set(variantData.map((v) => v.id))]
-          if (variantIds.length > 0) {
-            const firstVariantId = variantData[0].id
-            fetchReviewsForVariant(firstVariantId)
-          }
+            images: imagesForFirstColor.length > 0 ? imagesForFirstColor : safeJsonParse(data.images),
+          });
+          setDisplayImages(imagesForFirstColor.length > 0 ? imagesForFirstColor : safeJsonParse(data.images));
+
+          setVariants(variantData);
+          setSelectedColor(firstColorInVariants);
+
+          fetchReviewsForVariant(data.id);
         } else {
           setProduct(null)
         }
+
       } catch (err) {
         setProduct(null)
         setVariants([])
@@ -159,18 +178,45 @@ const DetailPage = () => {
       }
     }
 
+
     fetchProduct()
   }, [id])
 
+  const updateImageFromColor = (colorValue) => {
+    setSelectedIndex(0); // Reset ảnh về đầu tiên
 
-  const fetchReviewsForVariant = async (variantId) => {
+    const images = variants
+      .filter(v => v.color === colorValue)
+      .map(v => v.imageUrl)
+      .filter(Boolean);
+
+    if (images.length > 0) {
+      setDisplayImages(images);
+    } else {
+      // Nếu không có ảnh theo màu, fallback sang ảnh gốc (nếu muốn)
+      setDisplayImages(product.images || []);
+    }
+  };
+
+
+
+  useEffect(() => {
+    if (product && variants.length > 0) {
+      const firstColorInVariants = variants[0].color;
+      setSelectedColor(firstColorInVariants)
+      updateImageFromColor(firstColorInVariants)
+    }
+  }, [product, variants])
+
+  const fetchReviewsForVariant = async (productId) => {
     setLoadingReviews(true);
     try {
-      console.log("🛰️ Gọi API lấy review cho 1 productVariantId:", variantId)
-      const res = await getProductVariantsReviews(variantId);
-      const reviewList = res.data || []
+      const res = await getReviewByProductId(productId);
+
+      const reviewList = Array.isArray(res.data?.data) ? res.data.data : []
       console.log("📦 Review trả về:", reviewList)
       setReviews(reviewList)
+
     } catch (err) {
       console.error("Lỗi khi lấy đánh giá:", err);
       setReviews([]);
@@ -202,10 +248,14 @@ const DetailPage = () => {
   }
 
   const handleChangeImage = (direction) => {
-    if (!product) return
-    const max = product.images.length
-    setSelectedIndex((prev) => (direction === "left" ? (prev > 0 ? prev - 1 : max - 1) : (prev + 1) % max))
-  }
+    if (!displayImages || displayImages.length === 0) return;
+    const max = displayImages.length;
+    setSelectedIndex((prev) =>
+      direction === "left"
+        ? (prev > 0 ? prev - 1 : max - 1)
+        : (prev + 1) % max
+    );
+  };
 
   // Handle thêm vào giỏ hàng
   const handleAddtoCart = async () => {
@@ -318,10 +368,15 @@ const DetailPage = () => {
     )
   }
 
+
+  const getSelectedVariant = () => {
+    return variants.find(v => v.size === selectedSize && v.color === selectedColor);
+  }
+
+
   if (!product) {
     return <div className="error-message">Không tìm thấy sản phẩm.</div>
   }
-
 
 
 
@@ -332,14 +387,8 @@ const DetailPage = () => {
           <div className="product-image">
             <div className="main-image-wrapper">
               <div className="main-image" onClick={() => setIsModalOpen(true)}>
-                <img
-                  src={
-                    product.images?.[selectedIndex] ||
-                    "https://dosi-in.com/images/detailed/42/CDL10_1.jpg" ||
-                    "/placeholder.svg"
-                  }
-                  alt="product"
-                />
+                <img src={displayImages[selectedIndex]} alt="product" />
+
 
                 {/* Image Navigation Arrows */}
                 <Button
@@ -364,16 +413,15 @@ const DetailPage = () => {
             <div className="thumbnail-section">
               <Button className="nav-button left" icon={<LeftOutlined />} onClick={() => scrollThumbnails("left")} />
               <div ref={containerRef} className="thumbnail-container">
-                {Array.isArray(product.images) &&
-                  product.images.map((img, index) => (
-                    <div
-                      key={index}
-                      className={`thumbnail ${selectedIndex === index ? "active" : ""}`}
-                      onClick={() => setSelectedIndex(index)}
-                    >
-                      <img src={img || "/placeholder.svg"} alt={`thumbnail ${index + 1}`} />
-                    </div>
-                  ))}
+                {displayImages.map((img, index) => (
+                  <div
+                    key={index}
+                    className={`thumbnail ${selectedIndex === index ? "active" : ""}`}
+                    onClick={() => setSelectedIndex(index)}
+                  >
+                    <img src={img || "/placeholder.svg"} alt={`thumbnail ${index + 1}`} />
+                  </div>
+                ))}
               </div>
               <Button className="nav-button right" icon={<RightOutlined />} onClick={() => scrollThumbnails("right")} />
             </div>
@@ -381,7 +429,7 @@ const DetailPage = () => {
             <ImageModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
-              images={product.images}
+              images={displayImages}
               selectedIndex={selectedIndex}
               onChangeImage={handleChangeImage}
             />
@@ -422,7 +470,6 @@ const DetailPage = () => {
                 </div>
               </div>
             )}
-
             {/* Chọn Màu */}
             {filteredColors.length > 0 && (
               <div className="color-selection">
@@ -430,13 +477,20 @@ const DetailPage = () => {
                 <div className="color-options">
                   {filteredColors.map((color, idx) => {
                     const colorName = getColorName(color)
+                    const cssColor = getColorCssValue(color)
                     return (
                       <div
                         key={color + idx}
                         className={`color-circle ${selectedColor === color ? "active" : ""}`}
-                        style={{ backgroundColor: COLOR_CSS_MAP[colorName] || "gray" }}
+                        style={{ backgroundColor: cssColor }}
                         title={colorName}
-                        onClick={() => setSelectedColor(color)}
+                        onClick={() => {
+                          console.log("🟢 Màu được chọn từ UI:", color)
+                          setSelectedColor(color)
+                          updateImageFromColor(color)
+                        }
+                        }
+
                       >
                         {selectedColor === color && <CheckOutlined className="color-check" />}
                       </div>
@@ -458,6 +512,32 @@ const DetailPage = () => {
               >
                 Thêm Vào Giỏ
               </Button>
+              {
+                (() => {
+                  const selectedVariant = getSelectedVariant()
+                  return selectedVariant ? (
+                    <Tag
+                      color={selectedVariant.quantity === 0 ? "red" : "green"}
+                      style={{
+                        marginTop: 12,
+                        padding: "6px 14px",
+                        fontSize: 20,
+                        fontWeight: 600,
+                        borderRadius: "999px",
+                        backgroundColor: selectedVariant.quantity === 0 ? "#ffecec" : "#f6ffed",
+                        color: selectedVariant.quantity === 0 ? "#cf1322" : "#389e0d",
+                        border: `1px solid ${selectedVariant.quantity === 0 ? "#ffa39e" : "#b7eb8f"}`,
+                        display: "inline-block",
+                        width: "fit-content",
+                      }}
+                    >
+                      {selectedVariant.quantity === 0
+                        ? "Hết hàng"
+                        : `Còn lại: ${selectedVariant.quantity}`}
+                    </Tag>
+                  ) : null
+                })()
+              }
             </div>
 
             <div className="delivery-area">
@@ -487,7 +567,7 @@ const DetailPage = () => {
                   <span className="label">Chất liệu:</span>
                   <span className="value">{getMaterialName(product.material)}</span>
                 </div>
-                <div className="detail-item">
+                {/* <div className="detail-item">
                   <span className="label">Kích thước:</span>
                   <span className="value">
                     {[...uniqueSizes]
@@ -504,7 +584,7 @@ const DetailPage = () => {
                 <div className="detail-item">
                   <span className="label">Màu sắc:</span>
                   <span className="value">{uniqueColors.filter(Boolean).map(getColorName).join(" - ")}</span>
-                </div>
+                </div> */}
                 <div className="detail-item">
                   <span className="label">Mùa:</span>
                   <span className="value">{getSeasonName(product.season) || "Tất cả mùa"}</span>
@@ -524,8 +604,8 @@ const DetailPage = () => {
             loading={loadingReviews}
           />
         </div>
-      </div>
-      <Carousel numberOfSlides={6} numberOfItems={12} img={product.images?.[0]} />
+      </div >
+      <Carousel numberOfSlides={6} numberOfItems={12} img={displayImages?.[0]} />
     </>
   )
 }

@@ -44,7 +44,7 @@ const DesignStatusButton = ({
       }
 
       await api.patch(`CustomDesign/${designId}/status`, { status });
-      toast.success("Cập nhật trạng thái thành công!");
+      // toast.success("Cập nhật trạng thái thành công!");
       if (onSuccess) onSuccess();
     } catch (err) {
       toast.error(

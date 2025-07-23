@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, message } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import "./address.scss";
-import { deleteAddress, getUserAddress, setDefaultAddress } from "../../../utils/addressService";
+import { getUserAddress, setDefaultAddress } from "../../../utils/addressService";
 import AddressFormPage from "./AddressFormPage";
 import DeleteAddressModal from "./DeleteAddressModal";
 
@@ -45,15 +45,6 @@ const Address = () => {
     setEditingAddress(null)
   }
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteAddress(id);
-      message.success("xóa địa chỉ thành công");
-      getAddresses();
-    } catch {
-      message.error("Xoá thất bại");
-    }
-  }
 
   const handleBack = () => {
     setMode("list");

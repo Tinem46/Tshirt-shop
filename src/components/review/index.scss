@@ -4,8 +4,10 @@
   border-radius: 0.75rem;
   padding: 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
   .reviews-header {
     margin-bottom: 2rem;
+
     h2 {
       font-size: 1.5rem;
       font-weight: 700;
@@ -13,26 +15,32 @@
       margin-bottom: 1.5rem;
       text-align: left;
     }
+
     .rating-overview {
       margin-bottom: 1.5rem;
+
       .rating-summary {
         display: flex;
         align-items: center;
         gap: 1rem;
+
         .average-rating {
           display: flex;
           align-items: baseline;
           gap: 0.5rem;
+
           .rating-number {
             font-size: 2.5rem;
             font-weight: 700;
             color: #ff4d4f;
           }
+
           .rating-text {
             font-size: 1rem;
             color: #666;
           }
         }
+
         .stars-display {
           .ant-rate {
             color: #ff4d4f;
@@ -41,10 +49,12 @@
         }
       }
     }
+
     .filter-buttons {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
+
       .filter-btn {
         border-radius: 0.375rem;
         font-size: 0.875rem;
@@ -54,14 +64,17 @@
         background: white;
         color: #374151;
         transition: all 0.2s ease;
+
         &:hover {
           border-color: #ff4d4f;
           color: #ff4d4f;
         }
+
         &.active {
           background: #ff4d4f;
           border-color: #ff4d4f;
           color: white;
+
           &:hover {
             background: #ff7875;
             border-color: #ff7875;
@@ -70,75 +83,92 @@
       }
     }
   }
+
   .reviews-list {
     .review-item {
       border-bottom: 1px solid #f0f0f0;
       padding: 1.5rem 0;
+
       &:last-child {
         border-bottom: none;
       }
+
       .review-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
         margin-bottom: 1rem;
+
         .user-info {
           display: flex;
           gap: 0.75rem;
+
           .user-avatar {
             background: #f5f5f5;
             color: #999;
           }
+
           .user-details {
             .username {
               font-weight: 600;
               color: #1a1a1a;
               margin-bottom: 0.25rem;
             }
+
             .review-rating {
               margin-bottom: 0.25rem;
+
               .ant-rate {
                 font-size: 0.875rem;
                 color: #ff4d4f;
               }
             }
+
             .review-date {
               font-size: 0.75rem;
               color: #999;
             }
           }
         }
+
         .more-options {
           color: #999;
+
           &:hover {
             color: #666;
           }
         }
       }
+
       .review-content {
         margin-left: 3rem;
         margin-bottom: 1rem;
+
         .review-comment {
           color: #374151;
           line-height: 1.5;
           margin-bottom: 1rem;
         }
+
         .review-images {
           display: flex;
           gap: 0.5rem;
           flex-wrap: wrap;
+
           .review-image {
             width: 80px;
             height: 80px;
             border-radius: 0.375rem;
             overflow: hidden;
             border: 1px solid #e5e7eb;
+
             img {
               width: 100%;
               height: 100%;
               object-fit: cover;
               cursor: pointer;
               transition: transform 0.2s ease;
+
               &:hover {
                 transform: scale(1.05);
               }
@@ -146,16 +176,20 @@
           }
         }
       }
+
       .review-actions {
         margin-left: 3rem;
+
         .helpful-btn {
           color: #999;
           font-size: 0.875rem;
           padding: 0;
           height: auto;
+
           &:hover {
             color: #ff4d4f;
           }
+
           .anticon {
             margin-right: 0.25rem;
           }
@@ -163,6 +197,7 @@
       }
     }
   }
+
   .no-reviews {
     text-align: center;
     padding: 3rem 0;
@@ -175,6 +210,7 @@
   .product-reviews {
     padding: 1.5rem;
     margin-top: 2rem;
+
     .reviews-header {
       .filter-buttons {
         .filter-btn {
@@ -183,6 +219,7 @@
         }
       }
     }
+
     .reviews-list {
       .review-item {
         .review-header {
@@ -190,10 +227,12 @@
             gap: 0.5rem;
           }
         }
+
         .review-content,
         .review-actions {
           margin-left: 2.5rem;
         }
+
         .review-content {
           .review-images {
             .review-image {

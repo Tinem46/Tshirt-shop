@@ -158,7 +158,7 @@ export default function CustomDesignManagement() {
             </DesignStatusButton>
           )}
           {/* Delivered: chỉ cho status = 5 */}
-          {[5].includes(record.status) && (
+          {/* {[5].includes(record.status) && (
             <DesignStatusButton
               designId={record.id}
               status={6}
@@ -169,7 +169,7 @@ export default function CustomDesignManagement() {
             >
               Delivered
             </DesignStatusButton>
-          )}
+          )} */}
           {/* Done: chỉ cho status = 6 */}
           {[6].includes(record.status) && (
             <DesignStatusButton
@@ -184,7 +184,7 @@ export default function CustomDesignManagement() {
             </DesignStatusButton>
           )}
           {/* Từ chối: chỉ cho status < 6 */}
-          {[0, 1, 2, 3, 4, 5].includes(record.status) && (
+          {[0, 1, 2, 3].includes(record.status) && (
             <DesignStatusButton
               designId={record.id}
               status={8}

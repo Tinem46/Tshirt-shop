@@ -60,9 +60,18 @@ export const getProductVariantsReviews = (variantId) =>
     return res.data;
   });
 
+export const getReviewByProductId = (productId) => {
+   return api.get(`reviews/product/${productId}`)
+}
+
+// export const getReviewByProductId = (productId) => {
+//   return api.get(`reviews/product/${productId}`);
+// }
+
 export const updateReview = (reviewId, data) => {
   console.log("[DEBUG] API PUT /reviews/" + reviewId, data);
   return api.put(`reviews/${reviewId}`, data);
 }
 export const getUserReviewsByUserID = (userId) =>
   api.get(`reviews`, { params: { UserId: userId } });
+
