@@ -70,8 +70,15 @@ function OrderManagement() {
     "Failed", // 6
     "Paid", // 7
   ];
+  const PAYMENT_METHOD_LABELS_EN = [
+    "VNPAY", // 0
+    "COD", // 1
+  ];
   function getPaymentStatusLabel(status) {
     return PAYMENT_STATUS_LABELS_EN[status] || `Unknown (${status})`;
+  }
+  function getPaymentMethodLabel(method) {
+    return PAYMENT_METHOD_LABELS_EN[method] || `Unknown (${method})`;
   }
 
   const fetchOrderDetails = async (orderId) => {
@@ -190,6 +197,12 @@ function OrderManagement() {
       dataIndex: "paymentStatus",
       key: "paymentStatus",
       render: (status) => getPaymentStatusLabel(status),
+    },
+    {
+      title: "Payment Method",
+      dataIndex: "paymentMethod",
+      key: "paymentMethod",
+      render: (method) => getPaymentMethodLabel(method),
     },
     {
       title: "View Details",

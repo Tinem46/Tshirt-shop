@@ -1,7 +1,7 @@
 // pages/user/Payment/index.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Button, Select, Radio } from "antd";
+import { Button, Select, Radio, Spin } from "antd";
 import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
 import { toast } from "react-toastify";
@@ -11,8 +11,17 @@ import {
   setSavedCoupons,
   selectCoupon,
 } from "../../redux/features/couponSlice";
+import Swal from "sweetalert2";
+import Navigation from "../../components/navBar";
+import { ProductColorMap, ProductSizeMap } from "../../utils/enumMaps";
 
 const { Option } = Select;
+
+// Enum mapping: 0 = VNPAY, 1 = COD (theo BE)
+const PaymentMethodEnum = {
+  VNPAY: 0,
+  COD: 1,
+};
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -38,7 +47,8 @@ const PaymentPage = () => {
   // Shipping/payment method
   const [shippingMethods, setShippingMethods] = useState([]);
   const [shippingMethodId, setShippingMethodId] = useState(null);
-  const [paymentType, setPaymentType] = useState("COD");
+  const [paymentType, setPaymentType] = useState("COD"); // default COD
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchShippingMethods = async () => {
@@ -54,69 +64,76 @@ const PaymentPage = () => {
 
   // Tạo order
   const handlePlaceOrder = async () => {
+    setLoading(true);
     if (!shippingMethodId) {
       toast.error("Vui lòng chọn phương thức vận chuyển!");
+      setLoading(false);
       return;
     }
     if (!paymentType) {
       toast.error("Vui lòng chọn phương thức thanh toán!");
+      setLoading(false);
       return;
     }
-    console.log("Cart gửi sang order:", cart);
-    const payload = {
-      userAddressId: userAddressId || null, // Nếu là null sẽ bỏ qua field này
-      newAddress: newAddress || null, // Nếu là null sẽ bỏ qua field này
-      customerNotes: userDetails?.additionalInfo || "",
-      couponId: selectedCoupon?.id || null,
-      shippingMethodId,
-      orderItems: cart.map((item) => ({
-        cartItemId: item.id,
-        productId: item.productId ?? item.detail?.productId ?? null,
-        customDesignId: item.customDesignId ?? null,
-        productVariantId: item.productVariantId ?? item.detail?.id ?? null,
-        itemName: item.itemName ?? item.name ?? item.detail?.productName ?? "",
-        selectedColor: item.selectedColor ?? item.detail?.color ?? "",
-        selectedSize: item.selectedSize ?? item.detail?.size ?? "",
-        image: item.image ?? item.detail?.imageUrl ?? "",
-        quantity: item.quantity,
-        unitPrice: item.unitPrice ?? item.detail?.price ?? 0,
-      })),
-      paymentMethod: paymentType === "COD" ? 0 : 1, // 0: COD, 1: VNPAY
-    };
+    console.log("Placing order with shipping method:", shippingMethodId);
+    console.log("paymentType:", paymentType);
+    console.log("Mapped PaymentMethod:", PaymentMethodEnum[paymentType]);
 
-    console.log("OrderItems gửi đi:", payload.orderItems);
-    console.log("Payload gửi đi:", payload);
+    const payload = {
+      UserAddressId: userAddressId || null,
+      NewAddress: newAddress || null,
+      CustomerNotes: userDetails?.additionalInfo || "",
+      CouponId: selectedCoupon?.id || null,
+      ShippingMethodId: shippingMethodId,
+      OrderItems: cart.map((item) => ({
+        CartItemId: item.id ?? null,
+        ProductVariantId: item.productVariantId ?? item.detail?.id ?? null,
+        Quantity: item.quantity,
+      })),
+      PaymentMethod: PaymentMethodEnum[paymentType], // <--- dùng mapping
+    };
+    console.log("Placing order with payload:", payload);
 
     try {
       const res = await api.post("Orders", payload);
       const orderId = res.data.order.id;
 
       if (paymentType === "VNPAY") {
+        // Chỉ gọi create payment nếu chọn VNPAY
         const paymentRes = await api.post("Payments/create", {
           orderId,
-          paymentMethod: 0, // VNPAY
+          paymentMethod: PaymentMethodEnum.VNPAY, // 0
           description: "Thanh toán qua VNPay",
         });
 
         const paymentUrl = paymentRes.data?.paymentUrl || paymentRes.data?.url;
         if (paymentUrl) {
           window.location.href = paymentUrl;
-          return; // <-- PHẢI return để không chạy xuống else
+          return;
         } else {
           toast.error("Không lấy được link thanh toán VNPay!");
-          return; // <-- PHẢI return nếu không lấy được link!
+          return;
         }
       } else if (paymentType === "COD") {
-        // Nếu là COD, không cần làm gì thêm, chỉ cần thông báo thành công
-        toast.success("Đặt hàng thành công!");
+        // Nếu COD thì báo thành công, không gọi Payments/create
+        await Swal.fire({
+          title: "🎉 Đặt hàng thành công",
+          text: "Đơn hàng sẽ đến tay bạn sớm nhất 🚚",
+          icon: "success",
+          timer: 3000,
+          showConfirmButton: true,
+          confirmButtonText: "OK",
+        });
         navigate(`/order-success/${orderId}`);
       } else {
         toast.error("Phương thức thanh toán không hợp lệ!");
-        return; // <-- PHẢI return nếu phương thức không hợp lệ
+        return;
       }
     } catch (error) {
       toast.error("Đặt hàng thất bại! Vui lòng thử lại.");
       console.error("Error placing order:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -125,10 +142,6 @@ const PaymentPage = () => {
     shippingMethods.find((x) => x.id === shippingMethodId)?.fee ??
     cartSummary?.estimatedShipping ??
     0;
-  // const estimatedTotal =
-  //   (cartSummary?.totalAmount || 0) +
-  //   shippingFee -
-  //   (cartSummary?.estimatedShipping || 0);
 
   const handleApplyCoupon = async (couponId) => {
     const coupon = userCoupons.find((c) => c.id === couponId);
@@ -160,7 +173,6 @@ const PaymentPage = () => {
         })
       );
       toast.success("Áp dụng mã thành công!");
-      console.log("Coupon áp dụng:", res.data);
     } catch (err) {
       dispatch(selectCoupon(null));
       toast.error(
@@ -171,131 +183,154 @@ const PaymentPage = () => {
   };
 
   return (
-    <div className="payment-page-root">
-      <div className="payment-row">
-        {/* Cột chọn phương thức */}
-        <div className="payment-main">
-          <div className="payment-section">
-            <h2>Chọn phương thức vận chuyển</h2>
-            <Select
-              style={{ width: "100%" }}
-              placeholder="Chọn phương thức giao hàng"
-              value={shippingMethodId}
-              onChange={setShippingMethodId}
-            >
-              {shippingMethods.map((m) => (
-                <Option value={m.id} key={m.id}>
-                  {m.name} ({m.description}) -{" "}
-                  {m.fee ? <FormatCost value={m.fee} /> : "Miễn phí"}
-                </Option>
+    <>
+      <Navigation
+        mainName="Payment"
+        img="https://img.ws.mms.shopee.vn/vn-11134210-7r98o-lodhuspkwjqrac"
+      />
+      <div className="payment-page-root">
+        <div className="payment-row">
+          {/* Cột chọn phương thức */}
+          <div className="payment-main">
+            <div className="payment-section">
+              <h2>Chọn phương thức vận chuyển</h2>
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Chọn phương thức giao hàng"
+                value={shippingMethodId}
+                onChange={setShippingMethodId}
+              >
+                {shippingMethods.map((m) => (
+                  <Option value={m.id} key={m.id}>
+                    {m.name} ({m.description}) -{" "}
+                    {m.fee ? <FormatCost value={m.fee} /> : "Miễn phí"}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+
+            <div className="payment-section">
+              <h2>Chọn phương thức thanh toán</h2>
+              <Radio.Group
+                onChange={(e) => setPaymentType(e.target.value)}
+                value={paymentType}
+              >
+                <Radio value="VNPAY">VNPay (ATM/QR)</Radio>
+                <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
+              </Radio.Group>
+            </div>
+
+            <div className="payment-section">
+              <h2>Mã giảm giá</h2>
+              <Select
+                style={{ width: "100%" }}
+                placeholder="Chọn mã giảm giá"
+                value={selectedCoupon?.id}
+                onChange={handleApplyCoupon}
+                allowClear
+              >
+                {userCoupons.map((c) => (
+                  <Select.Option value={c.id} key={c.id}>
+                    {c.code} - {c.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
+            <div className="payment-section" style={{ marginBottom: 0 }}>
+              <Button
+                loading={loading}
+                type="primary"
+                onClick={handlePlaceOrder}
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  marginTop: 20,
+                  background:
+                    "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
+                  color: "#fff",
+                }}
+              >
+                {loading ? <Spin size="small" /> : "Đặt hàng"}
+              </Button>
+            </div>
+          </div>
+
+          {/* Cột chi tiết đơn hàng */}
+          <div className="payment-summary">
+            <h2 style={{ color: "white" }}>Chi tiết đơn hàng</h2>
+            <ul>
+              {cart?.map((item) => (
+                <li key={item.id}>
+                  <img
+                    src={item?.detail?.imageUrl || item.image}
+                    className="item-img"
+                    alt=""
+                  />
+                  <div className="item-detail">
+                    <span className="item-name">{item.productName}</span>
+                    <span className="item-qty">x {item.quantity}</span>
+                    {ProductColorMap[item?.detail?.color] ||
+                      (item.color && (
+                        <span
+                          style={{
+                            fontSize: 14,
+                            marginLeft: 5,
+                            color: "black",
+                          }}
+                        >
+                          {ProductColorMap[item?.detail?.color] || item.color}
+                        </span>
+                      ))}
+                    {ProductSizeMap[item?.detail?.size] ||
+                      (item.size && (
+                        <span
+                          style={{ fontSize: 14, marginLeft: 5, color: "#666" }}
+                        >
+                          {ProductSizeMap[item?.detail?.size] || item.size}
+                        </span>
+                      ))}
+                  </div>
+                  <div
+                    style={{
+                      minWidth: 68,
+                      textAlign: "right",
+                      fontWeight: 500,
+                    }}
+                  >
+                    <FormatCost value={item.unitPrice * item.quantity} />
+                  </div>
+                </li>
               ))}
-            </Select>
-          </div>
-
-          <div className="payment-section">
-            <h2>Chọn phương thức thanh toán</h2>
-            <Radio.Group
-              onChange={(e) => setPaymentType(e.target.value)}
-              value={paymentType}
-            >
-              <Radio value="COD">Thanh toán khi nhận hàng (COD)</Radio>
-              <Radio value="VNPAY">VNPay (ATM/QR)</Radio>
-            </Radio.Group>
-          </div>
-
-          <div className="payment-section">
-            <h2>Mã giảm giá</h2>
-            <Select
-              style={{ width: "100%" }}
-              placeholder="Chọn mã giảm giá"
-              value={selectedCoupon?.id}
-              onChange={handleApplyCoupon} // Gọi hàm kiểm tra & áp dụng khi chọn
-              allowClear
-            >
-              {userCoupons.map((c) => (
-                <Select.Option value={c.id} key={c.id}>
-                  {c.code} - {c.name}
-                </Select.Option>
-              ))}
-            </Select>
-          </div>
-          <div className="payment-section" style={{ marginBottom: 0 }}>
-            <Button
-              type="primary"
-              onClick={handlePlaceOrder}
-              style={{
-                width: "100%",
-                marginTop: 20,
-                background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
-                color: "#fff",
-              }}
-            >
-              Đặt hàng
-            </Button>
-          </div>
-        </div>
-
-        {/* Cột chi tiết đơn hàng */}
-        <div className="payment-summary">
-          <h2 style={{ color: "white" }}>Chi tiết đơn hàng</h2>
-          <ul>
-            {cart?.map((item) => (
-              <li key={item.id}>
-                <img src={item.image} className="item-img" alt="" />
-                <div className="item-detail">
-                  <span className="item-name">{item.name}</span>
-                  <span className="item-qty">x {item.quantity}</span>
-                  {item.selectedColor && (
-                    <span
-                      style={{ fontSize: 12, marginLeft: 5, color: "#666" }}
-                    >
-                      {item.selectedColor}
-                    </span>
-                  )}
-                  {item.selectedSize && (
-                    <span
-                      style={{ fontSize: 12, marginLeft: 5, color: "#666" }}
-                    >
-                      {item.selectedSize}
-                    </span>
-                  )}
-                </div>
-                <div
-                  style={{ minWidth: 68, textAlign: "right", fontWeight: 500 }}
-                >
-                  <FormatCost value={item.unitPrice * item.quantity} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="totals">
-            <p>
-              Subtotal: <FormatCost value={cartSummary?.totalAmount || 0} />
-            </p>
-            <p>
-              Shipping: <FormatCost value={shippingFee} />
-            </p>
-
-            {selectedCoupon?.discountAmount > 0 && (
-              <p style={{ color: "#0ab308" }}>
-                Giảm giá: -<FormatCost value={selectedCoupon.discountAmount} />
+            </ul>
+            <div className="totals">
+              <p>
+                Subtotal: <FormatCost value={cartSummary?.totalAmount || 0} />
               </p>
-            )}
-            <h3>
-              Total:{" "}
-              <FormatCost
-                value={
-                  (cartSummary?.totalAmount || 0) +
-                  shippingFee -
-                  (cartSummary?.estimatedShipping || 0) -
-                  (selectedCoupon?.discountAmount || 0)
-                }
-              />
-            </h3>
+              <p>
+                Shipping: <FormatCost value={shippingFee} />
+              </p>
+              {selectedCoupon?.discountAmount > 0 && (
+                <p style={{ color: "#0ab308" }}>
+                  Giảm giá: -
+                  <FormatCost value={selectedCoupon.discountAmount} />
+                </p>
+              )}
+              <h3>
+                Total:{" "}
+                <FormatCost
+                  value={
+                    (cartSummary?.totalAmount || 0) +
+                    shippingFee -
+                    (cartSummary?.estimatedShipping || 0) -
+                    (selectedCoupon?.discountAmount || 0)
+                  }
+                />
+              </h3>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

@@ -20,7 +20,11 @@ import { getMyOrders, confirmDelivered } from "../../../utils/orderService";
 import "./index.scss";
 import { toast } from "react-toastify";
 import CancelOrderModal from "./CancelOrderModal";
-import { createReview, getUserReviewsByUserID, updateReview } from "../../../utils/reviewService";
+import {
+  createReview,
+  getUserReviewsByUserID,
+  updateReview,
+} from "../../../utils/reviewService";
 import ProductReviewModal from "./ProductReviewModal";
 const { Header, Content } = Layout;
 const { TabPane } = Tabs;
@@ -72,28 +76,27 @@ const Orders = () => {
   const [reviewMode, setReviewMode] = useState("create");
   const [userReviews, setUserReviews] = useState([]);
 
-
-  // function isOrderListStatusChanged(oldOrders, newOrders) {
-  //   if (oldOrders.length !== newOrders.length) return true;
-  //   // Map theo id để tránh phụ thuộc thứ tự
-  //   const oldMap = new Map(oldOrders.map((o) => [o.id, o.status]));
-  //   for (let i = 0; i < newOrders.length; i++) {
-  //     const newOrder = newOrders[i];
-  //     if (!oldMap.has(newOrder.id)) return true; // order mới
-  //     if (oldMap.get(newOrder.id) !== newOrder.status) return true; // status đổi
-  //   }
-  //   return false;
-  // }
+  function isOrderListStatusChanged(oldOrders, newOrders) {
+    if (oldOrders.length !== newOrders.length) return true;
+    // Map theo id để tránh phụ thuộc thứ tự
+    const oldMap = new Map(oldOrders.map((o) => [o.id, o.status]));
+    for (let i = 0; i < newOrders.length; i++) {
+      const newOrder = newOrders[i];
+      if (!oldMap.has(newOrder.id)) return true; // order mới
+      if (oldMap.get(newOrder.id) !== newOrder.status) return true; // status đổi
+    }
+    return false;
+  }
   const fetchOrders = async () => {
     setLoading(true);
     try {
       const res = await getMyOrders();
       const newOrders = res.data || [];
       console.log("Fetched orders:", newOrders);
-      // if (isOrderListStatusChanged(orders, newOrders)) {
+      if (isOrderListStatusChanged(orders, newOrders)) {
         setOrders(newOrders);
         // toast.success("Đơn hàng đã được cập nhật!");
-      // }
+      }
     } catch (err) {
       console.error("Error loading orders", err);
       message.error("Không thể tải danh sách đơn hàng");
@@ -104,23 +107,19 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders(); // Lần đầu load
-
     fetchReviews();
-
   }, []);
 
-
-    const fetchReviews = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        const res = await getUserReviewsByUserID(userId);
-        setUserReviews(res.data?.data || []);
-        console.log("Dữ liệu review được lọc theo UserId:", res.data?.data);
-      } catch (error) {
-        setUserReviews([]);
-      }
+  const fetchReviews = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const res = await getUserReviewsByUserID(userId);
+      setUserReviews(res.data?.data || []);
+      console.log("Dữ liệu review được lọc theo UserId:", res.data?.data);
+    } catch (error) {
+      setUserReviews([]);
     }
- 
+  };
 
   const filteredOrders = orders.filter((o) => {
     const matchesTab =
@@ -149,13 +148,10 @@ const Orders = () => {
     setCancelModalOpen(true);
   };
 
-
-
   const handleSubmitReview = async (reviewList, mode) => {
     try {
       const results = await Promise.all(
-        reviewList.map(review => {
-
+        reviewList.map((review) => {
           if (mode === "update" && review.reviewId) {
             return updateReview(review.reviewId, {
               rating: review.rating,
@@ -175,7 +171,11 @@ const Orders = () => {
         })
       );
       console.log("[DEBUG] Review API results:", results);
-      toast.success(mode === "update" ? "Cập nhật đánh giá thành công!" : "Gửi đánh giá thành công!");
+      toast.success(
+        mode === "update"
+          ? "Cập nhật đánh giá thành công!"
+          : "Gửi đánh giá thành công!"
+      );
       setReviewModalOpen(false);
       fetchOrders();
       fetchReviews();
@@ -189,17 +189,15 @@ const Orders = () => {
     }
   };
 
-
   function findReviewOfItem(item, orderId) {
     return userReviews.find(
-      r =>
-        r.productVariantId === item.productVariantId &&
-        r.orderId === orderId
+      (r) =>
+        r.productVariantId === item.productVariantId && r.orderId === orderId
     );
   }
 
   const handleOpenReviewModal = (order, mode = "create") => {
-    const productList = order.orderItems.map(item => {
+    const productList = order.orderItems.map((item) => {
       const oldReview = findReviewOfItem(item, order.id);
       return {
         productId: item.productId,
@@ -247,17 +245,20 @@ const Orders = () => {
           </Button>
         );
         break;
-      case STATUS.delivered:
-
-        const allReviewed = order.orderItems.every(item => findReviewOfItem(item, order.id));
-        const noneReviewed = order.orderItems.every(item => !findReviewOfItem(item, order.id));
+      case STATUS.delivered:{
+        const allReviewed = order.orderItems.every((item) =>
+          findReviewOfItem(item, order.id)
+        );
+        const noneReviewed = order.orderItems.every(
+          (item) => !findReviewOfItem(item, order.id)
+        );
 
         if (noneReviewed) {
           actions.push(
             <Button
               key="review"
               type="primary"
-              onClick={() => handleOpenReviewModal(order, 'create')}
+              onClick={() => handleOpenReviewModal(order, "create")}
               icon={<CheckCircleOutlined />}
             >
               Đánh giá
@@ -268,16 +269,16 @@ const Orders = () => {
             <Button
               key="review-again"
               type="primary"
-              onClick={() => handleOpenReviewModal(order, 'update')}
+              onClick={() => handleOpenReviewModal(order, "update")}
               icon={<CheckCircleOutlined />}
             >
               Đánh giá lại
             </Button>
           );
-        };
+        }
+      }
 
-      default:
-        break;
+      break;
     }
     return actions;
   };

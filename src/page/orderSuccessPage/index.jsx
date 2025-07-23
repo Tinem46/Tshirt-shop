@@ -1,7 +1,11 @@
 // pages/user/OrderSuccess.jsx
 import { Result, Button, Descriptions, List, Spin } from "antd";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import { SmileOutlined, HomeOutlined, FileDoneOutlined } from "@ant-design/icons";
+import {
+  SmileOutlined,
+  HomeOutlined,
+  FileDoneOutlined,
+} from "@ant-design/icons";
 import { useEffect, useState, useMemo } from "react";
 import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
@@ -64,8 +68,9 @@ const OrderSuccess = () => {
 
       // Nếu không phải VNPAY hoặc thất bại thì dùng API cũ
       if (!orderData && realOrderId) {
-        const res = await api.get(`/Orders/${realOrderId}`);
+        const res = await api.get(`Orders/${realOrderId}`);
         orderData = res.data;
+        console.log("Order data from Orders API:", orderData);
       }
 
       setOrder(orderData);
@@ -117,6 +122,7 @@ const OrderSuccess = () => {
     subtotalAmount,
     shippingFee,
     shippingMethodName,
+    discountedAmount,
   } = order || {};
 
   return (
@@ -150,7 +156,7 @@ const OrderSuccess = () => {
               onClick={() => navigate("/userLayout?tab=orders")}
               icon={<FileDoneOutlined />}
             >
-              Xem đơn hàng của tôi 
+              Xem đơn hàng của tôi
             </Button>,
           ]}
         />
@@ -185,12 +191,17 @@ const OrderSuccess = () => {
             renderItem={(item) => (
               <List.Item>
                 <div className="order-item">
-                  {item.image && (
-                    <img src={item.image} alt="" className="order-item-image" />
-                  )}
+                  <img
+                    src={
+                      item.imageUrl ||
+                      "https://down-vn.img.susercontent.com/file/8bd57cda68fc7a4a2076feaae894b3fe"
+                    }
+                    alt=""
+                    className="order-item-image"
+                  />
                   <div className="order-item-info">
                     <div>
-                      <b>{item.itemName}</b>
+                      <b>{item.variantName}</b>
                     </div>
                     <div className="order-item-options">
                       {item.selectedColor && (
@@ -222,6 +233,12 @@ const OrderSuccess = () => {
             Tổng tiền hàng:{" "}
             <b>
               <FormatCost value={subtotalAmount} />
+            </b>
+          </div>
+          <div>
+            Giảm giá:{" "}
+            <b>
+              <FormatCost value={discountedAmount || 0} />
             </b>
           </div>
           <div className="order-total">

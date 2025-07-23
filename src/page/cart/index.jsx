@@ -16,6 +16,7 @@ import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
 import "./index.scss";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const SIZE_ENUM_MAP = { 1: "S", 2: "M", 3: "L", 4: "XL", 5: "XXL" };
 const COLOR_STYLE_MAP = {
@@ -100,19 +101,35 @@ const Cart = () => {
 
   // Thay đổi số lượng
   const handleQuantityChange = async (record, newQty) => {
+    const maxQty = record.detail?.quantity || 1;
     if (newQty < 1) {
-      try {
-        const res = await api.delete(`Cart`, {
-          data: [record.id],
-          headers: { "Content-Type": "application/json" },
-        });
-        console.log("Xóa sản phẩm:", res.data);
-        toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
-        fetchCart();
-      } catch (e) {
-        message.error("Số lượng không thể nhỏ hơn 1!");
+      const result = await Swal.fire({
+        title: "xóa sản phẩm",
+        text: "Bạn có muốn xóa sản phẩm này khỏi giỏ hàng",
+        icon: "warning",
+        showCancelButton: "true",
+        confirmButtonText: "xóa",
+        cancleButtonText: "Hủy",
+        reverseButtons: true,
+      });
+      if (result.isConfirmed) {
+        try {
+          const res = await api.delete(`Cart`, {
+            data: [record.id],
+            headers: { "Content-Type": "application/json" },
+          });
+          console.log("Xóa sản phẩm:", res.data);
+          toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
+          fetchCart();
+        } catch (e) {
+          message.error("Số lượng không thể nhỏ hơn 1!");
+        }
       }
       return;
+    }
+    if (newQty > maxQty) {
+      toast.warning(`chỉ còn lại ${maxQty} sản phẩm`);
+      newQty = maxQty;
     }
     setUpdating(true);
     try {
@@ -135,7 +152,9 @@ const Cart = () => {
       await api.delete("Cart", {
         data: cartItemIds,
         headers: { "Content-Type": "application/json" },
+        
       });
+      
       message.success("Đã xóa sản phẩm đã chọn khỏi giỏ hàng");
       fetchCart();
       setSelectedRowKeys([]);

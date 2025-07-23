@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from "react";
 import AuthLayout from "../../components/auth-layout";
 import { toast } from "react-toastify";
 import { login } from "../../redux/features/userSlice";
+import Swal from "sweetalert2";
 
 // Google OAuth Client ID của bạn
 const GOOGLE_CLIENT_ID =
@@ -113,7 +114,14 @@ const Login = () => {
           toast.success("Welcome Staff!");
         } else {
           navigate("/");
-          toast.success("Login successful!");
+          await Swal.fire({
+            title: "🎉 Chào mừng bạn đến với Shop!",
+            text: "Chúc bạn mua sắm vui vẻ ❤️",
+            icon: "success",
+            timer: 3000,
+            showConfirmButton: true ,
+            confirmButtonText: "OK",
+          });
         }
       } else {
         toast.error(apiData?.message || "Login failed!");

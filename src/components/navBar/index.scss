@@ -1,48 +1,266 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 .navigation {
+  position: relative;
   width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 60px;
+  height: 320px;
+  margin-bottom: 64px;
+  overflow: hidden;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
   .pictureOutline {
-    width: 100%;
-    height: 280px;
-    left: 0;
+    position: absolute;
     top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
+    z-index: 1;
+  }
+
+  .gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+    z-index: 2;
+  }
+
+  .blur-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(1px);
+    z-index: 3;
   }
 
   .container {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    z-index: 10;
+    padding: 0 32px;
 
     .shopTitle {
-      color: #000;
       font-family: "Poppins", sans-serif;
-      font-size: 48px;
-      font-style: normal;
+      font-size: clamp(32px, 5vw, 64px);
       font-weight: 700;
-      line-height: normal;
+      line-height: 1.1;
+      text-align: center;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+      letter-spacing: -0.02em;
     }
 
     .breadcrumbBar {
-      margin-top: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      border-radius: 50px;
+      padding: 12px 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
 
       .ant-breadcrumb {
-        color: #000;
         font-family: "Poppins", sans-serif;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 700;
-        line-height: normal;
+        font-size: 14px;
+        margin: 0;
+        display: flex;
+        align-items: center;
+
+        .separator {
+          color: rgba(156, 163, 175, 1);
+          margin: 0 8px;
+          font-size: 12px;
+        }
+
+        .breadcrumb-link {
+          cursor: pointer;
+          font-weight: 500;
+          color: rgba(55, 65, 81, 1);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 4px 8px;
+          border-radius: 6px;
+          position: relative;
+
+          &:hover {
+            color: rgba(37, 99, 235, 1);
+            background-color: rgba(239, 246, 255, 1);
+            transform: scale(1.05);
+          }
+
+          &.active {
+            font-weight: 700;
+            color: rgba(37, 99, 235, 1);
+            background-color: rgba(239, 246, 255, 1);
+          }
+
+          &:active {
+            transform: scale(0.98);
+          }
+        }
       }
     }
+  }
+
+  .decorative-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 4;
+
+    .floating-element {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      filter: blur(8px);
+
+      &.element-1 {
+        top: 16px;
+        left: 16px;
+        width: 80px;
+        height: 80px;
+        animation: float 4s ease-in-out infinite;
+      }
+
+      &.element-2 {
+        bottom: 16px;
+        right: 16px;
+        width: 64px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.05);
+        filter: blur(12px);
+        animation: float 4s ease-in-out infinite 1s;
+      }
+
+      &.element-3 {
+        top: 50%;
+        left: 32px;
+        width: 8px;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        filter: blur(0);
+        animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite 0.5s;
+      }
+
+      &.element-4 {
+        top: 33%;
+        right: 48px;
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.4);
+        filter: blur(0);
+        animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite 0.7s;
+      }
+    }
+  }
+
+  .bottom-accent {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    // background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    z-index: 10;
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    height: 280px;
+    margin-bottom: 48px;
+    border-radius: 12px;
+
+    .container {
+      padding: 0 16px;
+
+      .breadcrumbBar {
+        padding: 10px 20px;
+
+        .ant-breadcrumb {
+          font-size: 13px;
+
+          .separator {
+            margin: 0 6px;
+          }
+
+          .breadcrumb-link {
+            padding: 3px 6px;
+          }
+        }
+      }
+    }
+
+    .decorative-elements {
+      .floating-element {
+        &.element-1 {
+          width: 60px;
+          height: 60px;
+        }
+
+        &.element-2 {
+          width: 48px;
+          height: 48px;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: 240px;
+    margin-bottom: 32px;
+    border-radius: 8px;
+
+    .container {
+      .breadcrumbBar {
+        padding: 8px 16px;
+
+        .ant-breadcrumb {
+          font-size: 12px;
+
+          .separator {
+            margin: 0 4px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
   }
 }
