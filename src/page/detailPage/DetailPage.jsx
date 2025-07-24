@@ -15,7 +15,9 @@ import api from "../../config/api";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductReviews from "../../components/review/index";
 import "../../components/review/index.scss";
-import { getProductVariantsReviews } from "../../utils/reviewService";
+
+import { getReviewByProductId } from "../../utils/reviewService";
+
 import { toast } from "react-toastify";
 
 // ENUMS mapping
@@ -145,7 +147,6 @@ const DetailPage = () => {
         if (data) {
           setProduct({ ...data, images: safeJsonParse(data.images) });
           setVariants(variantData);
-          if (variantData.length > 0) fetchReviewsForVariant(variantData[0].id);
         } else setProduct(null);
       } catch {
         setProduct(null);
@@ -157,17 +158,22 @@ const DetailPage = () => {
     fetchProduct();
   }, [id]);
 
-  const fetchReviewsForVariant = async (variantId) => {
-    setLoadingReviews(true);
-    try {
-      const res = await getProductVariantsReviews(variantId);
-      setReviews(res.data || []);
-    } catch {
-      setReviews([]);
-    } finally {
-      setLoadingReviews(false);
+  useEffect(() => {
+    const fetchReviewsForVariant = async (productId) => {
+      setLoadingReviews(true);
+      try {
+        const res = await getReviewByProductId(productId);
+        setReviews(res.data || []);
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    if (product?.id) {
+      fetchReviewsForVariant(product.id);
     }
-  };
+  }, [product?.id]);
 
   // --- FILTER/UNIQUE ---
   const uniqueColors = [...new Set(variants.map((v) => getColorKey(v.color)))];
@@ -190,7 +196,6 @@ const DetailPage = () => {
         ),
       ]
     : uniqueSizes;
-
   // --- Unified Images Array, remove duplicate URL ---
   const productImages = (Array.isArray(product?.images) ? product.images : [])
     .filter((img) => !!img)
@@ -406,7 +411,11 @@ const DetailPage = () => {
                 <img
                   src={mainImage}
                   alt="product"
-                  style={{ objectFit: "cover", width: "100%", height: "auto" }}
+                  style={{
+                    objectFit: "cover",
+                    width: "100%",
+                    height: "auto",
+                  }}
                 />
               </div>
             </div>
@@ -422,7 +431,7 @@ const DetailPage = () => {
                 }
               />
               <div ref={containerRef} className="thumbnail-container">
-                {unifiedImages.map((img, index) => {
+                {unifiedImages.map((img) => {
                   const isActive =
                     thumb &&
                     img.url === thumb.url &&
@@ -517,6 +526,7 @@ const DetailPage = () => {
                                 (v.quantity !== undefined ? v.quantity : 0),
                               0
                             );
+
                       return (
                         <Button
                           key={size + idx}
@@ -566,6 +576,7 @@ const DetailPage = () => {
                               sum + (v.quantity !== undefined ? v.quantity : 0),
                             0
                           );
+
                     const colorName = getColorName(color);
                     return (
                       <div
