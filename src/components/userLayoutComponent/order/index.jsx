@@ -12,6 +12,8 @@ import {
   Space,
   Alert,
 } from "antd";
+import { Image } from "antd";
+
 import {
   SearchOutlined,
   CheckCircleOutlined,
@@ -66,7 +68,7 @@ const STATUS_COLORS = {
 const PAYMENT_STATUS_LABEL = {
   0: "Chưa thanh toán",
   1: "Đang xử lý",
-  2: "Đã thanh toán",
+  2: "Đã Hoàn Thành",
   3: "Thanh toán một phần",
   4: "Hoàn tiền",
   5: "Hoàn tiền một phần",
@@ -74,7 +76,7 @@ const PAYMENT_STATUS_LABEL = {
   7: "Đã thanh toán",
 };
 const PAYMENT_STATUS_COLOR = {
-  4: "magenta",
+  4: "success",
   5: "magenta",
   2: "success",
   7: "success",
@@ -119,7 +121,6 @@ const Orders = () => {
 
   useEffect(() => {
     fetchOrders(); // Lần đầu load
-
     fetchReviews();
 
   }, []);
@@ -127,14 +128,12 @@ const Orders = () => {
   useEffect(() => {
     if (activeTab === "cancelled") {
       fetchCancelledOrders();
-    }
-  }, [activeTab]);
-
-  useEffect(() => {
-    if (activeTab !== "cancelled") {
+    } else {
+      setOrders([]); // Reset đơn hàng trước khi fetch mới
       fetchOrders();
     }
   }, [activeTab]);
+
 
 
   const fetchReviews = async () => {
@@ -163,9 +162,28 @@ const Orders = () => {
     }
   };
 
+  const getMatchesTab = (order) => {
+    if (activeTab === "all") return true;
+
+    if (activeTab === "paid") {
+      return (
+        order.status === STATUS.pending &&
+        order.paymentStatus === 7
+      );
+    }
+
+    if (activeTab === "pending") {
+      return (
+        order.status === STATUS.pending &&
+        order.paymentStatus === 0
+      );
+    }
+    return order.status === STATUS[activeTab];
+  };
+
+
   const filteredOrders = orders.filter((o) => {
-    const matchesTab =
-      activeTab === "all" ? true : o.status === STATUS[activeTab];
+    const matchesTab = getMatchesTab(o);
     const matchesSearch =
       o.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
       o.receiverName?.toLowerCase().includes(search.toLowerCase()) ||
@@ -174,6 +192,7 @@ const Orders = () => {
       );
     return matchesTab && matchesSearch;
   });
+
 
   const filteredCancelledOrders = cancelledOrders.filter(order =>
     order.orderNumber?.toLowerCase().includes(search.toLowerCase()) ||
@@ -477,7 +496,8 @@ const Orders = () => {
                               borderRadius: 8,
                               fontWeight: 500,
                               display: "inline-block",
-                              width: 120,
+                              width: "fit-content",
+
                             }}
                           >
                             {PAYMENT_STATUS_LABEL[order.paymentStatus]}
@@ -506,11 +526,21 @@ const Orders = () => {
                       {order.items?.map((item, idx) => (
                         <div key={idx} className="order-item-row">
                           <div className="item-image-wrapper">
-                            <img
+                            <Image
                               src={item.imageUrl || "/placeholder.svg"}
                               alt={item.productName}
-                              className="item-image"
+                              width={70}
+                              height={80}
+                              style={{
+                                objectFit: "cover",
+                                borderRadius: 6,
+                                border: "1px solid #ddd",
+                              }}
+                              preview={{
+                                mask: "Xem ảnh",
+                              }}
                             />
+
                           </div>
                           <div className="item-details">
                             <div className="item-name">{item.productName}</div>
@@ -567,14 +597,36 @@ const Orders = () => {
 
                     {/* Lý do hủy và note hoàn tiền */}
                     {order.cancellationReason && (
-                      <Alert
-                        message={`Lý do hủy: ${order.cancellationReason}`}
-                        type="error"
-                        showIcon
-                        className="cancellation-alert"
-                        style={{ marginBottom: 8 }}
-                      />
+                      <div style={{ marginBottom: 12 }}>
+                        <Alert
+                          message={`Lý do hủy: ${order.cancellationReason}`}
+                          type="error"
+                          showIcon
+                          style={{ marginBottom: 6, width: "fit-content", maxWidth: "100%" }}
+                        />
+                        {Array.isArray(order.imageUrls) && order.imageUrls.length > 0 && (
+                          <Image.PreviewGroup>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                              {order.imageUrls.map((url, idx) => (
+                                <Image
+                                  key={idx}
+                                  src={url}
+                                  width={100}
+                                  height={100}
+                                  style={{
+                                    objectFit: "cover",
+                                    borderRadius: 6,
+                                    border: "1px solid #ddd",
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          </Image.PreviewGroup>
+                        )}
+
+                      </div>
                     )}
+
 
                     {/* Nếu trạng thái là Refunded (4) hoặc PartiallyRefunded (5) thì show note cho khách */}
                     {(order.paymentStatus === 4 || order.paymentStatus === 5) && (
@@ -582,6 +634,8 @@ const Orders = () => {
                         message="Đơn hàng đã được hoàn tiền. Vui lòng kiểm tra tài khoản hoặc liên hệ CSKH nếu chưa nhận được tiền."
                         type="success"
                         showIcon
+                        style={{ marginBottom: 8, width: "fit-content", marginLeft: 0 }}
+
                       />
                     )}
 
@@ -618,11 +672,25 @@ const Orders = () => {
                         <span className="order-date">
                           {formatDate(order.createdAt)}
                         </span>
+                        {order.paymentStatus !== undefined && (
+                          <div style={{ marginTop: 6 }}>
+                            <Tag
+                              color={PAYMENT_STATUS_COLOR[order.paymentStatus] || "default"}
+                              style={{
+                                fontSize: 12,
+                                height: 22,
+                                lineHeight: "20px",
+                                padding: "0 10px",
+                                borderRadius: 8,
+                                fontWeight: 500,
+                              }}
+                            >
+                              {PAYMENT_STATUS_LABEL[order.paymentStatus]}
+                            </Tag>
+                          </div>
+                        )}
                       </div>
-                      <Tag
-                        color={STATUS_COLORS[order.status]}
-                        className="order-status-tag"
-                      >
+                      <Tag color={STATUS_COLORS[order.status]} className="order-status-tag">
                         {STATUS_LABEL[order.status]}
                       </Tag>
                     </div>
@@ -630,10 +698,20 @@ const Orders = () => {
                       {order.orderItems.map((item, idx) => (
                         <div key={idx} className="order-item-row">
                           <div className="item-image-wrapper">
-                            <img
+
+                            <Image
                               src={item.imageUrl || "/placeholder.svg"}
                               alt={item.productName}
-                              className="item-image"
+                              width={70}
+                              height={80}
+                              style={{
+                                objectFit: "cover",
+                                borderRadius: 6,
+                                border: "1px solid #ddd",
+                              }}
+                              preview={{
+                                mask: "Xem ảnh",
+                              }}
                             />
                           </div>
                           <div className="item-details">
@@ -698,6 +776,8 @@ const Orders = () => {
                           type="error"
                           showIcon
                           className="cancellation-alert"
+                          style={{ marginBottom: 8, width: "fit-content", marginLeft: 0 }}
+
                         />
                       )}
 
@@ -707,6 +787,7 @@ const Orders = () => {
                           type="info"
                           showIcon
                           className="cancellation-alert"
+                          style={{ marginBottom: 8, width: "fit-content", marginLeft: 0 }}
                         />
                       )}
 
@@ -718,10 +799,18 @@ const Orders = () => {
                           type="warning"
                           showIcon
                           className="cancellation-alert"
-                          style={{ marginBottom: 8 }}
+                          style={{ marginBottom: 8, width: "fit-content", marginLeft: 0 }}
                         />
                       )}
+                      {order.status === STATUS.completed && (
+                        <Alert
+                          message={`Ghi chú admin: ${order.adminReviewNotes}`}
+                          type="info"
+                          showIcon
+                          style={{ marginBottom: 8, width: "fit-content", marginLeft: 0, alignSelf: "flex-start" }}
 
+                        />
+                      )}
                       <Space>{renderOrderActions(order)}</Space>
                     </div>
                   </div>
