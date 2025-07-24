@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:5265/api/",
+  baseURL: "https://localhost:7266/api/",
 });
 
 let isRefreshing = false;

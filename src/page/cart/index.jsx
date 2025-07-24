@@ -18,7 +18,7 @@ import "./index.scss";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 
-const SIZE_ENUM_MAP = { 1: "S", 2: "M", 3: "L", 4: "XL", 5: "XXL" };
+const SIZE_ENUM_MAP = { 0: "XS", 1: "S", 2: "M", 3: "L", 4: "XL", 5: "XXL" };
 const COLOR_STYLE_MAP = {
   0: "#000", // Black
   1: "#ff3b30", // Red (keeping for color display, but will be grayscale in UI)
@@ -37,6 +37,7 @@ const Cart = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
 
+  console.log("Cart component mounted", cartDetails);
   // Lấy giỏ hàng khi mount
   useEffect(() => {
     fetchCart();
@@ -152,9 +153,8 @@ const Cart = () => {
       await api.delete("Cart", {
         data: cartItemIds,
         headers: { "Content-Type": "application/json" },
-        
       });
-      
+
       message.success("Đã xóa sản phẩm đã chọn khỏi giỏ hàng");
       fetchCart();
       setSelectedRowKeys([]);
@@ -295,7 +295,7 @@ const Cart = () => {
                           <span className="label">Size:</span>
                           <span className="value">
                             {SIZE_ENUM_MAP[item.detail?.size] ||
-                              item.detail?.size ||
+                              item.size ||
                               "—"}
                           </span>
                         </div>

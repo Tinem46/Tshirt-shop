@@ -1,6 +1,6 @@
 // pages/user/OrderSuccess.jsx
 import { Result, Button, Descriptions, List, Spin } from "antd";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   SmileOutlined,
   HomeOutlined,
@@ -11,8 +11,8 @@ import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
 import "./index.scss";
 
+// Hàm regex lấy GUID
 function extractGuid(str) {
-  // Chuẩn regex GUID
   const match =
     str &&
     str.match(
@@ -23,51 +23,36 @@ function extractGuid(str) {
 
 const OrderSuccess = () => {
   const navigate = useNavigate();
-  const { orderId } = useParams();
   const location = useLocation();
-  const [paymentId, setPaymentId] = useState(null);
 
   // Lấy query params
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search]
   );
-  const vnpStatus = queryParams.get("vnp_TransactionStatus");
+  const paymentId = queryParams.get("paymentId");
   const vnpTxnRef = queryParams.get("vnp_TxnRef");
-  4;
-  const vnpResponseCode = queryParams.get("vnp_ResponseCode");
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Xác định đúng GUID của order
+  // Xác định đúng orderId dạng GUID (nếu có)
   const realOrderId = useMemo(() => {
-    // 1. Nếu params là GUID thật
-    let guid = extractGuid(orderId);
-    // 2. Nếu không, ưu tiên lấy từ vnp_TxnRef (VNPAY redirect)
+    let guid = extractGuid(paymentId);
     if (!guid) guid = extractGuid(vnpTxnRef);
     return guid;
-  }, [orderId, vnpTxnRef]);
+  }, [paymentId, vnpTxnRef]);
 
-  // Gọi API lấy chi tiết đơn hàng
+  // API lấy thông tin đơn hàng
   const fetchOrder = async () => {
     try {
       let orderData = null;
 
-      // Nếu đang xử lý VNPAY, lấy từ API payment
-      if (vnpStatus !== null && realOrderId) {
-        let paymentGuid = extractGuid(vnpTxnRef);
-        if (paymentGuid) {
-          setPaymentId(paymentGuid);
-          const res = await api.get(`Payments/${paymentGuid}/order`);
-
-          orderData = res.data.data;
-          console.log("Order data from VNPAY:", orderData);
-        }
-      }
-
-      // Nếu không phải VNPAY hoặc thất bại thì dùng API cũ
-      if (!orderData && realOrderId) {
+      if (paymentId) {
+        const res = await api.get(`Payments/${realOrderId}/order`);
+        orderData = res.data.data;
+        console.log("Order data from paymentId:", orderData);
+      } else if (realOrderId) {
         const res = await api.get(`Orders/${realOrderId}`);
         orderData = res.data;
         console.log("Order data from Orders API:", orderData);
@@ -83,32 +68,47 @@ const OrderSuccess = () => {
   };
 
   useEffect(() => {
-    if (!realOrderId) {
+    if (!paymentId && !realOrderId) {
       navigate("/");
       return;
     }
     setLoading(true);
     fetchOrder();
-  }, [realOrderId, vnpStatus, vnpTxnRef, navigate]);
+    // eslint-disable-next-line
+  }, [paymentId, realOrderId, vnpTxnRef, navigate]);
 
-  // Hàm xác định cách hiển thị phương thức thanh toán
+  // Hàm xác định hiển thị phương thức thanh toán từ field paymentMethod
   const getPaymentDisplay = () => {
-    if (vnpResponseCode) return "VNPAY";
-
+    if (order?.paymentMethod === 0) return "VNPAY (ATM/QR)";
+    if (order?.paymentMethod === 1) return "Thanh toán khi nhận hàng (COD)";
+    // Fallback cho case cũ
     if (
-      order.paymentType === "COD" ||
-      !order.paymentType // null, undefined hoặc ""
+      order?.paymentType === "COD" ||
+      !order?.paymentType // null, undefined hoặc ""
     )
       return "Thanh toán khi nhận hàng (COD)";
-
-    // Các loại khác nếu có
-    return order.paymentType;
+    return order?.paymentType || "Không xác định";
   };
 
   if (loading)
     return (
       <Spin tip="Đang tải chi tiết đơn hàng..." style={{ marginTop: 40 }} />
     );
+
+  if (!order) {
+    return (
+      <Result
+        status="warning"
+        title="Không tìm thấy đơn hàng"
+        subTitle="Có thể đơn hàng này đã bị huỷ hoặc sai mã đơn hàng."
+        extra={
+          <Button type="primary" onClick={() => navigate("/")}>
+            Về trang chủ
+          </Button>
+        }
+      />
+    );
+  }
 
   // destructure các field từ order
   const {

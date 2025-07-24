@@ -11,7 +11,7 @@ import Swal from "sweetalert2";
 
 // Google OAuth Client ID của bạn
 const GOOGLE_CLIENT_ID =
-  "1009591136005-4uidjil5c2bqc9mbtm8bip6q9017c2a1.apps.googleusercontent.com";
+  "573872884539-lov9g4rc77itiaucc7lovecrjel9bbnd.apps.googleusercontent.com";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -119,7 +119,7 @@ const Login = () => {
             text: "Chúc bạn mua sắm vui vẻ ❤️",
             icon: "success",
             timer: 3000,
-            showConfirmButton: true ,
+            showConfirmButton: true,
             confirmButtonText: "OK",
           });
         }

@@ -15,7 +15,9 @@ import api from "../../config/api";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductReviews from "../../components/review/index";
 import "../../components/review/index.scss";
+
 import { getReviewByProductId } from "../../utils/reviewService";
+
 import { toast } from "react-toastify";
 
 // ENUMS mapping
@@ -145,7 +147,6 @@ const DetailPage = () => {
         if (data) {
           setProduct({ ...data, images: safeJsonParse(data.images) });
           setVariants(variantData);
-          fetchReviewsForVariant(data.id);
         } else setProduct(null);
       } catch {
         setProduct(null);
@@ -157,45 +158,44 @@ const DetailPage = () => {
     fetchProduct();
   }, [id]);
 
-  const fetchReviewsForVariant = async (productId) => {
-    setLoadingReviews(true);
-    try {
-      const res = await getReviewByProductId(productId);
-
-      const reviewList = Array.isArray(res.data?.data) ? res.data.data : []
-      console.log("📦 Review trả về:", reviewList)
-      setReviews(reviewList)
-
-    } catch (err) {
-      console.error("Lỗi khi lấy đánh giá:", err);
-      setReviews([]);
-    } finally {
-      setLoadingReviews(false);
+  useEffect(() => {
+    const fetchReviewsForVariant = async (productId) => {
+      setLoadingReviews(true);
+      try {
+        const res = await getReviewByProductId(productId);
+        setReviews(res.data || []);
+      } catch {
+        setReviews([]);
+      } finally {
+        setLoadingReviews(false);
+      }
+    };
+    if (product?.id) {
+      fetchReviewsForVariant(product.id);
     }
-  }
+  }, [product?.id]);
 
   // --- FILTER/UNIQUE ---
   const uniqueColors = [...new Set(variants.map((v) => getColorKey(v.color)))];
   const uniqueSizes = [...new Set(variants.map((v) => getSizeName(v.size)))];
   const filteredColors = selectedSize
     ? [
-      ...new Set(
-        variants
-          .filter((v) => getSizeName(v.size) === selectedSize)
-          .map((v) => getColorKey(v.color))
-      ),
-    ]
+        ...new Set(
+          variants
+            .filter((v) => getSizeName(v.size) === selectedSize)
+            .map((v) => getColorKey(v.color))
+        ),
+      ]
     : uniqueColors;
   const filteredSizes = selectedColor
     ? [
-      ...new Set(
-        variants
-          .filter((v) => getColorKey(v.color) === selectedColor)
-          .map((v) => getSizeName(v.size))
-      ),
-    ]
+        ...new Set(
+          variants
+            .filter((v) => getColorKey(v.color) === selectedColor)
+            .map((v) => getSizeName(v.size))
+        ),
+      ]
     : uniqueSizes;
-
   // --- Unified Images Array, remove duplicate URL ---
   const productImages = (Array.isArray(product?.images) ? product.images : [])
     .filter((img) => !!img)
@@ -230,25 +230,25 @@ const DetailPage = () => {
   const modalImages = unifiedImages.map((img) => img.url);
   const modalIndex = thumb
     ? unifiedImages.findIndex(
-      (img) =>
-        img.url === thumb.url &&
-        (img.type !== "variant" ||
-          (thumb.type === "variant" &&
-            img.variantId === thumb.variantId &&
-            img.color === thumb.color &&
-            img.size === thumb.size))
-    )
+        (img) =>
+          img.url === thumb.url &&
+          (img.type !== "variant" ||
+            (thumb.type === "variant" &&
+              img.variantId === thumb.variantId &&
+              img.color === thumb.color &&
+              img.size === thumb.size))
+      )
     : 0;
 
   // Chọn variant (dựa vào selectedSize + selectedColor)
   const selectedVariant =
     (thumb && thumb.type === "variant"
       ? variants.find(
-        (v) =>
-          v.id === thumb.variantId &&
-          getColorKey(v.color) === thumb.color &&
-          getSizeName(v.size) === thumb.size
-      )
+          (v) =>
+            v.id === thumb.variantId &&
+            getColorKey(v.color) === thumb.color &&
+            getSizeName(v.size) === thumb.size
+        )
       : null) ||
     variants.find(
       (v) =>
@@ -411,7 +411,11 @@ const DetailPage = () => {
                 <img
                   src={mainImage}
                   alt="product"
-                  style={{ objectFit: "cover", width: "100%", height: "auto" }}
+                  style={{
+                    objectFit: "cover",
+                    width: "100%",
+                    height: "auto",
+                  }}
                 />
               </div>
             </div>
@@ -427,7 +431,7 @@ const DetailPage = () => {
                 }
               />
               <div ref={containerRef} className="thumbnail-container">
-                {unifiedImages.map((img, index) => {
+                {unifiedImages.map((img) => {
                   const isActive =
                     thumb &&
                     img.url === thumb.url &&
@@ -510,24 +514,26 @@ const DetailPage = () => {
                     .map((size, idx) => {
                       const qty = selectedColor
                         ? variants.find(
-                          (v) =>
-                            getSizeName(v.size) === size &&
-                            getColorKey(v.color) === selectedColor
-                        )?.quantity ?? 0
+                            (v) =>
+                              getSizeName(v.size) === size &&
+                              getColorKey(v.color) === selectedColor
+                          )?.quantity ?? 0
                         : variants
-                          .filter((v) => getSizeName(v.size) === size)
-                          .reduce(
-                            (sum, v) =>
-                              sum +
-                              (v.quantity !== undefined ? v.quantity : 0),
-                            0
-                          );
+                            .filter((v) => getSizeName(v.size) === size)
+                            .reduce(
+                              (sum, v) =>
+                                sum +
+                                (v.quantity !== undefined ? v.quantity : 0),
+                              0
+                            );
+
                       return (
                         <Button
                           key={size + idx}
                           type={selectedSize === size ? "primary" : "default"}
-                          className={`size-button ${selectedSize === size ? "selected" : ""
-                            }`}
+                          className={`size-button ${
+                            selectedSize === size ? "selected" : ""
+                          }`}
                           onClick={() => setSelectedSize(size)}
                           disabled={qty === 0}
                         >
@@ -559,23 +565,25 @@ const DetailPage = () => {
                   {filteredColors.map((color, idx) => {
                     const qty = selectedSize
                       ? variants.find(
-                        (v) =>
-                          getColorKey(v.color) === color &&
-                          getSizeName(v.size) === selectedSize
-                      )?.quantity ?? 0
+                          (v) =>
+                            getColorKey(v.color) === color &&
+                            getSizeName(v.size) === selectedSize
+                        )?.quantity ?? 0
                       : variants
-                        .filter((v) => getColorKey(v.color) === color)
-                        .reduce(
-                          (sum, v) =>
-                            sum + (v.quantity !== undefined ? v.quantity : 0),
-                          0
-                        );
+                          .filter((v) => getColorKey(v.color) === color)
+                          .reduce(
+                            (sum, v) =>
+                              sum + (v.quantity !== undefined ? v.quantity : 0),
+                            0
+                          );
+
                     const colorName = getColorName(color);
                     return (
                       <div
                         key={color + idx}
-                        className={`color-circle ${selectedColor === color ? "active" : ""
-                          }`}
+                        className={`color-circle ${
+                          selectedColor === color ? "active" : ""
+                        }`}
                         style={{
                           backgroundColor: getColorCss(color),
                           opacity: qty === 0 ? 0.3 : 1,
@@ -620,7 +628,8 @@ const DetailPage = () => {
                     if (value > (selectedVariant?.quantity || 1)) {
                       setBuyQuantity(selectedVariant?.quantity || 1);
                       toast.warning(
-                        `Chỉ còn ${selectedVariant?.quantity || 1
+                        `Chỉ còn ${
+                          selectedVariant?.quantity || 1
                         } sản phẩm trong kho!`
                       );
                     } else if (value < 1) {
