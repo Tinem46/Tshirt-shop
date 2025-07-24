@@ -56,6 +56,7 @@ function OrderManagement() {
     "Delivered", // 5
     "Cancelled", // 6
     "Returned", // 7
+    "CancellationRequested", // 8
   ];
   function getOrderStatusLabel(status) {
     return ORDER_STATUS_LABELS_EN[status] || `Unknown (${status})`;

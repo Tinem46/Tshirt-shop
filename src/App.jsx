@@ -101,7 +101,7 @@ function App() {
           element: <OrderSuccess />,
         },
         {
-          path: "/order-success",
+          path: "/payment-success",
           element: <OrderSuccess />,
         },
         {

@@ -5,6 +5,7 @@ import api from "../../../config/api";
 import DashboardTemplate from "../../../components/dashboard-template";
 import OrderDetails from "../../../components/orderDetails";
 import OrderFilter from "../../../components/orderFilter";
+import Swal from "sweetalert2";
 
 function CancelledOrdersManagement() {
   const [orders, setOrders] = useState([]);
@@ -22,20 +23,32 @@ function CancelledOrdersManagement() {
   // Fetch Cancelled Orders có filter ngày/sort
   const fetchCancelledOrders = async (customFilter = filter) => {
     setLoading(true);
-    const MIN_LOADING_TIME = 1200; // Tăng độ trễ loading (ms)
+    const MIN_LOADING_TIME = 1200;
     const start = Date.now();
     try {
-      const params = {
-        Status: 6,
+      const baseParams = {
         PageSize: 100,
         ...(customFilter.startDate && { FromDate: customFilter.startDate }),
         ...(customFilter.endDate && { ToDate: customFilter.endDate }),
         SortBy: "createdDate",
         SortDescending: customFilter.sortOrder === "desc",
       };
-      const res = await api.get("Orders", { params });
-      const data = Array.isArray(res.data) ? res.data : res.data?.data || [];
-      setOrders(data);
+
+      const [res6, res8] = await Promise.all([
+        api.get("Orders", { params: { ...baseParams, Status: 6 } }),
+        api.get("Orders", { params: { ...baseParams, Status: 8 } }),
+      ]);
+      // Gộp kết quả, loại bỏ trùng lặp (nếu có)
+      const data6 = Array.isArray(res6.data)
+        ? res6.data
+        : res6.data?.data || [];
+      const data8 = Array.isArray(res8.data)
+        ? res8.data
+        : res8.data?.data || [];
+      const merged = [...data6, ...data8].filter(
+        (order, idx, arr) => arr.findIndex((o) => o.id === order.id) === idx
+      );
+      setOrders(merged);
     } catch (err) {
       toast.error("Failed to fetch cancelled orders");
     } finally {
@@ -64,21 +77,45 @@ function CancelledOrdersManagement() {
     setIsDetailsOpen(false);
   };
 
-  const handleRefund = async (orderId) => {
-    try {
-      await api.post(
-        `transactions/refund`,
-        {},
-        {
-          params: {
-            koiOrderId: Number(orderId),
-          },
+  const handleProcessCancelRequest = async (
+    orderId,
+    newCancelStatus,
+    actionText
+  ) => {
+    const result = await Swal.fire({
+      title: `Nhập lý do ${actionText} yêu cầu hủy đơn`,
+      input: "text",
+      inputPlaceholder: "Nhập lý do tại đây...",
+      showCancelButton: true,
+      confirmButtonText: "Xác nhận",
+      cancelButtonText: "Hủy",
+      inputValidator: (value) => {
+        if (!value || !value.trim()) {
+          return "Bạn cần nhập lý do!";
         }
+      },
+    });
+
+    if (!result.isConfirmed) return;
+    const adminNotes = result.value;
+
+    try {
+      await api.patch(`Orders/${orderId}/process-cancellation-request`, {
+        cancellationRequestStatus: newCancelStatus, // 2 = Approved, 3 = Rejected
+        adminNotes,
+      });
+      toast.success(
+        `${
+          actionText.charAt(0).toUpperCase() + actionText.slice(1)
+        } yêu cầu hủy thành công!`
       );
-      toast.success("Order refunded successfully!");
+      // Refresh lại data
       fetchCancelledOrders();
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to refund order");
+      toast.error(
+        err?.response?.data?.message || `Lỗi khi ${actionText} yêu cầu hủy!`
+      );
+      console.error("Error processing cancellation request:", err);
     }
   };
 
@@ -98,6 +135,8 @@ function CancelledOrdersManagement() {
         return "Partially Refunded";
       case 6:
         return "Failed";
+      case 7:
+        return "Paid";
       default:
         return status;
     }
@@ -121,6 +160,23 @@ function CancelledOrdersManagement() {
         return "Cancelled";
       case 7:
         return "Returned";
+      case 8:
+        return "CancellationRequested";
+      default:
+        return status;
+    }
+  };
+  const getCancellationRequestStatus = (status) => {
+    switch (status) {
+      case 0:
+        return "None";
+      case 1:
+        return "Pending";
+      case 2:
+        return "Approved";
+      case 3:
+        return "Rejected";
+
       default:
         return status;
     }
@@ -156,6 +212,12 @@ function CancelledOrdersManagement() {
       render: (status) => getPaymentStatusLabel(status),
     },
     {
+      title: "Cancellation Request Status",
+      dataIndex: "cancellationRequestStatus",
+      key: "cancellationRequestStatus",
+      render: (status) => getCancellationRequestStatus(status),
+    },
+    {
       title: "View Details",
       key: "viewDetails",
       render: (text, record) => (
@@ -173,19 +235,29 @@ function CancelledOrdersManagement() {
     {
       title: "Actions",
       key: "actions",
-      render: (text, record) => (
-        <div style={{ display: "flex", gap: 8 }}>
-          {record.paymentStatus === 2 && (
+      render: (text, record) =>
+        record.status === 8 && record.cancellationRequestStatus === 1 ? (
+          <div style={{ display: "flex", gap: 8 }}>
             <Button
               type="primary"
-              style={{ backgroundColor: "#faad14", color: "#fff" }}
-              onClick={() => handleRefund(record.id)}
+              style={{ backgroundColor: "#27ae60", color: "#fff" }}
+              onClick={
+                () => handleProcessCancelRequest(record.id, 2, "chấp nhận") // 2: Approved
+              }
             >
-              Refund
+              Accept
             </Button>
-          )}
-        </div>
-      ),
+            <Button
+              type="primary"
+              danger
+              onClick={
+                () => handleProcessCancelRequest(record.id, 3, "từ chối") // 3: Rejected
+              }
+            >
+              Reject
+            </Button>
+          </div>
+        ) : null,
     },
   ];
 

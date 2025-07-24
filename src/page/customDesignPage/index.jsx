@@ -12,8 +12,6 @@ import api from "../../config/api";
 import FormatCost from "../../components/formatCost";
 import { Button, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import Swal from "sweetalert2";
 
 const SHIRT_TYPES = [
   { value: 1, label: "T-Shirt" },
@@ -41,19 +39,6 @@ const SIZES = [
   { value: 6, label: "XXL" },
 ];
 
-const DESIGN_STATUS_LABELS = {
-  0: "Bản nháp",
-  3: "Đã yêu cầu",
-  4: "Đơn hàng",
-  5: "Đang giao hàng",
-  6: "Đã giao hàng",
-  7: "Hoàn thành đơn",
-  8: "Từ chối",
-  // Thêm các trạng thái khác nếu có
-};
-
-const getDesignStatusLabel = (status) => DESIGN_STATUS_LABELS[status];
-
 const CustomDesign = () => {
   const [formData, setFormData] = useState({
     designName: "",
@@ -73,6 +58,7 @@ const CustomDesign = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
   const navigate = useNavigate();
+  const historySectionRef = useRef(null);
 
   const handlePreview = (imgUrl) => {
     setPreviewImage(imgUrl);
@@ -80,23 +66,16 @@ const CustomDesign = () => {
   };
 
   // Chỉ load history khi mở history, không ảnh hưởng preview
-  const historySectionRef = useRef(null);
-
   useEffect(() => {
-    if (showhistory) {
-      loadHistoryDesigns();
-      // Đợi 1 chút cho DOM render xong rồi scroll (hoặc scroll sau khi load xong list)
-      setTimeout(() => {
-        if (historySectionRef.current) {
-          historySectionRef.current.scrollIntoView({
-            behavior: "smooth",
-            block: "start",
-          });
-        }
-      }, 150); // delay nhỏ để đảm bảo render xong
+    if (showhistory && historySectionRef.current) {
+      // Scroll mượt tới section
+      historySectionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
     }
-    // eslint-disable-next-line
   }, [showhistory]);
+
   // --- DEBUG: log ở mỗi lần render ---
   console.log("currentDesign (render):", currentDesign);
 
@@ -196,23 +175,17 @@ const CustomDesign = () => {
 
   const handleHistoryItemClick = (design) => {
     setCurrentDesign(design);
-
     console.log("Set currentDesign from history:", design);
   };
 
-  const handleToggleStatusDesign = async (design) => {
-    const newStatus = design.status === 3 ? 0 : 3;
+  const handleToggleLikeDesign = async (design) => {
+    const newStatus = design.status === 1 ? 0 : 1;
     try {
       await api.patch(`CustomDesign/${design.id}/status`, {
         status: newStatus,
       });
       // Sau khi PATCH thành công, reload lại history để cập nhật UI!
       await loadHistoryDesigns();
-      if (design.status !== 3) {
-        toast.success("Tạo đơn hàng thành công !");
-      } else {
-        toast.error("Hủy đơn hàng thành công !");
-      }
     } catch (err) {
       alert("Có lỗi khi cập nhật trạng thái sản phẩm!");
       console.error("Like/Unlike error:", err);
@@ -342,7 +315,18 @@ const CustomDesign = () => {
                     rows={3}
                   />
                 </div>
-
+                <div className="form-group">
+                  <label htmlFor="quantity">Quantity</label>
+                  <input
+                    type="number"
+                    id="quantity"
+                    name="quantity"
+                    value={formData.quantity}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="10000"
+                  />
+                </div>
                 <div className="form-actions">
                   <button
                     type="button"
@@ -442,10 +426,6 @@ const CustomDesign = () => {
                     <div className="history-design-info">
                       <h4>{design.designName}</h4>
 
-                      <span className={`order-status status-${design.status}`}>
-                        {getDesignStatusLabel(design.status)}
-                      </span>
-
                       <p>
                         <FormatCost value={design.totalPrice} />
                       </p>
@@ -453,40 +433,36 @@ const CustomDesign = () => {
                         {new Date(design.createdAt).toLocaleDateString()}
                       </span>
                       <div className="like-btn-container">
-                        {[0, 1, 2, 3].includes(design.status) && (
-                          <div className="request-btn-container">
-                            <button
-                              className={`request-btn ${
-                                design.status === 3 ? "requested" : ""
-                              }`}
-                              onClick={async (e) => {
-                                e.stopPropagation();
-                                if (design.status === 3) {
-                                  // Nếu đang ở trạng thái yêu cầu, xác nhận trước khi hủy
-                                  const result = await Swal.fire({
-                                    title: "Xác nhận hủy yêu cầu?",
-                                    text: "Bạn có chắc chắn muốn hủy yêu cầu sản phẩm này?",
-                                    icon: "warning",
-                                    showCancelButton: true,
-                                    confirmButtonText: "Hủy yêu cầu",
-                                    cancelButtonText: "Không",
-                                    confirmButtonColor: "#e53935",
-                                  });
-                                  if (result.isConfirmed) {
-                                    handleToggleStatusDesign(design);
-                                  }
-                                } else {
-                                  // Gửi yêu cầu luôn nếu chưa ở trạng thái yêu cầu
-                                  handleToggleStatusDesign(design);
-                                }
-                              }}
-                            >
-                              {design.status === 3 ? "Hủy yêu cầu" : "Yêu cầu"}
-                            </button>
-                          </div>
-                        )}
+                        <button
+                          className="like-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleLikeDesign(design);
+                          }}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                          }}
+                          title={
+                            design.status === 1
+                              ? "Đã thích - Bấm để bỏ thích"
+                              : "Bấm để thích sản phẩm"
+                          }
+                        >
+                          <Heart
+                            size={22}
+                            color={design.status === 1 ? "#e63946" : "#999"}
+                            fill={design.status === 1 ? "#e63946" : "none"}
+                            strokeWidth={2.2}
+                            style={{
+                              transition: "color 0.2s",
+                              cursor: "pointer",
+                            }}
+                          />
+                        </button>
                       </div>
-                      {design.status === 3 && (
+                      {design.status === 1 && (
                         <Button
                           onClick={() =>
                             navigate(

@@ -1,4 +1,4 @@
-import { Descriptions, Table, Button, Tag } from "antd";
+import { Descriptions, Table, Tag } from "antd";
 
 const ORDER_STATUS_LABELS_EN = [
   "Pending", // 0
@@ -9,6 +9,7 @@ const ORDER_STATUS_LABELS_EN = [
   "Delivered", // 5
   "Cancelled", // 6
   "Returned", // 7
+  "Cancellation Requested", // 8
 ];
 const PAYMENT_STATUS_LABELS_EN = [
   "Unpaid", // 0
@@ -18,9 +19,11 @@ const PAYMENT_STATUS_LABELS_EN = [
   "Refunded", // 4
   "Partially Refunded", // 5
   "Failed", // 6
+  "Paid", // 7 (bổ sung nếu có)
 ];
+
 function getOrderStatusLabel(status) {
-  return ORDER_STATUS_LABELS_EN[status] || `Unknown (${status})`;
+  return ORDER_STATUS_LABELS_EN[status] || `${status}`;
 }
 function getPaymentStatusLabel(status) {
   return PAYMENT_STATUS_LABELS_EN[status] || `Unknown (${status})`;
@@ -31,6 +34,14 @@ function formatVND(amount) {
 
 function OrderDetails({ selectedOrder, onClose }) {
   if (!selectedOrder) return null;
+
+  // Đảm bảo nhận đúng danh sách sản phẩm từ BE dù là items hay orderItems
+  const orderItems =
+    Array.isArray(selectedOrder.orderItems) && selectedOrder.orderItems.length
+      ? selectedOrder.orderItems
+      : Array.isArray(selectedOrder.items)
+      ? selectedOrder.items
+      : [];
 
   const {
     orderNumber,
@@ -49,18 +60,32 @@ function OrderDetails({ selectedOrder, onClose }) {
     finalTotal,
     customerNotes,
     cancellationReason,
-    orderItems = [],
+    adminReviewNotes,
   } = selectedOrder;
 
   const detailColumns = [
     {
+      title: "Item Image",
+      dataIndex: "productImage",
+      key: "productImage",
+      render: (text, record) => (
+        <img
+          src={record.imageUrl || record.customDesignImage || ""}
+          alt={record.imageUrl || record.customDesignName || "N/A"}
+          style={{ width: 100, height: 100, objectFit: "cover" }}
+        />
+      ),
+    },
+
+    {
       title: "Item Name",
-      render: (_, record) =>
-        record.productName ||
-        record.customDesignName ||
-        record.variantName ||
-        record.itemName ||
-        "N/A",
+      dataIndex: "productName",
+      key: "productName",
+      render: (text, record) =>
+        // record.productName ||
+        // record.customDesignName ||
+        // record.variantName ||
+        record.itemName || record.productName || "N/A",
     },
     {
       title: "Quantity",
@@ -71,29 +96,22 @@ function OrderDetails({ selectedOrder, onClose }) {
       title: "Unit Price",
       dataIndex: "unitPrice",
       key: "unitPrice",
-      render: (text) => formatVND(text),
+      render: (text) =>
+        text == null ? "" : `${parseFloat(text).toLocaleString("vi-VN")}đ`,
     },
     {
       title: "Total Price",
-      dataIndex: "totalPrice",
       key: "totalPrice",
-      render: (text) => formatVND(text),
+      render: (_, record) =>
+        record.quantity && record.unitPrice
+          ? `${(record.quantity * record.unitPrice).toLocaleString("vi-VN")}đ`
+          : "",
     },
-    // Add more columns if needed
+    // Nếu muốn hiển thị thêm ảnh hoặc variantName thì bổ sung column ở đây
   ];
 
   return (
     <div className="order-details" style={{ maxWidth: 800, margin: "0 auto" }}>
-      <div
-        className="order-details-header"
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      ></div>
-
       <Descriptions
         bordered
         column={1}
@@ -107,7 +125,8 @@ function OrderDetails({ selectedOrder, onClose }) {
           {createdAt && new Date(createdAt).toLocaleString()}
         </Descriptions.Item>
         <Descriptions.Item label="Receiver">
-          {receiverName} ({receiverPhone})
+          {receiverName}
+          {receiverPhone && ` (${receiverPhone})`}
         </Descriptions.Item>
         <Descriptions.Item label="Shipping Address">
           {shippingAddress}
@@ -148,15 +167,23 @@ function OrderDetails({ selectedOrder, onClose }) {
             {cancellationReason}
           </Descriptions.Item>
         )}
+        {adminReviewNotes && (
+          <Descriptions.Item label="Admin Review Notes">
+            {adminReviewNotes}
+          </Descriptions.Item>
+        )}
       </Descriptions>
 
       <h3>Order Items</h3>
       <Table
         dataSource={orderItems}
         columns={detailColumns}
-        rowKey="id"
+        rowKey={(record, idx) =>
+          record.id || record.productName + (record.variantName || "") + idx
+        }
         pagination={false}
         size="small"
+        locale={{ emptyText: "No data" }}
       />
     </div>
   );

@@ -5,16 +5,17 @@ import api from "../../../config/api";
 import FormatCost from "../../formatCost";
 import "./index.scss";
 import DesignStatusButton from "../../designStatusButton";
-import { Height } from "@mui/icons-material";
+import { Button, Modal } from "antd";
 import { toast } from "react-toastify";
 import { useLocation } from "react-router-dom";
-import { Modal } from "antd";
 
 const tabList = [
   { key: "all", label: "Tất cả", status: -1 },
   { key: "draft", label: "Nháp", status: DESIGN_STATUS.draft },
+  { key: "liked", label: "Đã thích", status: DESIGN_STATUS.liked },
+  { key: "accepted", label: "Được duyệt", status: DESIGN_STATUS.accepted },
   { key: "request", label: "Yêu cầu ", status: DESIGN_STATUS.request },
-  { key: "order", label: "Đang xử lý đơn", status: DESIGN_STATUS.order },
+  { key: "order", label: "Chờ đặt hàng", status: DESIGN_STATUS.order },
   { key: "shipping", label: "Đang vận chuyển", status: DESIGN_STATUS.shipping },
   { key: "delivered", label: "Đã giao", status: DESIGN_STATUS.delivered },
   { key: "done", label: "Hoàn thành", status: DESIGN_STATUS.done },
@@ -34,14 +35,25 @@ const DesignPage = () => {
     type: "error",
   });
   const [searchTerm, setSearchTerm] = useState("");
-  const [previewImg, setPreviewImg] = useState(null); // hoặc useState("")
+  const [previewImg, setPreviewImg] = useState(null);
   const [previewVisible, setPreviewVisible] = useState(false);
 
-  //Search
+  // State cho modal đặt hàng
+  const [orderModalVisible, setOrderModalVisible] = useState(false);
+  const [orderData, setOrderData] = useState({
+    payerName: "",
+    payerPhone: "",
+    payerAddress: "",
+    description: "",
+  });
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [selectedDesign, setSelectedDesign] = useState(null);
+
   // Xử lý thay đổi input search
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
+
   // Lọc danh sách thiết kế theo từ khóa tìm kiếm
   const filteredDesigns = designs.filter(
     (design) =>
@@ -128,6 +140,46 @@ const DesignPage = () => {
     return colors[status] || "#6b7280";
   };
 
+  // Handler mở modal đặt hàng
+  const openOrderModal = (design) => {
+    setSelectedDesign(design);
+    setOrderModalVisible(true);
+    setOrderData({
+      payerName: "",
+      payerPhone: "",
+      payerAddress: "",
+      description: "",
+    });
+  };
+
+  // Handler gửi đặt hàng VNPAY
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedDesign) return;
+    setOrderLoading(true);
+    try {
+      // Gọi API đặt hàng thanh toán VNPAY
+      await api.post(`custom-design-payments/${selectedDesign.id}`, {
+        customDesignId: selectedDesign.id,
+        paymentMethod: 0, // 0 = VNPAY
+        payerName: orderData.payerName,
+        payerPhone: orderData.payerPhone,
+        payerAddress: orderData.payerAddress,
+        description: orderData.description,
+      });
+      toast.success(
+        "Đặt hàng thành công! Vui lòng kiểm tra email hoặc thông báo để hoàn tất thanh toán VNPAY."
+      );
+      setOrderModalVisible(false);
+      setSelectedDesign(null);
+      fetchDesigns();
+    } catch (err) {
+      toast.error("Có lỗi khi đặt hàng. Vui lòng thử lại.");
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
   return (
     <div className="design-page">
       {/* Notification */}
@@ -196,6 +248,27 @@ const DesignPage = () => {
                     alt={design.designName}
                   />
                   <div className="card-overlay">
+                    {(design.status === DESIGN_STATUS.liked ||
+                      design.status === DESIGN_STATUS.draft) && (
+                      <button
+                        className="like-button"
+                        onClick={() => handleToggleLike(design)}
+                      >
+                        <Heart
+                          size={24}
+                          color={
+                            design.status === DESIGN_STATUS.liked
+                              ? "#ef4444"
+                              : "#ffffff"
+                          }
+                          fill={
+                            design.status === DESIGN_STATUS.liked
+                              ? "#ef4444"
+                              : "none"
+                          }
+                        />
+                      </button>
+                    )}
                     <button
                       className="preview-btn"
                       onClick={() => {
@@ -231,11 +304,10 @@ const DesignPage = () => {
                     {DESIGN_LABEL[design.status]}
                   </div>
 
-                  {/* === Nút chuyển trạng thái (chỉ hiện đúng sản phẩm hợp lệ) === */}
-                  {design.status === DESIGN_STATUS.draft && (
-                    <DesignStatusButton
-                      designId={design.id}
-                      status={DESIGN_STATUS.request}
+                  {/* Nút đặt hàng VNPAY (nếu hợp lệ) */}
+                  {design.status === DESIGN_STATUS.accepted && (
+                    <Button
+                      onClick={() => openOrderModal(design)}
                       type="primary"
                       style={{
                         marginTop: 8,
@@ -243,38 +315,12 @@ const DesignPage = () => {
                         borderRadius: 8,
                         height: "40px",
                       }}
-                      onSuccess={() => {
-                        fetchDesigns();
-                        toast.success(
-                          "Vui lòng kiểm tra email để xác nhận đơn đặt hàng!"
-                        );
-                      }}
                     >
-                      Đặt hàng
-                    </DesignStatusButton>
+                      Đặt hàng & Thanh toán VNPAY
+                    </Button>
                   )}
 
-                  {design.status === DESIGN_STATUS.request && (
-                    <DesignStatusButton
-                      designId={design.id}
-                      status={DESIGN_STATUS.draft} // Trả về draft khi hủy
-                      danger
-                      style={{
-                        marginTop: 8,
-                        width: "100%",
-                        borderRadius: 8,
-                        height: "40px",
-                      }}
-                      withConfirm // custom prop, xử lý ở trong component để hỏi confirm
-                      onSuccess={() => {
-                        fetchDesigns();
-                        toast.success("Yêu cầu đã được hủy!");
-                      }}
-                    >
-                      Hủy yêu cầu
-                    </DesignStatusButton>
-                  )}
-
+                  {/* Nút chuyển trạng thái nếu cần */}
                   {design.status === DESIGN_STATUS.shipping && (
                     <DesignStatusButton
                       designId={design.id}
@@ -287,7 +333,7 @@ const DesignPage = () => {
                         height: "40px",
                       }}
                       onSuccess={() => {
-                        fetchDesigns(); // Reload lại danh sách thiết kế
+                        fetchDesigns();
                         toast.success(
                           "Vui lòng kiểm tra email để xác nhận đơn đặt hàng!"
                         );
@@ -302,6 +348,8 @@ const DesignPage = () => {
           </div>
         )}
       </div>
+
+      {/* Modal xem ảnh lớn */}
       <Modal
         open={previewVisible}
         footer={null}
@@ -318,6 +366,94 @@ const DesignPage = () => {
             maxHeight: "70vh",
           }}
         />
+      </Modal>
+
+      {/* Modal đặt hàng & thanh toán VNPAY */}
+      <Modal
+        open={orderModalVisible}
+        footer={null}
+        onCancel={() => setOrderModalVisible(false)}
+        centered
+        width={600}
+        destroyOnClose
+      >
+        <h2>Đặt hàng & Thanh toán VNPAY</h2>
+        {selectedDesign && (
+          <>
+            <div style={{ marginBottom: 12 }}>
+              <b>Tên thiết kế:</b> {selectedDesign.designName}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <b>Giá trị thanh toán trước (50%): </b>
+              <FormatCost value={selectedDesign.totalPrice * 0.5} />
+            </div>
+          </>
+        )}
+        <form
+          onSubmit={handleOrderSubmit}
+          style={{ display: "flex", flexDirection: "column", gap: 12 }}
+        >
+          <input
+            required
+            placeholder="Tên người thanh toán"
+            value={orderData.payerName}
+            onChange={(e) =>
+              setOrderData((data) => ({ ...data, payerName: e.target.value }))
+            }
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ddd",height: 60 }}
+          />
+          <input
+            required
+            placeholder="Số điện thoại"
+            value={orderData.payerPhone}
+            onChange={(e) => {
+              // Chỉ cho phép nhập số
+              const value = e.target.value.replace(/\D/g, "");
+              setOrderData((data) => ({ ...data, payerPhone: value }));
+            }}
+            pattern="^(0|\+84)[0-9]{9}$"
+            title="Số điện thoại phải bắt đầu bằng 0 hoặc +84 và có 10 số"
+            maxLength={11}
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ddd" ,height: 60 }}
+          />
+          <input
+            required
+            placeholder="Địa chỉ giao hàng"
+            value={orderData.payerAddress}
+            onChange={(e) =>
+              setOrderData((data) => ({
+                ...data,
+                payerAddress: e.target.value,
+              }))
+            }
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ddd",height: 60  }}
+          />
+          <textarea
+            placeholder="Ghi chú/ Mô tả đơn hàng"
+            value={orderData.description}
+            onChange={(e) =>
+              setOrderData((data) => ({ ...data, description: e.target.value }))
+            }
+            rows={2}
+            style={{ padding: 8, borderRadius: 6, border: "1px solid #ddd",height: 120  }}
+          />
+          <button
+            type="submit"
+            disabled={orderLoading}
+            style={{
+              background: "#10b981",
+              color: "#fff",
+              border: "none",
+              padding: "10px 0",
+              borderRadius: 6,
+              fontWeight: "bold",
+              marginTop: 8,
+              cursor: "pointer",height: 60 
+            }}
+          >
+            {orderLoading ? "Đang gửi yêu cầu..." : "Thanh toán VNPAY (50%)"}
+          </button>
+        </form>
       </Modal>
     </div>
   );
